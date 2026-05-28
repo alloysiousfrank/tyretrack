@@ -12,7 +12,14 @@ const app = express()
 connectDB()
 
 // MIDDLEWARE
-app.use(cors())
+app.use(
+  cors({
+    origin: [
+      "https://tyretrackfrontend.vercel.app",
+    ],
+    credentials: true,
+  })
+)
 app.use(express.json())
 
 // ROUTES
