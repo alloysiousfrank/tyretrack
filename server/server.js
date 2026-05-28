@@ -1,4 +1,5 @@
 const express = require("express")
+const mongoose = require("mongoose")
 const cors = require("cors")
 require("dotenv").config()
 
@@ -9,15 +10,15 @@ const bookingRoutes = require("./routes/bookingRoutes")
 
 const app = express()
 
+// DATABASE
 connectDB()
 
-// CORS FIX
+// CORS
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
       "https://tyretrackfrontend.vercel.app",
-      "https://tyretrackfrontend-3s6rag82q-alloysious-frank-s-projects.vercel.app",
     ],
     credentials: true,
   })
@@ -25,18 +26,17 @@ app.use(
 
 app.use(express.json())
 
-app.get("/", (req, res) => {
-  res.json({
-    message: "TyreTrack Server Running",
-  })
-})
-
 // ROUTES
 app.use("/api/auth", authRoutes)
 app.use("/api/bookings", bookingRoutes)
 
+// TEST ROUTE
+app.get("/", (req, res) => {
+  res.send("TyreTrack Server Running")
+})
+
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
