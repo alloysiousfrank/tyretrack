@@ -1,6 +1,6 @@
-const API_URL = "https://tyretrack-server.onrender.com"
+const API_URL =
+  "https://tyretrack-server.onrender.com/api/auth"
 
-// SEND OTP
 export const sendOtp = async (
   name: string,
   email: string,
@@ -11,11 +11,9 @@ export const sendOtp = async (
     `${API_URL}/send-otp`,
     {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         name,
         email,
@@ -25,10 +23,8 @@ export const sendOtp = async (
   )
 
   return response.json()
-
 }
 
-// VERIFY OTP
 export const verifyOtp = async (
   email: string,
   otp: string
@@ -38,11 +34,9 @@ export const verifyOtp = async (
     `${API_URL}/verify-otp`,
     {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         email,
         otp,
@@ -51,5 +45,4 @@ export const verifyOtp = async (
   )
 
   return response.json()
-
 }
