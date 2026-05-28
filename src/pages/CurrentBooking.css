@@ -1,0 +1,124 @@
+.current-booking-page {
+  min-height: 100vh;
+  padding: 140px 20px 80px;
+  background:
+    radial-gradient(circle at top right,
+    rgba(255,0,0,0.12),
+    transparent 35%),
+    #000;
+  color: white;
+}
+
+.current-booking-card {
+  max-width: 1000px;
+  margin: auto;
+  background: rgba(10,10,10,0.96);
+  border: 1px solid rgba(255,0,0,0.18);
+  border-radius: 30px;
+  padding: 50px;
+  box-shadow: 0 0 40px rgba(255,0,0,0.08);
+}
+
+.current-booking-card h1 {
+  text-align: center;
+  font-size: 3rem;
+  margin-bottom: 50px;
+}
+
+.booking-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(250px,1fr));
+  gap: 25px;
+}
+
+.booking-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,0,0,0.1);
+  border-radius: 18px;
+  padding: 24px;
+}
+
+.booking-item span {
+  display: block;
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.booking-item h3 {
+  color: white;
+  font-size: 1.2rem;
+}
+
+.status-active {
+  color: #ff2b2b;
+}
+
+.booking-progress {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  margin-top: 50px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  width: 70%;
+  height: 100%;
+  background:
+    linear-gradient(90deg,
+    #ff0000,
+    #ff4d4d);
+  box-shadow: 0 0 20px rgba(255,0,0,0.5);
+}
+
+.cancel-booking-btn {
+  width: 100%;
+  margin-top: 35px;
+  padding: 18px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(
+    90deg,
+    #ff1f1f,
+    #b30000
+  );
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.cancel-booking-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(255,0,0,0.4);
+}
+
+.booking-note {
+  margin-top: 30px;
+  text-align: center;
+  color: #aaa;
+  font-size: 1rem;
+}
+
+.no-booking {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+
+  .current-booking-card {
+    padding: 30px 20px;
+  }
+
+  .current-booking-card h1 {
+    font-size: 2.2rem;
+  }
+
+}

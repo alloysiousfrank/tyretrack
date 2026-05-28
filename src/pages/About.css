@@ -1,0 +1,36 @@
+.about-hero {
+  text-align: center;
+  padding: 3rem 2rem;
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--text-muted);
+  max-width: 720px;
+  margin: 0 auto 3rem;
+}
+
+.about-values {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.about-values h3 {
+  font-size: 1.15rem;
+  margin-bottom: 0.75rem;
+  color: var(--red-primary);
+}
+
+.about-values p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.about-cta {
+  text-align: center;
+}
+
+.about-cta p {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}

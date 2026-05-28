@@ -1,0 +1,46 @@
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.contact-info h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.contact-info p {
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.contact-link {
+  display: block;
+  font-size: 1.1rem;
+  color: var(--red-primary);
+  margin-bottom: 0.5rem;
+}
+
+.contact-hours {
+  margin: 1.25rem 0 !important;
+  font-size: 0.9rem;
+}
+
+.contact-sent {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+.contact-map {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}

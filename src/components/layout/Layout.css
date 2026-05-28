@@ -1,0 +1,24 @@
+.layout {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.layout--home {
+  padding-top: 0;
+}
+
+.layout.page {
+  padding-top: 120px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background: #000;
+}
+
+.page-inner {
+  width: 100%;
+  min-height: 100vh;
+}

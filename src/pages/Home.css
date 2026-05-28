@@ -1,0 +1,135 @@
+.home__story {
+  position: relative;
+  z-index: 5;
+}
+
+.home__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+  border-radius: var(--radius-xl);
+}
+
+.home__stat-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--red-primary);
+}
+
+.home__stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.home__services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.service-card h3 {
+  font-size: 1.25rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.service-card p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.service-card__image {
+  height: 140px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  margin: -0.5rem -0.5rem 1rem;
+  opacity: 0.85;
+}
+
+.service-card__icon {
+  font-size: 1.5rem;
+  color: var(--red-primary);
+}
+
+.service-card__meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.service-card__link {
+  display: inline-block;
+  margin-top: 1rem;
+  font-weight: 600;
+  color: var(--red-primary);
+  transition: transform 0.3s;
+}
+
+.service-card__link:hover {
+  transform: translateX(4px);
+}
+
+.home__center-cta {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+.home__gallery-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.compare-card__images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.compare-card__images span {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--red-primary);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.compare-card__images img {
+  border-radius: 10px;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  width: 100%;
+}
+
+.home__track-cta {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.home__track-cta .btn {
+  margin-top: 1.5rem;
+}
+
+.home__map {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  padding: 0.5rem;
+}
+
+.home__phone {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--text-muted);
+}
+
+.home__phone a:hover {
+  color: var(--red-primary);
+}
