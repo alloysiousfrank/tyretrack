@@ -14,8 +14,11 @@ export default function CinematicHero() {
   const glowY = useTransform(scrollYProgress, [0, 1], [0, 500])
 
   useEffect(() => {
-    setEntryX(-window.innerWidth / 2)
-
+if (window.innerWidth < 768) {
+  setEntryX(-180)
+} else {
+  setEntryX(-window.innerWidth / 2)
+}
     const onScroll = () => setIsScrolled(window.scrollY > 120)
     window.addEventListener('scroll', onScroll)
     onScroll()
