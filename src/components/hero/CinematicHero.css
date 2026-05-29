@@ -117,57 +117,101 @@
   }
 }
 
-/* MOBILE HERO FIX */
+/* =========================================
+   MOBILE HERO INTRO FIX
+========================================= */
 
 @media (max-width: 768px) {
 
   .cinematic-hero {
-    min-height: 100vh;
-    padding: 120px 20px 60px;
     overflow: hidden;
   }
 
-  .cinematic-hero__content {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
+  /* TYRETRACK TITLE */
+  .hero-title {
+    font-size: 2.8rem !important;
     text-align: center;
-  }
-
-  .cinematic-hero__text {
-    width: 100%;
-    z-index: 2;
-  }
-
-  .cinematic-hero__title {
-    font-size: 3.2rem;
-    line-height: 1;
-  }
-
-  .cinematic-hero__subtitle {
-    font-size: 1rem;
-    margin-top: 12px;
-  }
-
-  .cinematic-hero__wheel-zone {
-    width: 100%;
-    height: 260px;
+    line-height: 1.1;
     display: flex;
-    justify-content: center;
     align-items: center;
-    overflow: visible;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: nowrap;
   }
 
-  .cinematic-hero__wheel {
-    width: 220px !important;
-    height: 220px !important;
+  /* SPINNING WHEEL LOGO */
+  .hero-wheel {
+    width: 68px !important;
+    height: 68px !important;
+
+    animation:
+      mobileWheelSpin 2.2s ease forwards,
+      wheelRotate 2.2s linear;
+
+    transform-origin: center;
   }
 
-  .cinematic-hero__wheel-glow {
-    width: 240px;
-    height: 240px;
-    filter: blur(70px);
+  /* TITLE FADE AFTER WHEEL SETTLES */
+  .hero-title-text {
+    opacity: 0;
+
+    animation:
+      mobileTitleFade 1s ease forwards;
+
+    animation-delay: 1.8s;
+  }
+
+  /* WHEEL MOVEMENT */
+  @keyframes mobileWheelSpin {
+
+    0% {
+      transform:
+        translateX(120px)
+        rotate(0deg);
+
+      opacity: 0;
+    }
+
+    20% {
+      opacity: 1;
+    }
+
+    100% {
+      transform:
+        translateX(0px)
+        rotate(720deg);
+
+      opacity: 1;
+    }
+
+  }
+
+  /* CONTINUOUS SPIN */
+  @keyframes wheelRotate {
+
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(720deg);
+    }
+
+  }
+
+  /* TITLE FADE */
+  @keyframes mobileTitleFade {
+
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0px);
+    }
+
   }
 
 }
