@@ -118,70 +118,72 @@
 }
 
 /* =========================================
-   PERFECT DESKTOP-LIKE MOBILE HERO
+   MOBILE HERO FIX
 ========================================= */
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
 
-  .hero-title-container {
-    transform: scale(0.72);
-    gap: 10px;
+  .cinematic-hero {
+    overflow: hidden;
+  }
+
+  .hero-content {
+    width: 100%;
+    height: 100vh;
+
+    display: flex;
     justify-content: center;
     align-items: center;
+
+    position: relative;
+  }
+
+  .hero-title-container {
+
+    position: absolute;
+
+    top: 52%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    gap: 10px;
   }
 
   .hero-wheel {
-    width: 95px;
-    height: 95px;
 
-    animation:
-      wheelSpinMobile 2.5s ease forwards;
+    width: 70px !important;
+    height: 70px !important;
+
+    flex-shrink: 0;
   }
 
   .hero-title {
-    font-size: 3rem;
-    opacity: 0;
 
-    animation:
-      titleFadeMobile 1s ease forwards;
-    animation-delay: 1.8s;
+    font-size: 42px !important;
+    white-space: nowrap;
+
+    opacity: 1 !important;
   }
 
   .hero-subtitle {
-    font-size: 1rem;
-    margin-top: 12px;
+
+    position: absolute;
+
+    top: calc(52% + 55px);
+
+    width: 100%;
+
+    text-align: center;
+
+    font-size: 14px !important;
+
+    opacity: 1 !important;
   }
-
-}
-
-  /* EXACT DESKTOP STYLE SPIN */
-
-@keyframes wheelSpinMobile {
-
-  0% {
-    transform:
-      translateX(120px)
-      rotate(0deg);
-  }
-
-  100% {
-    transform:
-      translateX(0px)
-      rotate(720deg);
-  }
-
-}
-
-@keyframes titleFadeMobile {
-
-  0% {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
 }
