@@ -96,36 +96,44 @@
   object-fit: contain;
 }
 
-/* ✅ Mobile view mirrors desktop */
 @media screen and (max-width: 768px) {
   .cinematic-hero {
     height: 85vh;
     padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .cinematic-hero__content {
-    flex-direction: row; /* keep same as desktop */
-    gap: 1.5rem;
+    flex-direction: row; /* keep same layout as desktop */
+    gap: 0.5rem; /* reduced spacing between text and wheel */
     justify-content: center;
     align-items: center;
-    text-align: center;
   }
 
   .cinematic-hero__text {
-    align-items: center;
-    text-align: center;
+
+    align-items: flex-end; /* 🔽 align text to left side */
+     text-align: right;    /* both title + subtitle aligned left */
   }
 
+  /* 👉 If you prefer right alignment instead, swap to:
+     align-items: flex-start;   
+     text-align: left;
+  */
+
   .cinematic-hero__title {
-    font-size: clamp(2.5rem, 7vw, 4rem); /* scale down slightly but same look */
+    font-size: clamp(2.5rem, 7vw, 4rem);
   }
 
   .cinematic-hero__subtitle {
-    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-size: 0.85rem; /* smaller subtitle for mobile */
+    margin-top: 0.25rem; /* tighter spacing under title */
   }
 
   .cinematic-hero__wheel {
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 150px;
   }
 }
