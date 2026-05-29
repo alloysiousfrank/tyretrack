@@ -133,3 +133,8 @@
 .home__phone a:hover {
   color: var(--red-primary);
 }
+.home__phone a {
+  color: var(--text-muted);
+  font-weight: 600;
+  transition: color 0.3s;
+}
