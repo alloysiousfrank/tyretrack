@@ -132,7 +132,7 @@ export default function Home() {
             />
           </section>
           <p className="home__phone">
-            <a href={`tel:${GARAGE.phone.replace(/\s/g, '')}`}>{GARAGE.phone}</a>
+            <a href={`tel:${GARAGE.phone1.replace(/\s/g, '')}`}>{GARAGE.phone1}</a>
             {' · '}
             <a href={GARAGE.mapLink} target="_blank" rel="noreferrer">
               Open in Google Maps

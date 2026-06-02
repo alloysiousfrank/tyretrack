@@ -1,3 +1,13 @@
+import wheelAlignmentImg from '../assets/wheel-alignment.png'
+import wheelBalancingImg from '../assets/wheel-balancing.png'
+import multiBrandTyresImg from '../assets/multi-brand-tyres.png'
+import automaticCarSpaImg from '../assets/automatic-car-spa.png'
+import foamWashImg from '../assets/foam-wash.png'
+import interiorCleaningImg from '../assets/interior-cleaning.png'
+import teflonCoatingImg from '../assets/teflon-coating.png'
+import ceramicCoatingImg from '../assets/ceramic-coating.png'
+
+
 export interface Service {
   id: string
   title: string
@@ -8,57 +18,114 @@ export interface Service {
   image: string
 }
 
-export const services: Service[] = [
+export const GARAGE = {
+  name: 'TYRE TRACK',
+
+  owner: 'Rtn A CHARLES',
+
+  phone1: '9443738487',
+  phone2: '7448787979',
+
+  whatsapp: '9443738487',
+
+  email: 'tyretrack2024@gmail.com',
+
+  address:
+    '107/2 Andipalayam, Opposite Gokulam Apartment, Mangalam Road, Tirupur',
+
+  mapLink:
+    'https://maps.app.goo.gl/dAaNU2m4fkZj69JZ7?g_st=aw',
+
+  mapEmbed:
+    'https://www.google.com/maps?q=107/2+Andipalayam+Opposite+Gokulam+Apartment+Mangalam+Road+Tirupur&output=embed',
+}
+
+export const services = [
   {
     id: 'wheel-alignment',
     title: 'Wheel Alignment',
     description:
-      'Precision laser alignment for perfect handling, even tyre wear, and a smoother drive on every road.',
-    price: 'From ₹899',
-    duration: '45–60 min',
-    icon: '◎',
-    image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80',
+      'Precision wheel alignment service for smooth handling, tyre life improvement, and driving stability for all four wheelers.',
+    price: 'Premium Alignment',
+    duration: '45 mins',
+    image: wheelAlignmentImg,
+    icon: '⚙️',
   },
+
   {
-    id: 'tyre-services',
-    title: 'Tyre Services',
+    id: 'wheel-balancing',
+    title: 'Wheel Balancing',
     description:
-      'Premium tyre fitting, balancing, rotation, and puncture repair with manufacturer-grade equipment.',
-    price: 'From ₹499',
-    duration: '30–90 min',
-    icon: '◉',
-    image: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&q=80',
+      'Advanced wheel balancing service for vibration-free driving and maximum tyre performance.',
+    price: 'Professional Service',
+    duration: '30 mins',
+    image: wheelBalancingImg,
+    icon: '🛞',
   },
+
   {
-    id: 'water-wash',
-    title: 'Water Wash',
+    id: 'multi-brand-tyres',
+    title: 'Multi Brand Tyres',
     description:
-      'Multi-stage exterior wash with pH-balanced foam, underbody rinse, and hydrophobic finish.',
-    price: 'From ₹399',
-    duration: '25–40 min',
-    icon: '◇',
-    image: 'https://images.unsplash.com/photo-1601362840469-51e4d8d229ec?w=800&q=80',
+      'Tyres available for both four wheelers and two wheelers including Bridgestone, Apollo, Michelin, Yokohama, Pirelli, Continental and Goodyear.',
+    price: 'All Brands Available',
+    duration: 'Instant',
+    image: multiBrandTyresImg,
+    icon: '🏁',
   },
+
+  {
+    id: 'automatic-car-spa',
+    title: 'Automatic Car Spa',
+    description:
+      'Premium automatic car spa with foam wash, detailing, and luxury finish for all vehicle types.',
+    price: 'Starting from ₹499',
+    duration: '60 mins',
+    image: automaticCarSpaImg,
+    icon: '🚘',
+  },
+
+  {
+    id: 'foam-wash',
+    title: 'Foam Wash',
+    description:
+      'High-pressure foam wash service with deep exterior cleaning and glossy finish.',
+    price: 'Quick Wash',
+    duration: '25 mins',
+    image: foamWashImg,
+    icon: '🫧',
+  },
+
   {
     id: 'interior-cleaning',
     title: 'Interior Cleaning',
     description:
-      'Deep vacuum, leather conditioning, dashboard detailing, and odour-neutralising treatment.',
-    price: 'From ₹1,299',
-    duration: '60–120 min',
-    icon: '▣',
-    image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80',
+      'Complete interior cleaning including seats, dashboard, carpets, and deep vacuum detailing.',
+    price: 'Detailing Service',
+    duration: '90 mins',
+    image: interiorCleaningImg,
+    icon: '✨',
+  },
+
+  {
+    id: 'teflon-coating',
+    title: 'Teflon Coating',
+    description:
+      'Premium Teflon coating protection for long-lasting shine and paint protection.',
+    price: 'Premium Coating',
+    duration: '2 hrs',
+    image: teflonCoatingImg,
+    icon: '🛡️',
+  },
+
+  {
+    id: 'ceramic-coating',
+    title: 'Ceramic Coating',
+    description:
+      'Luxury ceramic coating with water repellence and mirror gloss protection.',
+    price: 'Luxury Package',
+    duration: '4 hrs',
+    image: ceramicCoatingImg,
+    icon: '🔥',
   },
 ]
-
-export const GARAGE = {
-  name: 'TyreTrack',
-  tagline: 'Precision. Performance. Perfection.',
-  phone: '+91 98765 43210',
-  email: 'hello@tyretrack.in',
-  address: '42 Motorway Industrial Estate, Andheri East, Mumbai 400069',
-  hours: 'Mon–Sat 8:00 AM – 8:00 PM · Sun 9:00 AM – 5:00 PM',
-  mapEmbed:
-    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.532326464887!2d72.8777!3d19.1136!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDA2JzQ5LjAiTiA3MsKwNTInMzkuNyJF!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin',
-  mapLink: 'https://maps.google.com/?q=Andheri+East+Mumbai',
-}

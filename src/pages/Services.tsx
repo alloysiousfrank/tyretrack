@@ -21,22 +21,40 @@ export default function Services() {
       <section className="services-showcase">
         {services.map((service, i) => (
           <RevealSection key={service.id} delay={i * 0.08}>
-            <GlassCard className={`service-row ${i % 2 === 1 ? 'service-row--reverse' : ''}`}>
-              <motion.section
+            <GlassCard
+              className={`service-row ${
+                i % 2 === 1 ? 'service-row--reverse' : ''
+              }`}
+            >
+              <motion.div
                 className="service-row__visual"
-                style={{ backgroundImage: `url(${service.image})` }}
+                style={{
+                  backgroundImage: `url(${service.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
                 whileHover={{ scale: 1.03 }}
                 transition={{ duration: 0.5 }}
-              />
+              ></motion.div>
+
               <section className="service-row__content">
-                <span className="service-row__icon">{service.icon}</span>
+                <span className="service-row__icon">
+                  {service.icon}
+                </span>
+
                 <h2>{service.title}</h2>
+
                 <p>{service.description}</p>
+
                 <section className="service-row__meta">
                   <span>{service.price}</span>
                   <span>{service.duration}</span>
                 </section>
-                <Link to={`/booking?service=${service.id}`} className="btn btn-primary">
+
+                <Link
+                  to={`/booking?service=${service.id}`}
+                  className="btn btn-primary"
+                >
                   Book {service.title}
                 </Link>
               </section>

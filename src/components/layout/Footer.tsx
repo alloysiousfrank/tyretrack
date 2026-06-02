@@ -10,7 +10,7 @@ export default function Footer() {
           <Link to="/" className="footer__logo">
             TyreTrack
           </Link>
-          <p className="footer__tagline">{GARAGE.tagline}</p>
+          <p className="footer__tagline">{GARAGE.owner}</p>
         </div>
 
         <div className="footer__cols">
@@ -23,13 +23,13 @@ export default function Footer() {
           </div>
           <div>
             <h4>Contact</h4>
-            <a href={`tel:${GARAGE.phone.replace(/\s/g, '')}`}>{GARAGE.phone}</a>
+            <a href={`tel:${GARAGE.phone1.replace(/\s/g, '')}`}>{GARAGE.phone1}</a>
             <a href={`mailto:${GARAGE.email}`}>{GARAGE.email}</a>
             <p>{GARAGE.address}</p>
           </div>
           <div>
             <h4>Hours</h4>
-            <p>{GARAGE.hours}</p>
+            <p>Mon-Sat: 8.45AM-8.15PM</p>
           </div>
         </div>
 
