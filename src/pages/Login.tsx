@@ -12,6 +12,8 @@ export default function Login() {
   const [otp, setOtp] = useState("")
   const [otpSent, setOtpSent] = useState(false)
 
+  const API_URL = "http://localhost:5000/api/auth"
+
   // SEND OTP OR DIRECT LOGIN
 const handleSendOtp = async () => {
 

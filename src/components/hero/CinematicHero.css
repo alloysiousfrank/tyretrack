@@ -31,7 +31,7 @@
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: -0.2rem;
 }
 
 .cinematic-hero__text {
@@ -86,8 +86,8 @@
 .cinematic-hero__wheel {
   position: relative;
   z-index: 2;
-  width: 120px;
-  height: 120px;
+  width: 200px;
+  height: 200px;
 }
 
 .cinematic-hero__wheel img {
@@ -107,7 +107,7 @@
 
   .cinematic-hero__content {
     flex-direction: row; /* keep same layout as desktop */
-    gap: 0.5rem; /* reduced spacing between text and wheel */
+    gap: -0.2rem; /* reduced spacing between text and wheel */
     justify-content: center;
     align-items: center;
   }
@@ -133,7 +133,7 @@
   }
 
   .cinematic-hero__wheel {
-    width: 150px;
-    height: 150px;
+    width: 155px;
+    height: 155px;
   }
 }
