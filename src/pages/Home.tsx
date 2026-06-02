@@ -42,7 +42,7 @@ export default function Home() {
             subtitle="Premium care for every detail — book any service online in under a minute."
           />
           <section className="home__services-grid">
-            {services.map((service, i) => (
+            {services.slice(0, 4).map((service, i) => (
               <GlassCard key={service.id} className="service-card" red={i === 0}>
                 <section
                   className="service-card__image"

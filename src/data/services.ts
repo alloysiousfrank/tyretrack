@@ -49,7 +49,7 @@ export const services = [
     price: 'Premium Alignment',
     duration: '45 mins',
     image: wheelAlignmentImg,
-    icon: '⚙️',
+    icon: '⦿',
   },
 
   {
@@ -60,7 +60,7 @@ export const services = [
     price: 'Professional Service',
     duration: '30 mins',
     image: wheelBalancingImg,
-    icon: '🛞',
+    icon: '⛭',
   },
 
   {
@@ -71,7 +71,7 @@ export const services = [
     price: 'All Brands Available',
     duration: 'Instant',
     image: multiBrandTyresImg,
-    icon: '🏁',
+    icon: '⍟',
   },
 
   {
@@ -82,7 +82,7 @@ export const services = [
     price: 'Starting from ₹499',
     duration: '60 mins',
     image: automaticCarSpaImg,
-    icon: '🚘',
+    icon: '◈' ,
   },
 
   {
@@ -93,7 +93,7 @@ export const services = [
     price: 'Quick Wash',
     duration: '25 mins',
     image: foamWashImg,
-    icon: '🫧',
+    icon: '✺',
   },
 
   {
@@ -104,7 +104,7 @@ export const services = [
     price: 'Detailing Service',
     duration: '90 mins',
     image: interiorCleaningImg,
-    icon: '✨',
+    icon: '⬡' ,
   },
 
   {
@@ -115,7 +115,7 @@ export const services = [
     price: 'Premium Coating',
     duration: '2 hrs',
     image: teflonCoatingImg,
-    icon: '🛡️',
+    icon:'✴',
   },
 
   {
@@ -126,6 +126,6 @@ export const services = [
     price: 'Luxury Package',
     duration: '4 hrs',
     image: ceramicCoatingImg,
-    icon: '🔥',
+    icon: '✦',
   },
 ]
