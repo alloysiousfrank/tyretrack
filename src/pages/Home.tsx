@@ -22,10 +22,10 @@ export default function Home() {
           />
           <section className="home__stats glass">
             {[
-              { value: '12K+', label: 'Services Completed' },
+              { value: '1K+', label: 'Services Completed' },
               { value: '4.9', label: 'Customer Rating' },
-              { value: '15+', label: 'Expert Technicians' },
-              { value: '8yr', label: 'Trusted in Mumbai' },
+              { value: '5+', label: 'Expert Technicians' },
+              { value: '3yr', label: 'Trusted in Tirupur' },
             ].map((stat) => (
               <article key={stat.label} className="home__stat">
                 <span className="home__stat-value">{stat.value}</span>
@@ -133,6 +133,7 @@ export default function Home() {
           </section>
           <p className="home__phone">
             <a href={`tel:${GARAGE.phone1.replace(/\s/g, '')}`}>{GARAGE.phone1}</a>
+
             {' · '}
             <a href={GARAGE.mapLink} target="_blank" rel="noreferrer">
               Open in Google Maps

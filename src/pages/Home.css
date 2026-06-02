@@ -112,6 +112,10 @@
 .home__track-cta {
   text-align: center;
   padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .home__track-cta .btn {

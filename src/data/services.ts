@@ -21,7 +21,7 @@ export interface Service {
 export const GARAGE = {
   name: 'TYRE TRACK',
 
-  owner: 'Rtn A CHARLES',
+  owner: 'Rtn A Charles',
 
   phone1: '9443738487',
   phone2: '7448787979',
@@ -34,10 +34,10 @@ export const GARAGE = {
     '107/2 Andipalayam, Opposite Gokulam Apartment, Mangalam Road, Tirupur',
 
   mapLink:
-    'https://maps.app.goo.gl/dAaNU2m4fkZj69JZ7?g_st=aw',
+    'https://maps.app.goo.gl/RNxAmWY4DbxqEm3g9',
 
   mapEmbed:
-    'https://www.google.com/maps?q=107/2+Andipalayam+Opposite+Gokulam+Apartment+Mangalam+Road+Tirupur&output=embed',
+    'https://maps.google.com/maps?q=TYRE%20TRACK%20Tirupur&t=&z=15&ie=UTF8&iwloc=&output=embed',
 }
 
 export const services = [

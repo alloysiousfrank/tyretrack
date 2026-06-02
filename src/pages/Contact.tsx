@@ -29,13 +29,15 @@ export default function Contact() {
           <GlassCard className="contact-info">
             <h3>TyreTrack Garage</h3>
             <p>{GARAGE.address}</p>
-            <a href={`tel:${GARAGE.phone.replace(/\s/g, '')}`} className="contact-link">
-              {GARAGE.phone}
+            <a href={`tel:${GARAGE.phone1.replace(/\s/g, '')}`} className="contact-link">
+              {GARAGE.phone1}
             </a>
             <a href={`mailto:${GARAGE.email}`} className="contact-link">
               {GARAGE.email}
             </a>
-            <p className="contact-hours">{GARAGE.hours}</p>
+            {(GARAGE as any).hours && (
+              <p className="contact-hours">{(GARAGE as any).hours}</p>
+            )}
             <a href={GARAGE.mapLink} target="_blank" rel="noreferrer" className="btn btn-ghost">
               Open in Google Maps
             </a>
@@ -79,6 +81,7 @@ export default function Contact() {
             style={{ border: 0, borderRadius: 16 }}
             allowFullScreen
             loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
           />
         </section>
       </RevealSection>
