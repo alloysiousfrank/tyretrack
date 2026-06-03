@@ -7,9 +7,7 @@ const nodemailer = require("nodemailer")
 // ==========================================
 
 exports.sendOtp = async (req, res) => {
-
   try {
-
     const { name, email, phone } = req.body
 
     // CHECK EXISTING USER
@@ -20,7 +18,6 @@ exports.sendOtp = async (req, res) => {
     // =========================================
 
     if (existingUser) {
-
       const token = jwt.sign(
         {
           id: existingUser._id,
@@ -42,93 +39,73 @@ exports.sendOtp = async (req, res) => {
           phone: existingUser.phone,
         },
       })
-
     }
 
     // =========================================
     // NEW USER OTP FLOW
     // =========================================
 
-    const otp =
-      Math.floor(100000 + Math.random() * 900000).toString()
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString()
 
-    // MAIL TRANSPORT
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+    // MAIL TRANSPORTER
 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
 
-  family: 4,
-})
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("GMAIL VERIFY ERROR:", error);
-  } else {
-    console.log("GMAIL SERVER READY");
-  }
-});
+      family: 4,
+    })
 
     // SEND OTP MAIL
-    /*await transporter.sendMail({
 
-      from: process.env.EMAIL_USER,
-
+    await transporter.sendMail({
+      from: `"TyreTrack" <${process.env.EMAIL_USER}>`,
       to: email,
-
       subject: "TyreTrack OTP Verification",
 
-      text: `Your TyreTrack OTP is ${otp}`,
-
+      html: `
+        <div style="font-family:Arial,sans-serif">
+          <h2>TyreTrack OTP Verification</h2>
+          <p>Your OTP is:</p>
+          <h1 style="color:red">${otp}</h1>
+          <p>This OTP is valid for login verification.</p>
+        </div>
+      `,
     })
-*/
 
-return res.json({
-  success: true,
-  existingUser: false,
-  message: "OTP Sent Successfully",
-})
-    // SAVE USER WITH OTP
+    // SAVE USER
+
     const user = new User({
-
       name,
       email,
       phone,
       otp,
-
     })
 
     await user.save()
 
     return res.json({
-
       success: true,
       existingUser: false,
       message: "OTP Sent Successfully",
-
     })
-
   } catch (error) {
-
     console.log("SEND OTP ERROR FULL:")
-console.log(error)
-console.log(error.message)
-console.log(error.stack)
+    console.log(error)
 
     return res.status(500).json({
-
       success: false,
-      message: "Server Error",
-
+      message: error.message,
     })
-
   }
-
 }
 
 // ==========================================
@@ -136,55 +113,39 @@ console.log(error.stack)
 // ==========================================
 
 exports.verifyOtp = async (req, res) => {
-
   try {
-
     const { email, otp } = req.body
 
-    // FIND USER
     const user = await User.findOne({ email })
 
     if (!user) {
-
       return res.status(404).json({
         success: false,
         message: "User not found",
       })
-
     }
 
-    // OTP CHECK
-    const savedOtp = String(user.otp).trim()
-    const enteredOtp = String(otp).trim()
-
-    if (savedOtp !== enteredOtp) {
-
+    if (String(user.otp).trim() !== String(otp).trim()) {
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
       })
-
     }
 
-    // CREATE TOKEN
     const token = jwt.sign(
       {
         id: user._id,
       },
-
       process.env.JWT_SECRET,
-
       {
         expiresIn: "7d",
       }
     )
 
-    // REMOVE OTP AFTER SUCCESS
     user.otp = ""
     await user.save()
 
     return res.json({
-
       success: true,
       token,
 
@@ -193,20 +154,13 @@ exports.verifyOtp = async (req, res) => {
         email: user.email,
         phone: user.phone,
       },
-
     })
-
   } catch (error) {
-
     console.log("VERIFY OTP ERROR:", error)
 
     return res.status(500).json({
-
       success: false,
       message: "Verification Failed",
-
     })
-
   }
-
 }
