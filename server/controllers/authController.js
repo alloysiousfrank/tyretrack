@@ -51,35 +51,46 @@ exports.sendOtp = async (req, res) => {
 
     // MAIL TRANSPORTER
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: Number(process.env.EMAIL_PORT),
+  secure: false,
 
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+})
+console.log("EMAIL_HOST:", process.env.EMAIL_HOST)
+console.log("EMAIL_PORT:", process.env.EMAIL_PORT)
+console.log("EMAIL_USER:", process.env.EMAIL_USER)
+console.log("Attempting to send OTP to:", email)
 
-      family: 4,
-    })
 
     // SEND OTP MAIL
 
     await transporter.sendMail({
-      from: `"TyreTrack" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "TyreTrack OTP Verification",
+  from: `"TyreTrack" <tyretrackoff@gmail.com>`,
+  to: email,
+  subject: "TyreTrack OTP Verification",
 
-      html: `
-        <div style="font-family:Arial,sans-serif">
-          <h2>TyreTrack OTP Verification</h2>
-          <p>Your OTP is:</p>
-          <h1 style="color:red">${otp}</h1>
-          <p>This OTP is valid for login verification.</p>
-        </div>
-      `,
-    })
+  html: `
+    <div style="font-family:Arial;padding:20px">
+      <h2>TyreTrack OTP Verification</h2>
+
+      <p>Your verification code is:</p>
+
+      <h1 style="
+        color:#dc2626;
+        letter-spacing:8px;
+      ">
+        ${otp}
+      </h1>
+
+      <p>This OTP expires shortly.</p>
+    </div>
+  `,
+})
 
     // SAVE USER
 
@@ -107,7 +118,7 @@ exports.sendOtp = async (req, res) => {
     })
   }
 }
-
+console.log("OTP EMAIL SENT SUCCESSFULLY")
 // ==========================================
 // VERIFY OTP
 // ==========================================
