@@ -5,7 +5,7 @@ import SectionHeading from '../components/ui/SectionHeading'
 import GlassCard from '../components/ui/GlassCard'
 import Footer from '../components/layout/Footer'
 import { services, GARAGE } from '../data/services'
-import { galleryItems } from '../data/gallery'
+import { getDemoStages } from '../data/tracking'
 import './Home.css'
 
 export default function Home() {
@@ -68,48 +68,34 @@ export default function Home() {
           </section>
         </RevealSection>
 
-        <RevealSection className="section-gap" delay={0.1}>
-          <SectionHeading
-            eyebrow="Chapter III"
-            title="Before & After"
-            subtitle="See the transformation. Real results from our premium bays."
-            align="center"
-          />
-          <section className="home__gallery-preview">
-            {galleryItems.slice(0, 2).map((item) => (
-              <GlassCard key={item.id} className="compare-card">
-                <section className="compare-card__images">
-                  <article>
-                    <span>Before</span>
-                    <img src={item.before} alt={`${item.vehicle} before`} loading="lazy" />
-                  </article>
-                  <article>
-                    <span>After</span>
-                    <img src={item.after} alt={`${item.vehicle} after`} loading="lazy" />
-                  </article>
-                </section>
-                <h4>{item.vehicle}</h4>
-                <p>{item.service}</p>
-              </GlassCard>
-            ))}
-          </section>
-          <section className="home__center-cta">
-            <Link to="/gallery" className="btn btn-primary">
-              Full Gallery
-            </Link>
-          </section>
-        </RevealSection>
-
         <RevealSection className="section-gap">
           <GlassCard className="home__track-cta glass-red" red>
-            <SectionHeading
-              eyebrow="Live"
-              title="Track Your Service"
-              subtitle="Enter your booking ID (demo: TT-2026-4821) to see real-time progress through every stage."
-            />
-            <Link to="/track" className="btn btn-primary">
-              Open Live Tracker
-            </Link>
+            <div className="home__track-content">
+              <div className="home__track-text">
+                <SectionHeading
+                  eyebrow="Live"
+                  title="Track Your Service"
+                  subtitle="Live booking tracking for TYRE TRACK customers. Monitor your vehicle service progress in real time. Enter your booking ID (demo: TT-2026-4821) to see real-time progress through every stage."
+                />
+                <Link to="/track" className="btn btn-primary">
+                  Open Live Tracker
+                </Link>
+              </div>
+
+              <div className="home__track-timeline">
+                <div className="tracking-line">
+                  {getDemoStages(3).map((stage) => (
+                    <div key={stage.id} className={`track-stage track-stage--${stage.status}`}>
+                      <div className="track-stage__dot"></div>
+                      <div className="track-stage__info">
+                        <p className="track-stage__label">{stage.label}</p>
+                        <p className="track-stage__desc">{stage.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </GlassCard>
         </RevealSection>
 

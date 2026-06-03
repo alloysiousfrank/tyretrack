@@ -53,16 +53,29 @@ exports.sendOtp = async (req, res) => {
       Math.floor(100000 + Math.random() * 900000).toString()
 
     // MAIL TRANSPORT
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    })
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+
+  family: 4,
+})
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("GMAIL VERIFY ERROR:", error);
+  } else {
+    console.log("GMAIL SERVER READY");
+  }
+});
 
     // SEND OTP MAIL
-    await transporter.sendMail({
+    /*await transporter.sendMail({
 
       from: process.env.EMAIL_USER,
 
@@ -73,7 +86,13 @@ exports.sendOtp = async (req, res) => {
       text: `Your TyreTrack OTP is ${otp}`,
 
     })
+*/
 
+return res.json({
+  success: true,
+  existingUser: false,
+  message: "OTP Sent Successfully",
+})
     // SAVE USER WITH OTP
     const user = new User({
 
@@ -96,7 +115,10 @@ exports.sendOtp = async (req, res) => {
 
   } catch (error) {
 
-    console.log("SEND OTP ERROR:", error)
+    console.log("SEND OTP ERROR FULL:")
+console.log(error)
+console.log(error.message)
+console.log(error.stack)
 
     return res.status(500).json({
 

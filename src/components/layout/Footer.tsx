@@ -35,7 +35,7 @@ export default function Footer() {
         </div>
 
         <div className="footer__bottom">
-          <p>© {new Date().getFullYear()} TyreTrack. Demo site — replace with your real data.</p>
+          <p>© {new Date().getFullYear()} TyreTrack. Your Need is Our Service.</p>
         </div>
       </div>
     </footer>

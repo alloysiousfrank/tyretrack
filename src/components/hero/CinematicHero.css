@@ -62,7 +62,7 @@
 
 .cinematic-hero__subtitle {
   color: #a1a1aa;
-  font-size: clamp(1.28rem, 2.5vw, 1.35rem);
+  font-size: clamp(1.28rem, 2.5vw, 0rem);
   margin-top: 0.5rem;
   letter-spacing: 0.02em;
 }

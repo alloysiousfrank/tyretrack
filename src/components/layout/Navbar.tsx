@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { motion, useScroll } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
-import wheelImage from '../../assets/logo2.png'
+import wheelImage from '../../assets/logo3.png'
 import './Navbar.css'
 
 const primaryLinks = [

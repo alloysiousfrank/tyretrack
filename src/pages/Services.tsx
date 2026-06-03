@@ -12,7 +12,7 @@ export default function Services() {
       <RevealSection>
         <SectionHeading
           eyebrow="Services"
-          title="Precision Meets Luxury"
+          title="Premium Tyre & Auto Care"
           subtitle="Every service is delivered with premium equipment, certified technicians, and transparent pricing."
           align="center"
         />

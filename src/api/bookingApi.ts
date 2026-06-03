@@ -1,5 +1,5 @@
 const API =
-  "https://tyretrack-server.onrender.com"
+"https://tyretrack-server.onrender.com/api/bookings"
 
 // CREATE BOOKING
 export const createBooking = async (

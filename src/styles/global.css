@@ -25,12 +25,17 @@
 }
 
 html {
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
 }
 
 html.lenis,
 html.lenis body {
   height: auto;
+  scroll-behavior: auto;
+}
+
+.lenis {
+  scroll-behavior: auto;
 }
 
 .lenis.lenis-smooth {

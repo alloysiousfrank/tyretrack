@@ -42,7 +42,7 @@ if (window.innerWidth < 768) {
       <motion.div className="cinematic-hero__content" style={{ y: heroY }}>
         <div className={`cinematic-hero__text ${showText ? 'cinematic-hero__text--visible' : ''}`}>
           <h1 className="cinematic-hero__title">TyreTrack</h1>
-          <p className="cinematic-hero__subtitle">Your Need Is Our Service</p>
+          <p className="cinematic-hero__subtitle">Premium Service & Auto Care</p>
         </div>
 
         <div className="cinematic-hero__wheel-zone">
