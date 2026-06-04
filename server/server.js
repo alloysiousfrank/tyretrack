@@ -18,7 +18,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://tyretrackfrontend.vercel.app",
+      "https://tyretrack-neon.vercel.app",
     ],
     credentials: true,
   })
