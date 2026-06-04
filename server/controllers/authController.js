@@ -2,176 +2,164 @@ const User = require("../models/User")
 const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer")
 
-// ==========================================
-// SEND OTP / LOGIN
-// ==========================================
+exports.loginOrRegister = async (req, res) => {
 
-exports.sendOtp = async (req, res) => {
-  try {
-    const { name, email, phone } = req.body
+try {
 
-    // CHECK EXISTING USER
-    const existingUser = await User.findOne({ email })
+const { name, email, phone } = req.body
 
-    // =========================================
-    // EXISTING USER LOGIN DIRECTLY
-    // =========================================
+if (!email || !phone) {
 
-    if (existingUser) {
-      const token = jwt.sign(
-        {
-          id: existingUser._id,
-        },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: "7d",
-        }
-      )
+  return res.status(400).json({
+    success: false,
+    message: "Email and Phone are required",
+  })
 
-      return res.json({
-        success: true,
-        existingUser: true,
-        token,
-
-        user: {
-          name: existingUser.name,
-          email: existingUser.email,
-          phone: existingUser.phone,
-        },
-      })
-    }
-
-    // =========================================
-    // NEW USER OTP FLOW
-    // =========================================
-
-    const otp = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString()
-
-    // MAIL TRANSPORTER
-
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT),
-  secure: false,
-
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-})
-console.log("EMAIL_HOST:", process.env.EMAIL_HOST)
-console.log("EMAIL_PORT:", process.env.EMAIL_PORT)
-console.log("EMAIL_USER:", process.env.EMAIL_USER)
-console.log("Attempting to send OTP to:", email)
-
-
-    // SEND OTP MAIL
-
-    await transporter.sendMail({
-  from: `"TyreTrack" <tyretrackoff@gmail.com>`,
-  to: email,
-  subject: "TyreTrack OTP Verification",
-
-  html: `
-    <div style="font-family:Arial;padding:20px">
-      <h2>TyreTrack OTP Verification</h2>
-
-      <p>Your verification code is:</p>
-
-      <h1 style="
-        color:#dc2626;
-        letter-spacing:8px;
-      ">
-        ${otp}
-      </h1>
-
-      <p>This OTP expires shortly.</p>
-    </div>
-  `,
-})
-
-    // SAVE USER
-
-    const user = new User({
-      name,
-      email,
-      phone,
-      otp,
-    })
-
-    await user.save()
-
-    return res.json({
-      success: true,
-      existingUser: false,
-      message: "OTP Sent Successfully",
-    })
-  } catch (error) {
-    console.log("SEND OTP ERROR FULL:")
-    console.log(error)
-
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    })
-  }
 }
-console.log("OTP EMAIL SENT SUCCESSFULLY")
-// ==========================================
-// VERIFY OTP
-// ==========================================
 
-exports.verifyOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body
+// FIND USER
+let user = await User.findOne({
+  email: email.toLowerCase(),
+})
 
-    const user = await User.findOne({ email })
+// EXISTING USER
+if (user) {
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      })
+  const token = jwt.sign(
+    {
+      id: user._id,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
     }
+  )
 
-    if (String(user.otp).trim() !== String(otp).trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP",
-      })
-    }
+  return res.json({
+    success: true,
+    existingUser: true,
+    token,
 
-    const token = jwt.sign(
-      {
-        id: user._id,
+    user: {
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+    },
+  })
+
+}
+
+// CREATE NEW USER
+
+user = await User.create({
+
+  name,
+  email: email.toLowerCase(),
+  phone,
+
+})
+
+// SEND WELCOME EMAIL
+
+try {
+
+  const transporter =
+    nodemailer.createTransport({
+
+      host: process.env.EMAIL_HOST,
+
+      port: Number(
+        process.env.EMAIL_PORT
+      ),
+
+      secure: false,
+
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    )
 
-    user.otp = ""
-    await user.save()
-
-    return res.json({
-      success: true,
-      token,
-
-      user: {
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-      },
     })
-  } catch (error) {
-    console.log("VERIFY OTP ERROR:", error)
 
-    return res.status(500).json({
-      success: false,
-      message: "Verification Failed",
-    })
+  await transporter.sendMail({
+
+    from: `"TyreTrack" <${process.env.EMAIL_USER}>`,
+
+    to: email,
+
+    subject:
+      "Welcome to TyreTrack",
+
+    html: `
+      <div style="font-family:Arial;padding:20px">
+        <h2>Welcome to TyreTrack 🚗</h2>
+
+        <p>
+          Hi ${name},
+        </p>
+
+        <p>
+          Thank you for choosing TyreTrack.
+        </p>
+
+        <p>
+          Your account has been successfully created.
+        </p>
+
+        <p>
+          We look forward to serving you.
+        </p>
+
+        <h3>
+          TYRE TRACK
+        </h3>
+      </div>
+    `,
+
+  })
+
+} catch (mailError) {
+
+  console.log(
+    "WELCOME MAIL ERROR:",
+    mailError.message
+  )
+
+}
+
+const token = jwt.sign(
+  {
+    id: user._id,
+  },
+  process.env.JWT_SECRET,
+  {
+    expiresIn: "7d",
   }
+)
+
+return res.json({
+
+  success: true,
+  existingUser: false,
+  token,
+
+  user: {
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+  },
+
+})
+
+} catch (error) {
+  console.log(
+    "LOGIN OR REGISTER ERROR:",
+    error
+  )
+
+  return res.status(500).json({
+    success: false,
+    message: "Server Error",
+  })
+}
 }

@@ -1,14 +1,14 @@
 const API_URL =
   "https://tyretrack-server.onrender.com/api/auth"
 
-export const sendOtp = async (
+export const loginOrRegister = async (
   name: string,
   email: string,
   phone: string
 ) => {
 
   const response = await fetch(
-    `${API_URL}/send-otp`,
+    `${API_URL}/login`,
     {
       method: "POST",
       headers: {
@@ -18,28 +18,6 @@ export const sendOtp = async (
         name,
         email,
         phone,
-      }),
-    }
-  )
-
-  return response.json()
-}
-
-export const verifyOtp = async (
-  email: string,
-  otp: string
-) => {
-
-  const response = await fetch(
-    `${API_URL}/verify-otp`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        otp,
       }),
     }
   )

@@ -4,10 +4,11 @@ const bookingSchema =
   new mongoose.Schema(
     {
 
-      bookingId: {
-        type: String,
-        required: true,
-      },
+     bookingId: {
+  type: String,
+  required: true,
+  unique: true,
+},
 
       name: {
         type: String,
@@ -30,7 +31,7 @@ const bookingSchema =
       },
 
       date: {
-        type: String,
+        type: Date,
         required: true,
       },
 

@@ -1,7 +1,7 @@
 import { useState } from "react"
 import "./Login.css"
 
-import { sendOtp, verifyOtp } from "../api/authApi"
+import { loginOrRegister } from "../api/authApi"
 
 export default function Login() {
 
@@ -9,93 +9,34 @@ export default function Login() {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
 
-  const [otp, setOtp] = useState("")
-  const [otpSent, setOtpSent] = useState(false)
+  const [loading, setLoading] =
+    useState(false)
 
-  const API_URL = "http://localhost:5000/api/auth"
+  const handleLogin = async () => {
 
-  // SEND OTP OR DIRECT LOGIN
-const handleSendOtp = async () => {
+    try {
 
-  try {
+      setLoading(true)
 
-    const data = await sendOtp(
-      name,
-      email,
-      phone
-    )
+      const data =
+        await loginOrRegister(
+          name,
+          email,
+          phone
+        )
 
-    console.log(data)
+      console.log(data)
 
-if (data.existingUser) {
+      if (!data.success) {
 
-  // SAVE TOKEN
-  localStorage.setItem(
-    "token",
-    data.token
-  )
+        alert(
+          data.message ||
+          "Login Failed"
+        )
 
-  // SAVE USER DETAILS
-  localStorage.setItem(
-    "userName",
-    data.user.name
-  )
+        return
 
-  localStorage.setItem(
-    "userEmail",
-    data.user.email
-  )
-
-  localStorage.setItem(
-    "userPhone",
-    data.user.phone
-  )
-
-  localStorage.setItem(
-    "isLoggedIn",
-    "true"
-  )
-
-  alert("Login Successful ✅")
-
-  window.location.href = "/booking"
-
-  return
-}
-
-    // NEW USER OTP
-    if (data.success) {
-
-      setOtpSent(true)
-
-      alert("OTP Sent Successfully ✅")
-
-    }
-
-  } catch (error) {
-
-    console.log(error)
-
-    alert("Something went wrong")
-
-  }
-
-}
-
-
-
-const handleVerifyOtp = async () => {
-
-  try {
-
-    const data = await verifyOtp(
-      email,
-      otp
-    )
-
-    console.log(data)
-
-    if (data.success) {
+      }
 
       localStorage.setItem(
         "token",
@@ -122,25 +63,38 @@ const handleVerifyOtp = async () => {
         "true"
       )
 
-      alert("OTP Verified ✅")
+      if (data.existingUser) {
 
-      window.location.href = "/booking"
+        alert(
+          "Welcome Back ✅"
+        )
 
-    } else {
+      } else {
 
-      alert(data.message)
+        alert(
+          "Account Created Successfully ✅"
+        )
+
+      }
+
+      window.location.href =
+        "/booking"
+
+    } catch (error) {
+
+      console.log(error)
+
+      alert(
+        "Something went wrong"
+      )
+
+    } finally {
+
+      setLoading(false)
 
     }
 
-  } catch (error) {
-
-    console.log(error)
-
-    alert("Verification Failed")
-
   }
-
-}
 
   return (
 
@@ -148,7 +102,9 @@ const handleVerifyOtp = async () => {
 
       <div className="login-card">
 
-        <h1>TyreTrack Login</h1>
+        <h1>
+          TyreTrack Login
+        </h1>
 
         <input
           type="text"
@@ -177,32 +133,18 @@ const handleVerifyOtp = async () => {
           }
         />
 
-        {otpSent && (
+        <button
+          onClick={handleLogin}
+          disabled={loading}
+        >
 
-          <input
-            type="text"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) =>
-              setOtp(e.target.value)
-            }
-          />
+          {
+            loading
+              ? "Please Wait..."
+              : "Continue"
+          }
 
-        )}
-
-        {!otpSent ? (
-
-          <button onClick={handleSendOtp}>
-            Send OTP
-          </button>
-
-        ) : (
-
-          <button onClick={handleVerifyOtp}>
-            Verify OTP
-          </button>
-
-        )}
+        </button>
 
       </div>
 

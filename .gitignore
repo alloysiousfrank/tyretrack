@@ -3,4 +3,6 @@ dist
 .DS_Store
 *.local
 .env
+smtp_key.txt
+pass.txt
 .env.*
