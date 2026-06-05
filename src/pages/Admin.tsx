@@ -75,12 +75,6 @@ const updateBookingStatus = async (bookingId: string) => {
     // UPDATE STATE
     setBookings(updatedBookings)
 
-    // UPDATE LOCAL STORAGE
-    localStorage.setItem(
-      "bookings",
-      JSON.stringify(updatedBookings)
-    )
-
     // FIND UPDATED BOOKING
     const updatedBooking = updatedBookings.find(
       (booking) => booking.bookingId === bookingId
@@ -88,7 +82,7 @@ const updateBookingStatus = async (bookingId: string) => {
 
     // UPDATE DATABASE
     await fetch(
-      `http://localhost:5000/api/bookings/${bookingId}`,
+      `https://tyretrack-server.onrender.com/api/bookings/${bookingId}`,
       {
         method: "PUT",
 
@@ -127,7 +121,7 @@ const clearAllBookings = async () => {
   try {
 
     await fetch(
-      "http://localhost:5000/api/bookings/clear/all",
+      "https://tyretrack-server.onrender.com/api/bookings/clear/all",
       {
         method: "DELETE",
       }
@@ -135,7 +129,6 @@ const clearAllBookings = async () => {
 
     setBookings([])
 
-    localStorage.removeItem("bookings")
 
     alert("All bookings cleared")
 
@@ -164,7 +157,7 @@ const deleteBookingHandler = async (
     if (!confirmDelete) return
 
     await fetch(
-      `http://localhost:5000/api/bookings/${bookingId}`,
+      `https://tyretrack-server.onrender.com/api/bookings/${bookingId}`,
       {
         method: "DELETE",
       }
