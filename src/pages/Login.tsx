@@ -1,9 +1,16 @@
 import { useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import "./Login.css"
 
 import { loginOrRegister } from "../api/authApi"
 
 export default function Login() {
+
+  const [searchParams] =
+  useSearchParams()
+
+const selectedService =
+  searchParams.get("service")
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -77,8 +84,19 @@ export default function Login() {
 
       }
 
-      window.location.href =
-        "/booking"
+      if (selectedService) {
+
+  localStorage.setItem(
+    "selectedService",
+    selectedService
+  )
+
+}
+
+window.location.href =
+  selectedService
+    ? `/booking?service=${selectedService}`
+    : "/booking"
 
     } catch (error) {
 
@@ -95,6 +113,7 @@ export default function Login() {
     }
 
   }
+
 
   return (
 

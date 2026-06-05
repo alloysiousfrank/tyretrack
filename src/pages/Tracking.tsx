@@ -15,48 +15,42 @@ export default function Tracking() {
 
   useEffect(() => {
 
-    const fetchLatestBooking = async () => {
+const fetchLatestBooking = async () => {
 
-      try {
+  try {
 
-        const response = await fetch(
-          "https://tyretrack-server.onrender.com/api/bookings"
-        )
+    const currentUserEmail =
+      localStorage.getItem(
+        "userEmail"
+      )
 
-        const data = await response.json()
+    if (!currentUserEmail) return
 
-        if (data.length > 0) {
+    const response = await fetch(
+      `https://tyretrack-server.onrender.com/api/bookings/user/${currentUserEmail}`
+    )
 
-          // GET CURRENT USER EMAIL
-          const currentUserEmail =
-            localStorage.getItem("userEmail")
+    const data =
+      await response.json()
 
-          // FIND CURRENT USER BOOKINGS
-          const userBookings =
-            data.filter(
-              (item: any) =>
-                item.email === currentUserEmail
-            )
+    if (
+      data.success &&
+      data.bookings.length > 0
+    ) {
 
-          if (userBookings.length > 0) {
-
-            // LATEST BOOKING
-            const latestBooking =
-              userBookings[userBookings.length - 1]
-
-            setBooking(latestBooking)
-
-          }
-
-        }
-
-      } catch (error) {
-
-        console.log(error)
-
-      }
+      setBooking(
+        data.bookings[0]
+      )
 
     }
+
+  } catch (error) {
+
+    console.log(error)
+
+  }
+
+}
 
     fetchLatestBooking()
 
@@ -106,7 +100,11 @@ export default function Tracking() {
 
             <div className="tracking-item">
               <span>Date</span>
-              <h3>{booking.date}</h3>
+              <h3>
+  {new Date(
+    booking.date
+  ).toLocaleDateString()}
+</h3>
             </div>
 
             <div className="tracking-item">

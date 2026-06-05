@@ -1,7 +1,7 @@
 import { useState } from "react"
 import "./Booking.css"
 import { createBooking } from "../api/bookingApi"
-
+import { useSearchParams } from "react-router-dom"
 export default function Booking() {
 
   // USER DATA FROM LOGIN
@@ -33,6 +33,22 @@ export default function Booking() {
   const [loading, setLoading] =
     useState(false)
 
+  const [searchParams] = useSearchParams()
+
+  const selectedService =
+    searchParams.get("service")
+
+  const serviceMap: any = {
+  "wheel-alignment": "Wheel Alignment",
+  "wheel-balancing": "Wheel Balancing",
+  "multi-brand-tyres": "Multi Branded Tyres",
+  "automatic-car-spa": "Automatic Car Spa",
+  "foam-wash": "Foam Wash",
+  "interior-cleaning": "Interior Cleaning",
+  "teflon-coating": "Teflon Coating",
+  "ceramic-coating": "Ceramic Coating",
+}
+
   const [formData, setFormData] = useState({
 
     name: userName || "",
@@ -41,13 +57,19 @@ export default function Booking() {
 
     phone: userPhone || "",
 
-    service: "",
+  service:
+  serviceMap[
+    localStorage.getItem(
+      "selectedService"
+    ) || ""
+  ] || "",
 
     date: today,
 
     time: "",
 
   })
+
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -191,24 +213,36 @@ if (!response.success) {
               Select Service
             </option>
 
-            <option value="Tyre Replacement">
-              Tyre Replacement
-            </option>
-
             <option value="Wheel Alignment">
-              Wheel Alignment
+               Wheel Alignment
             </option>
 
+            <option value="Wheel Balancing">
+              Wheel Balancing
+            </option>
+
+            <option value="Multi Branded Tyres">
+              Multi Branded Tyres
+            </option>
+
+            <option value="Automatic Car Spa">
+              Automatic Car Spa
+            </option>
+
+            <option value="Foam Wash">
+              Foam Wash
+            </option>
+            
             <option value="Interior Cleaning">
               Interior Cleaning
             </option>
 
-            <option value="Water Wash">
-              Water Wash
+            <option value="Teflon Coating">
+              Teflon Coating
             </option>
-
-            <option value="General Service">
-              General Service
+            
+            <option value="Ceramic Coating">
+              Ceramic Coating
             </option>
 
           </select>
