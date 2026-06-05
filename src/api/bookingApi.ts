@@ -30,3 +30,15 @@ export const getBookings = async () => {
   return response.json()
 
 }
+
+// GET USER BOOKINGS
+export const getUserBookings =
+  async (email: string) => {
+
+  const response = await fetch(
+    `${API}/user/${email}`
+  )
+
+  return response.json()
+
+}

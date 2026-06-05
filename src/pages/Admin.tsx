@@ -30,7 +30,7 @@ const fetchBookings = async () => {
   try {
 
     const response = await fetch(
-      "http://localhost:5000/api/bookings"
+      "https://tyretrack-server.onrender.com/api/bookings"
     )
 
     const data = await response.json()

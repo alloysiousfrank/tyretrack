@@ -93,26 +93,18 @@ export default function Booking() {
       }
 
       // SAVE TO DATABASE
-      await createBooking(bookingData)
+      const response =
+  await createBooking(bookingData)
 
-      // SAVE TO LOCAL STORAGE
-      const existingBookings =
-        JSON.parse(
-          localStorage.getItem("bookings") || "[]"
-        )
+if (!response.success) {
 
-      existingBookings.push(bookingData)
+  throw new Error(
+    response.message ||
+    "Booking Failed"
+  )
 
-      localStorage.setItem(
-        "bookings",
-        JSON.stringify(existingBookings)
-      )
-
-      // SAVE CURRENT BOOKING
-      localStorage.setItem(
-        "latestBookingId",
-        bookingId
-      )
+}
+      
 
       // SUCCESS
       alert(

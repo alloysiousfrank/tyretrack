@@ -74,7 +74,27 @@
     #ff4d4d);
   box-shadow: 0 0 20px rgba(255,0,0,0.5);
 }
+.track-booking-btn {
 
+  width: 100%;
+
+  margin-top: 1rem;
+
+  padding: 12px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  background: #2563eb;
+
+  color: white;
+
+}
 .cancel-booking-btn {
   width: 100%;
   margin-top: 35px;

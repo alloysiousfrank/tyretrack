@@ -102,6 +102,16 @@ const latestBooking =
 
             </div>
 
+<button
+  className="track-booking-btn"
+  onClick={() => {
+    window.location.href =
+      `/track?bookingId=${booking.bookingId}`
+  }}
+>
+  Open Live Tracking
+</button>
+
             <button
   className="cancel-booking-btn"
   onClick={() => {

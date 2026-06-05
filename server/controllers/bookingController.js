@@ -49,6 +49,38 @@ exports.getBookings = async (req, res) => {
 
 }
 
+// GET USER BOOKINGS
+exports.getUserBookings = async (req, res) => {
+
+  try {
+
+    const { email } = req.params
+
+    const bookings = await Booking.find({
+      email: email.toLowerCase(),
+    }).sort({
+      createdAt: -1,
+    })
+
+    res.json({
+      success: true,
+      bookings,
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user bookings",
+    })
+
+  }
+
+}
+
+
 // UPDATE BOOKING STATUS
 exports.updateBookingStatus = async (req, res) => {
 
@@ -102,6 +134,30 @@ exports.deleteBooking = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Delete Failed",
+    })
+
+  }
+
+}
+
+exports.clearAllBookings = async (req, res) => {
+
+  try {
+
+    await Booking.deleteMany({})
+
+    res.json({
+      success: true,
+      message: "All bookings deleted",
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to clear bookings",
     })
 
   }

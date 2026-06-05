@@ -5,6 +5,7 @@ const router = express.Router()
 const {
   createBooking,
   getBookings,
+  getUserBookings,
   updateBookingStatus,
   deleteBooking,
 } = require("../controllers/bookingController")
@@ -12,13 +13,28 @@ const {
 // CREATE BOOKING
 router.post("/", createBooking)
 
-// GET BOOKINGS
+// GET ALL BOOKINGS
 router.get("/", getBookings)
 
-// UPDATE STATUS
-router.put("/:bookingId", updateBookingStatus)
+// GET USER BOOKINGS
+router.get(
+  "/user/:email",
+  getUserBookings
+)
 
+// UPDATE STATUS
+router.put(
+  "/:bookingId",
+  updateBookingStatus
+)
+router.delete(
+  "/clear/all",
+  clearAllBookings
+)
 // DELETE BOOKING
-router.delete("/:bookingId", deleteBooking)
+router.delete(
+  "/:bookingId",
+  deleteBooking
+)
 
 module.exports = router
