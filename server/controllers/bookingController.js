@@ -148,7 +148,7 @@ exports.clearAllBookings = async (req, res) => {
 
     res.json({
       success: true,
-      message: "All bookings deleted",
+      message: "All bookings deleted"
     })
 
   } catch (error) {
@@ -157,7 +157,69 @@ exports.clearAllBookings = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to clear bookings",
+      message: "Failed to clear bookings"
+    })
+
+  }
+
+}
+
+// GET BOOKINGS OF ONE USER
+
+exports.getUserBookings =
+  async (req, res) => {
+
+  try {
+
+    const bookings =
+      await Booking.find({
+        email: req.params.email,
+      }).sort({
+        createdAt: -1,
+      })
+
+    res.json({
+      success: true,
+      bookings,
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to fetch user bookings",
+    })
+
+  }
+
+}
+
+// CLEAR ALL BOOKINGS
+
+exports.clearAllBookings =
+  async (req, res) => {
+
+  try {
+
+    await Booking.deleteMany({})
+
+    res.json({
+      success: true,
+      message:
+        "All bookings deleted",
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to clear bookings",
     })
 
   }

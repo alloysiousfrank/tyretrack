@@ -8,6 +8,7 @@ const {
   getUserBookings,
   updateBookingStatus,
   deleteBooking,
+  clearAllBookings,
 } = require("../controllers/bookingController")
 
 // CREATE BOOKING
@@ -27,11 +28,14 @@ router.put(
   "/:bookingId",
   updateBookingStatus
 )
+
+// CLEAR ALL BOOKINGS
 router.delete(
   "/clear/all",
   clearAllBookings
 )
-// DELETE BOOKING
+
+// DELETE SINGLE BOOKING
 router.delete(
   "/:bookingId",
   deleteBooking
