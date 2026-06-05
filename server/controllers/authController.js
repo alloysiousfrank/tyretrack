@@ -61,71 +61,38 @@ user = await User.create({
 
 // SEND WELCOME EMAIL
 
-try {
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: Number(process.env.EMAIL_PORT),
+  secure: false,
 
-  const transporter =
-    nodemailer.createTransport({
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 
-      host: process.env.EMAIL_HOST,
+  connectionTimeout: 5000,
+})
 
-      port: Number(
-        process.env.EMAIL_PORT
-      ),
-
-      secure: false,
-
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-
-    })
-
-  await transporter.sendMail({
-
+transporter
+  .sendMail({
     from: `"TyreTrack" <${process.env.EMAIL_USER}>`,
-
     to: email,
-
-    subject:
-      "Welcome to TyreTrack",
-
+    subject: "Welcome to TyreTrack",
     html: `
       <div style="font-family:Arial;padding:20px">
         <h2>Welcome to TyreTrack 🚗</h2>
-
-        <p>
-          Hi ${name},
-        </p>
-
-        <p>
-          Thank you for choosing TyreTrack.
-        </p>
-
-        <p>
-          Your account has been successfully created.
-        </p>
-
-        <p>
-          We look forward to serving you.
-        </p>
-
-        <h3>
-          TYRE TRACK
-        </h3>
+        <p>Hi ${name},</p>
+        <p>Your account has been created successfully.</p>
       </div>
     `,
-
   })
-
-} catch (mailError) {
-
-  console.log(
-    "WELCOME MAIL ERROR:",
-    mailError.message
-  )
-
-}
+  .then(() => {
+    console.log("Welcome email sent")
+  })
+  .catch((err) => {
+    console.log("Mail failed:", err.message)
+  })
 
 const token = jwt.sign(
   {
