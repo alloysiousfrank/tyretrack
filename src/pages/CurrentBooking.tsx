@@ -7,25 +7,39 @@ export default function CurrentBooking() {
 
   useEffect(() => {
 
-    const bookings =
-      JSON.parse(localStorage.getItem("bookings") || "[]")
+    const fetchCurrentBooking = async () => {
 
-    if (bookings.length > 0) {
+      try {
 
-      const activeBookings =
-  bookings.filter(
-    (booking: any) =>
-      !booking.completed
-  )
+        const userEmail =
+          localStorage.getItem("userEmail")
 
-const latestBooking =
-  activeBookings[
-    activeBookings.length - 1
-  ]
+        if (!userEmail) return
 
-      setBooking(latestBooking)
+        const response = await fetch(
+          `https://tyretrack-server.onrender.com/api/bookings/user/${userEmail}`
+        )
+
+        const data = await response.json()
+
+        if (
+          data.success &&
+          data.bookings.length > 0
+        ) {
+
+          setBooking(data.bookings[0])
+
+        }
+
+      } catch (error) {
+
+        console.log(error)
+
+      }
 
     }
+
+    fetchCurrentBooking()
 
   }, [])
 
@@ -87,63 +101,66 @@ const latestBooking =
               <div className="booking-item">
                 <span>Status</span>
                 <h3 className="status-active">
-                  {
-                    booking.status ||
-                    "Booking Confirmed"
-                  }
+                  {booking.status}
                 </h3>
               </div>
 
             </div>
 
             <div className="booking-progress">
-
               <div className="progress-bar"></div>
-
             </div>
 
-<button
-  className="track-booking-btn"
-  onClick={() => {
-    window.location.href =
-      `/track?bookingId=${booking.bookingId}`
-  }}
->
-  Open Live Tracking
-</button>
+            <button
+              className="track-booking-btn"
+              onClick={() => {
+                window.location.href = "/track"
+              }}
+            >
+              Open Live Tracking
+            </button>
 
             <button
-  className="cancel-booking-btn"
-  onClick={() => {
+              className="cancel-booking-btn"
+              onClick={async () => {
 
-    const confirmCancel =
-      window.confirm(
-        "Are you sure you want to cancel this booking?"
-      )
+                const confirmCancel =
+                  window.confirm(
+                    "Are you sure you want to cancel this booking?"
+                  )
 
-    if (!confirmCancel) return
+                if (!confirmCancel) return
 
-    const bookings =
-      JSON.parse(localStorage.getItem("bookings") || "[]")
+                try {
 
-    const updatedBookings =
-      bookings.filter(
-        (item: any) =>
-          item.bookingId !== booking.bookingId
-      )
+                  await fetch(
+                    `https://tyretrack-server.onrender.com/api/bookings/${booking.bookingId}`,
+                    {
+                      method: "DELETE",
+                    }
+                  )
 
-    localStorage.setItem(
-      "bookings",
-      JSON.stringify(updatedBookings)
-    )
+                  alert(
+                    "Booking Cancelled Successfully"
+                  )
 
-    alert("Booking Cancelled Successfully")
+                  window.location.href =
+                    "/booking"
 
-    window.location.href = "/booking"
-  }}
->
-  Cancel Booking
-</button>
+                } catch (error) {
+
+                  console.log(error)
+
+                  alert(
+                    "Failed to cancel booking"
+                  )
+
+                }
+
+              }}
+            >
+              Cancel Booking
+            </button>
 
             <div className="booking-note">
 
@@ -161,4 +178,5 @@ const latestBooking =
     </div>
 
   )
+
 }
