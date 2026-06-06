@@ -58,12 +58,8 @@ export default function Booking() {
 
     phone: userPhone || "",
 
-  service:
-  serviceMap[
-    localStorage.getItem(
-      "selectedService"
-    ) || ""
-  ] || "",
+service:
+serviceMap[selectedService || ""] || "",
 
     date: today,
 
