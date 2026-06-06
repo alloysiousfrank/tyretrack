@@ -4,9 +4,10 @@ const cors = require("cors")
 require("dotenv").config()
 
 const connectDB = require("./config/db")
-
 const authRoutes = require("./routes/authRoutes")
 const bookingRoutes = require("./routes/bookingRoutes")
+const adminRoutes = require("./routes/adminRoutes")
+
 
 const app = express()
 
@@ -30,6 +31,7 @@ app.use(express.json())
 // ROUTES
 app.use("/api/auth", authRoutes)
 app.use("/api/bookings", bookingRoutes)
+app.use("/api/admin", adminRoutes)
 
 // TEST ROUTE
 app.get("/", (req, res) => {

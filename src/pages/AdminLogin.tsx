@@ -9,63 +9,68 @@ export default function AdminLogin() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleLogin = (e: React.FormEvent) => {
+const handleLogin = async (
+  e: React.FormEvent
+) => {
 
-    e.preventDefault()
+  e.preventDefault()
 
-    // OWNER ADMIN
+  try {
 
-    if (
-      username === "admin" &&
-      password === "12345"
-    ) {
+    const response =
+      await fetch(
+        "https://tyretrack-server.onrender.com/api/admin/login",
+        {
+          method: "POST",
 
-      localStorage.setItem(
-        "adminLoggedIn",
-        "true"
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        }
       )
 
-      localStorage.setItem(
-        "adminRole",
-        "Admin"
-      )
+    const data =
+      await response.json()
 
-      alert("Admin Login Successful ✅")
+    if (!data.success) {
 
-      navigate("/admin")
+      alert(data.message)
+
+      return
 
     }
 
-    // DEVELOPER LOGIN
+    localStorage.setItem(
+      "adminToken",
+      data.token
+    )
 
-    else if (
-      username === "developer" &&
-      password === "dev123"
-    ) {
+    localStorage.setItem(
+      "adminRole",
+      data.role
+    )
 
-      localStorage.setItem(
-        "adminLoggedIn",
-        "true"
-      )
+    alert(
+      `${data.role} Login Successful ✅`
+    )
 
-      localStorage.setItem(
-        "adminRole",
-        "Developer"
-      )
+    navigate("/admin")
 
-      alert("Developer Login Successful ✅")
+  } catch (error) {
 
-      navigate("/admin")
+    console.log(error)
 
-    }
-
-    else {
-
-      alert("Invalid Credentials ❌")
-
-    }
+    alert("Login Failed")
 
   }
+
+}
 
   return (
 
