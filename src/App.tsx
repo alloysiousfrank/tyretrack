@@ -33,11 +33,7 @@ function App() {
 
         <Route
   path="/admin"
-  element={
-    localStorage.getItem("adminLoggedIn")
-      ? <Admin />
-      : <AdminLogin />
-  }
+  element={<Admin />}
 />
 
         <Route path="about" element={<About />} />

@@ -108,14 +108,6 @@ const handleLogin = async (
 
         </form>
 
-        <div className="login-info">
-
-          <p>
-            Developer Access Enabled
-          </p>
-
-        </div>
-
       </div>
 
     </div>
