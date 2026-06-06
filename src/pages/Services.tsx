@@ -52,7 +52,7 @@ export default function Services() {
                 </section>
 
                 <Link
-                  to={`/login?service=${service.id}`}
+                  to={`/booking?service=${service.id}`}
                   className="btn btn-primary"
                 >
                   Book {service.title}

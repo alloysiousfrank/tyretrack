@@ -17,10 +17,19 @@ export default function Booking() {
   const isLoggedIn =
     localStorage.getItem("isLoggedIn")
 
+  const [loading, setLoading] =
+    useState(false)
+
+  const [searchParams] = useSearchParams()
+
+  const selectedService =
+    searchParams.get("service")
+
   // REDIRECT IF NOT LOGGED IN
   if (!isLoggedIn || !userEmail) {
 
-    window.location.href = "/login"
+    window.location.href =
+      `/login?service=${selectedService || ""}`
 
     return null
 
@@ -29,14 +38,6 @@ export default function Booking() {
   // TODAY DATE AUTO
   const today =
     new Date().toISOString().split("T")[0]
-
-  const [loading, setLoading] =
-    useState(false)
-
-  const [searchParams] = useSearchParams()
-
-  const selectedService =
-    searchParams.get("service")
 
   const serviceMap: any = {
   "wheel-alignment": "Wheel Alignment",
