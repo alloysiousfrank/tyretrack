@@ -60,6 +60,8 @@
 .service-card h3 {
   font-size: 1.25rem;
   margin: 0.75rem 0 0.5rem;
+  transition: color 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+
 }
 
 .service-card p {

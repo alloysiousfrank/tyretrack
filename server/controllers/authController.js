@@ -60,7 +60,7 @@ user = await User.create({
 })
 
 // SEND WELCOME EMAIL
-
+/*
 const transporter =
   nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -150,4 +150,4 @@ return res.json({
     message: "Server Error",
   })
 }
-}
+}*/
