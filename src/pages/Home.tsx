@@ -43,7 +43,7 @@ export default function Home() {
           />
           <section className="home__services-grid">
             {services.slice(0, 4).map((service, i) => (
-              <GlassCard key={service.id} className="service-card" red={i === 0}>
+              <GlassCard key={service.id} className="service-card" red={i === 3}>
                 <section
                   className="service-card__image"
                   style={{ backgroundImage: `url(${service.image})` }}

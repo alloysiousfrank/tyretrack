@@ -53,6 +53,23 @@
   transition: color 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.service-card {
+  position: relative;
+  z-index: 1;
+  transition: all 0.35s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-6px);
+
+  box-shadow:
+    0 0 20px rgba(225, 6, 0, 0.25),
+    0 0 40px rgba(225, 6, 0, 0.15),
+    0 0 60px rgba(225, 6, 0, 0.08);
+
+  border-color: rgba(225, 6, 0, 0.35);
+}
+
 .service-card:hover h3 {
   color: var(--red-primary);
 }
