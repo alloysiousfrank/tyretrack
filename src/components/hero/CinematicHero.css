@@ -128,7 +128,7 @@
   }
 
   .cinematic-hero__subtitle {
-    font-size: 0.85rem; /* smaller subtitle for mobile */
+    font-size: clamp(1rem, 2.5vw, 0rem); /* smaller subtitle for mobile */
     margin-top: 0.25rem; /* tighter spacing under title */
   }
 
