@@ -1,72 +1,47 @@
 const Booking = require("../models/Booking")
 const User = require("../models/User")
 
-exports.getReports = async (
-  req,
-  res
-) => {
+exports.getReports = async (req,res)=>{
 
-  try {
+  const totalUsers =
+    await User.countDocuments()
 
-    const totalUsers =
-      await User.countDocuments()
+  const totalBookings =
+    await Booking.countDocuments()
 
-    const totalBookings =
-      await Booking.countDocuments()
+  const completedBookings =
+    await Booking.countDocuments({
+      status:"Completed"
+    })
 
-    const completedBookings =
-      await Booking.countDocuments({
-        status: "Completed",
-      })
-
-    const pendingBookings =
-      await Booking.countDocuments({
-        status: {
-          $ne: "Completed",
-        },
-      })
-
-    let revenue = 0
-
-    const completed =
-      await Booking.find({
-        status: "Completed",
-      })
-
-    completed.forEach(
-      booking => {
-
-        revenue += Number(
-          booking.price || 2500
-        )
-
+  const pendingBookings =
+    await Booking.countDocuments({
+      status:{
+        $ne:"Completed"
       }
-    )
-
-    res.json({
-
-      success: true,
-
-      totalUsers,
-
-      totalBookings,
-
-      completedBookings,
-
-      pendingBookings,
-
-      revenue,
-
     })
 
-  } catch (error) {
+  const revenue =
+    completedBookings * 2500
 
-    console.log(error)
-
-    res.status(500).json({
-      success: false,
-    })
-
-  }
+  res.json({
+    totalUsers,
+    totalBookings,
+    completedBookings,
+    pendingBookings,
+    revenue
+  })
 
 }
+const {
+ getReports
+}
+=
+require(
+ "../controllers/adminReportController"
+)
+
+router.get(
+ "/reports",
+ getReports
+)
