@@ -61,32 +61,53 @@ user = await User.create({
 
 // SEND WELCOME EMAIL
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT),
-  secure: true,
+const transporter =
+  nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: true,
 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  })
 
-  connectionTimeout: 5000,
-})
+await transporter.verify()
 
-transporter
-  .sendMail({
-    from: `"TyreTrack" <${process.env.EMAIL_USER}>`,
+console.log(
+  "Brevo SMTP Connected ✅"
+)
+
+const info =
+  await transporter.sendMail({
+    from:
+      '"TyreTrack" <tyretrackoff@gmail.com@email.com>',
+
     to: email,
-    subject: "Welcome to TyreTrack",
+
+    subject:
+      "Welcome to TyreTrack",
+
     html: `
       <div style="font-family:Arial;padding:20px">
         <h2>Welcome to TyreTrack 🚗</h2>
         <p>Hi ${name},</p>
-        <p>Your account has been created successfully.</p>
+
+        <p>
+          Your account has been created
+          successfully.
+        </p>
+
+        <p>
+          Thank you for choosing
+          TyreTrack.
+        </p>
       </div>
     `,
   })
+
+console.log(info.messageId)
   .then(() => {
     console.log("Welcome email sent")
   })
