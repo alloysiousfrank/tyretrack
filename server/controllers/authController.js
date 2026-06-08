@@ -114,7 +114,7 @@ console.log(info.messageId)
   .catch((err) => {
     console.log("Mail failed:", err.message)
   })
-
+*/
 const token = jwt.sign(
   {
     id: user._id,
@@ -150,4 +150,4 @@ return res.json({
     message: "Server Error",
   })
 }
-}*/
+}
