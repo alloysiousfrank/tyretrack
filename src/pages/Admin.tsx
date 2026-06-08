@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { getBookings } from "../api/bookingApi"
+import AdminSidebar from
+"../components/admin/AdminSidebar"
 const token =
   localStorage.getItem(
     "adminToken"
@@ -124,7 +126,8 @@ const clearAllBookings = async () => {
   if (!confirmDelete) return
 
   try {
-
+const token =
+  localStorage.getItem("adminToken")
     await fetch(
       "https://tyretrack-server.onrender.com/api/bookings/clear/all",
       {
@@ -244,8 +247,15 @@ window.location.href =
     })
 
   return (
+<>
+<AdminSidebar />
 
-    <div className="admin-page">
+<div
+ className="admin-page"
+ style={{
+  marginLeft: "270px"
+ }}
+>
 
       <div className="admin-container">
 
@@ -274,55 +284,6 @@ window.location.href =
           </button>
 
         </div>
-
-        <div className="admin-nav">
-
-  <button
-    onClick={() =>
-      window.location.href =
-      "/admin-dashboard"
-    }
-  >
-    📊 Dashboard
-  </button>
-
-  <button
-    onClick={() =>
-      window.location.href =
-      "/admin"
-    }
-  >
-    📦 Bookings
-  </button>
-
-  <button
-    onClick={() =>
-      window.location.href =
-      "/admin-customers"
-    }
-  >
-    👥 Customers
-  </button>
-
-  <button
-    onClick={() =>
-      window.location.href =
-      "/admin-analytics"
-    }
-  >
-    📈 Analytics
-  </button>
-
-  <button
-    onClick={() =>
-      window.location.href =
-      "/admin-reports"
-    }
-  >
-    📄 Reports
-  </button>
-
-</div>
 
         {/* STATS */}
 
@@ -556,6 +517,8 @@ window.location.href =
 
     </div>
 
-  )
+</>
+
+)
 
 }

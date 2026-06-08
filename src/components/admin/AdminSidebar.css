@@ -1,0 +1,110 @@
+.admin-sidebar {
+
+  width: 270px;
+  min-height: 100vh;
+
+  background: #0a0a0a;
+
+  border-right:
+    1px solid rgba(
+      255,
+      0,
+      0,
+      .15
+    );
+
+  padding: 30px;
+
+  position: fixed;
+
+  left: 0;
+  top: 0;
+
+  display: flex;
+  flex-direction: column;
+
+}
+
+.admin-logo {
+
+  margin-bottom: 50px;
+
+}
+
+.admin-logo h2 {
+
+  color: #ff2b2b;
+
+  margin: 0;
+
+  font-size: 2rem;
+
+}
+
+.admin-logo span {
+
+  color: #888;
+
+  font-size: .8rem;
+
+}
+
+.admin-menu {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+
+}
+
+.admin-menu a {
+
+  text-decoration: none;
+
+  color: white;
+
+  padding: 14px 18px;
+
+  border-radius: 14px;
+
+  transition: .3s ease;
+
+  border: 1px solid transparent;
+
+}
+
+.admin-menu a:hover {
+
+  background:
+    rgba(255,0,0,.08);
+
+  border-color:
+    rgba(255,0,0,.2);
+
+}
+
+.logout-btn {
+
+  margin-top: auto;
+
+  border: none;
+
+  padding: 15px;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff2b2b,
+      #8b0000
+    );
+
+  color: white;
+
+  cursor: pointer;
+
+  font-weight: 700;
+
+}
