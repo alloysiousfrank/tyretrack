@@ -73,7 +73,7 @@
 .glass-card:hover::after {
   opacity: 1;
 }
-
+/*
 .glass-red {
   border-color: var(--border-red);
   box-shadow: 
@@ -89,7 +89,7 @@
     inset 0 1px 0 rgba(225, 6, 0, 0.2),
     0 0 80px rgba(225, 6, 0, 0.12);
 }
-
+*/
 .glass {
   border-color: rgba(225, 6, 0, 0.18);
 
