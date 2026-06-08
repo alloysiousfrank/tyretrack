@@ -92,6 +92,7 @@ const updateBookingStatus = async (bookingId: string) => {
 
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
 
         body: JSON.stringify({
@@ -164,11 +165,17 @@ const deleteBookingHandler = async (
       )
 
     if (!confirmDelete) return
-
+const token =
+  localStorage.getItem("adminToken")
     await fetch(
       `https://tyretrack-server.onrender.com/api/bookings/${bookingId}`,
       {
         method: "DELETE",
+
+        headers: {
+      Authorization:
+        `Bearer ${token}`,
+    },
       }
     )
 
@@ -185,11 +192,16 @@ const deleteBookingHandler = async (
   // LOGOUT
 const handleAdminLogout = () => {
 
-  localStorage.removeItem("adminToken")
-  localStorage.removeItem("adminRole")
+  localStorage.removeItem(
+  "adminToken"
+)
 
-  window.location.href =
-    "/admin-login"
+localStorage.removeItem(
+  "adminRole"
+)
+
+window.location.href =
+"/admin-login"
 
 }
   // STATS

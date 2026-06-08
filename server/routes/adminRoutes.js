@@ -18,6 +18,12 @@ const {
   getCustomers,
 } = require("../controllers/adminCustomerController")
 
+const {
+  getReports,
+} = require(
+  "../controllers/adminReportController"
+)
+
 router.post(
   "/login",
   adminLogin
@@ -36,6 +42,11 @@ router.get(
 router.get(
   "/customers",
   getCustomers
+)
+
+router.get(
+  "/reports",
+  getReports
 )
 
 module.exports = router

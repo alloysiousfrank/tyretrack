@@ -50,27 +50,32 @@ function App() {
 />
 
 <Route
-  path="adminDashboard"
+  path="admin-dashboard"
   element={<AdminDashboard />}
 />
 
 <Route
-  path="adminCustomers"
+  path="admin-customers"
   element={<AdminCustomers />}
 />
 
 <Route
-  path="adminAnalytics"
+  path="admin-analytics"
   element={<AdminAnalytics />}
 />
 
 <Route
-  path="adminReports"
+  path="admin-reports"
   element={
     localStorage.getItem("adminToken")
       ? <AdminReports />
       : <AdminLogin />
   }
+/>
+
+<Route
+  path="admin-reports"
+  element={<AdminReports />}
 />
 
         <Route path="about" element={<About />} />

@@ -1,11 +1,15 @@
 const Booking = require("../models/Booking")
+const User = require("../models/User")
 
-exports.getAnalytics = async (
+exports.getReports = async (
   req,
   res
 ) => {
 
   try {
+
+    const totalUsers =
+      await User.countDocuments()
 
     const totalBookings =
       await Booking.countDocuments()
@@ -22,18 +26,6 @@ exports.getAnalytics = async (
         },
       })
 
-    const serviceStats =
-      await Booking.aggregate([
-        {
-          $group: {
-            _id: "$service",
-            count: {
-              $sum: 1,
-            },
-          },
-        },
-      ])
-
     let revenue = 0
 
     const completed =
@@ -42,7 +34,7 @@ exports.getAnalytics = async (
       })
 
     completed.forEach(
-      (booking) => {
+      booking => {
 
         revenue += Number(
           booking.price || 2500
@@ -51,15 +43,11 @@ exports.getAnalytics = async (
       }
     )
 
-    const popularService =
-      serviceStats.sort(
-        (a, b) =>
-          b.count - a.count
-      )[0]
-
     res.json({
 
       success: true,
+
+      totalUsers,
 
       totalBookings,
 
@@ -68,12 +56,6 @@ exports.getAnalytics = async (
       pendingBookings,
 
       revenue,
-
-      popularService:
-        popularService?._id ||
-        "No Data",
-
-      serviceStats,
 
     })
 

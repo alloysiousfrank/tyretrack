@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react"
+import {
+  useEffect,
+  useState,
+} from "react"
 
 export default function AdminReports() {
 
-  const [stats, setStats] =
-    useState<any>({})
+  const [report,
+    setReport] =
+    useState<any>(null)
 
   useEffect(() => {
 
@@ -11,52 +15,61 @@ export default function AdminReports() {
 
   }, [])
 
-  const fetchReports = async () => {
+  const fetchReports =
+    async () => {
 
-    try {
+      const response =
+        await fetch(
+          "https://tyretrack-server.onrender.com/api/admin/reports"
+        )
 
-      const response = await fetch(
-        "https://tyretrack-server.onrender.com/api/admin/stats"
-      )
+      const data =
+        await response.json()
 
-      const data = await response.json()
-
-      setStats(data)
-
-    } catch (error) {
-
-      console.log(error)
+      setReport(data)
 
     }
 
-  }
+  if (!report)
+    return <p>Loading...</p>
 
   return (
 
     <div className="admin-page">
 
-      <h1>Reports</h1>
+      <div className="admin-container">
 
-      <div className="admin-stats">
+        <h1>
+          Business Reports
+        </h1>
 
-        <div className="stat-card">
-          <h3>Total Users</h3>
-          <p>{stats.totalUsers}</p>
-        </div>
+        <div className="admin-stats">
 
-        <div className="stat-card">
-          <h3>Total Bookings</h3>
-          <p>{stats.totalBookings}</p>
-        </div>
+          <div className="stat-card">
+            <h3>Total Users</h3>
+            <p>{report.totalUsers}</p>
+          </div>
 
-        <div className="stat-card">
-          <h3>Completed</h3>
-          <p>{stats.completedBookings}</p>
-        </div>
+          <div className="stat-card">
+            <h3>Total Bookings</h3>
+            <p>{report.totalBookings}</p>
+          </div>
 
-        <div className="stat-card">
-          <h3>Revenue</h3>
-          <p>₹ {stats.revenue}</p>
+          <div className="stat-card">
+            <h3>Completed</h3>
+            <p>{report.completedBookings}</p>
+          </div>
+
+          <div className="stat-card">
+            <h3>Pending</h3>
+            <p>{report.pendingBookings}</p>
+          </div>
+
+          <div className="stat-card">
+            <h3>Revenue</h3>
+            <p>₹ {report.revenue}</p>
+          </div>
+
         </div>
 
       </div>

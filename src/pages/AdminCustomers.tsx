@@ -124,9 +124,9 @@ export default function AdminCustomers() {
                     </strong>
 
                     {
-                      new Date(
-                        customer.joinedDate
-                      )
+                     new Date(
+ customer.createdAt
+)
                         .toLocaleDateString()
                     }
                   </p>
