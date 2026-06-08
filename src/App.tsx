@@ -36,18 +36,9 @@ function App() {
         <Route path="track" element={<Tracking />} />
 
 <Route
-  path="admin"
-  element={
-    localStorage.getItem("adminToken")
-      ? <Admin />
-      : <AdminLogin />
-  }
-/>
-
-<Route
   path="admin-login"
   element={<AdminLogin />}
- />
+/>
 
 <Route
   path="admin"
@@ -59,34 +50,22 @@ function App() {
 />
 
 <Route
-  path="admin-dashboard"
-  element={
-    localStorage.getItem("adminToken")
-      ? <AdminDashboard />
-      : <AdminLogin />
-  }
+  path="adminDashboard"
+  element={<AdminDashboard />}
 />
 
 <Route
-  path="admin-customers"
-  element={
-    localStorage.getItem("adminToken")
-      ? <AdminCustomers />
-      : <AdminLogin />
-  }
+  path="adminCustomers"
+  element={<AdminCustomers />}
 />
 
 <Route
-  path="admin-analytics"
-  element={
-    localStorage.getItem("adminToken")
-      ? <AdminAnalytics />
-      : <AdminLogin />
-  }
+  path="adminAnalytics"
+  element={<AdminAnalytics />}
 />
 
 <Route
-  path="admin-reports"
+  path="adminReports"
   element={
     localStorage.getItem("adminToken")
       ? <AdminReports />

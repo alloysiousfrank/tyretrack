@@ -183,9 +183,10 @@ const deleteBookingHandler = async (
 }
 
   // LOGOUT
-  const handleAdminLogout = () => {
+const handleAdminLogout = () => {
 
   localStorage.removeItem("adminToken")
+  localStorage.removeItem("adminRole")
 
   window.location.href =
     "/admin-login"
