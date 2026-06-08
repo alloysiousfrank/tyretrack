@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react"
 import { getBookings } from "../api/bookingApi"
-
+const token =
+  localStorage.getItem(
+    "adminToken"
+  )
 import "./Admin.css"
 
 export default function Admin() {
@@ -9,7 +12,8 @@ export default function Admin() {
 
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState("All")
-
+const role =
+  localStorage.getItem("adminRole")
   const serviceStages = [
     "Booking Confirmed",
     "Vehicle Received",
@@ -124,9 +128,14 @@ const clearAllBookings = async () => {
       "https://tyretrack-server.onrender.com/api/bookings/clear/all",
       {
         method: "DELETE",
-      }
-    )
 
+        headers: {
+     Authorization:
+       `Bearer ${token}`
+    }     
+  }
+
+    )
     setBookings([])
 
 
@@ -176,19 +185,12 @@ const deleteBookingHandler = async (
   // LOGOUT
   const handleAdminLogout = () => {
 
-    localStorage.removeItem(
-      "adminLoggedIn"
-    )
+  localStorage.removeItem("adminToken")
 
-    localStorage.removeItem(
-      "adminRole"
-    )
+  window.location.href =
+    "/admin-login"
 
-    window.location.href =
-      "/admin-login"
-
-  }
-
+}
   // STATS
   const completedBookings =
     bookings.filter(
@@ -240,12 +242,16 @@ const deleteBookingHandler = async (
             TyreTrack Admin Dashboard
           </h1>
 
-          <button
+          {role === "Admin" && (
+
+<button
   className="clear-btn"
   onClick={clearAllBookings}
 >
   Clear All Bookings
 </button>
+
+)}
 
           <button
             className="admin-logout-btn"
@@ -255,6 +261,55 @@ const deleteBookingHandler = async (
           </button>
 
         </div>
+
+        <div className="admin-nav">
+
+  <button
+    onClick={() =>
+      window.location.href =
+      "/admin-dashboard"
+    }
+  >
+    📊 Dashboard
+  </button>
+
+  <button
+    onClick={() =>
+      window.location.href =
+      "/admin"
+    }
+  >
+    📦 Bookings
+  </button>
+
+  <button
+    onClick={() =>
+      window.location.href =
+      "/admin-customers"
+    }
+  >
+    👥 Customers
+  </button>
+
+  <button
+    onClick={() =>
+      window.location.href =
+      "/admin-analytics"
+    }
+  >
+    📈 Analytics
+  </button>
+
+  <button
+    onClick={() =>
+      window.location.href =
+      "/admin-reports"
+    }
+  >
+    📄 Reports
+  </button>
+
+</div>
 
         {/* STATS */}
 
@@ -458,16 +513,20 @@ const deleteBookingHandler = async (
                       Update Service Status
                     </button>
 
-                    <button
-                      className="delete-booking-btn"
-                      onClick={() =>
-                        deleteBookingHandler(
-                          booking.bookingId
-                        )
-                      }
-                    >
-                      Delete Booking
-                    </button>
+{role === "Admin" && (
+
+<button
+  className="delete-booking-btn"
+  onClick={() =>
+    deleteBookingHandler(
+      booking.bookingId
+    )
+  }
+>
+  Delete Booking
+</button>
+
+)}
 
                   </div>
 

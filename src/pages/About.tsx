@@ -54,7 +54,7 @@ export default function About() {
 
       <RevealSection>
         <section className="about-cta">
-          <p>{GARAGE.hours}</p>
+          <p>{GARAGE.address}</p>
           <Link to="/booking" className="btn btn-primary">
             Book Your Visit
           </Link>

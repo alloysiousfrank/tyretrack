@@ -14,6 +14,10 @@ import History from './pages/History'
 import CurrentBooking from "./pages/CurrentBooking"
 import Admin from "./pages/Admin"
 import AdminLogin from "./pages/AdminLogin"
+import AdminDashboard from "./pages/AdminDashboard"
+import AdminCustomers from "./pages/AdminCustomers"
+import AdminAnalytics from "./pages/AdminAnalytics"
+import AdminReports from "./pages/AdminReports"
 
 function App() {
   return (
@@ -31,9 +35,63 @@ function App() {
 
         <Route path="track" element={<Tracking />} />
 
-        <Route
-  path="/admin"
-  element={<Admin />}
+<Route
+  path="admin"
+  element={
+    localStorage.getItem("adminToken")
+      ? <Admin />
+      : <AdminLogin />
+  }
+/>
+
+<Route
+  path="admin-login"
+  element={<AdminLogin />}
+ />
+
+<Route
+  path="admin"
+  element={
+    localStorage.getItem("adminToken")
+      ? <Admin />
+      : <AdminLogin />
+  }
+/>
+
+<Route
+  path="admin-dashboard"
+  element={
+    localStorage.getItem("adminToken")
+      ? <AdminDashboard />
+      : <AdminLogin />
+  }
+/>
+
+<Route
+  path="admin-customers"
+  element={
+    localStorage.getItem("adminToken")
+      ? <AdminCustomers />
+      : <AdminLogin />
+  }
+/>
+
+<Route
+  path="admin-analytics"
+  element={
+    localStorage.getItem("adminToken")
+      ? <AdminAnalytics />
+      : <AdminLogin />
+  }
+/>
+
+<Route
+  path="admin-reports"
+  element={
+    localStorage.getItem("adminToken")
+      ? <AdminReports />
+      : <AdminLogin />
+  }
 />
 
         <Route path="about" element={<About />} />

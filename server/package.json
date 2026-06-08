@@ -16,7 +16,8 @@
     "mongodb": "^7.2.0",
     "mongoose": "^9.6.2",
     "nodemailer": "^8.0.10",
-    "otp-generator": "^4.0.1"
+    "otp-generator": "^4.0.1",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

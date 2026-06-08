@@ -55,12 +55,13 @@ const handleLogin = async (
       "adminRole",
       data.role
     )
-
+    console.log("TOKEN:", data.token)
+console.log("ROLE:", data.role)
     alert(
       `${data.role} Login Successful ✅`
     )
-
-    navigate("/admin")
+    console.log("NAVIGATING...")
+window.location.href = "/admin"
 
   } catch (error) {
 

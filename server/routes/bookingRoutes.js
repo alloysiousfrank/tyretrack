@@ -1,7 +1,8 @@
 const express = require("express")
 
 const router = express.Router()
-
+const authMiddleware =
+require("../middleware/authMiddleware")
 const {
   createBooking,
   getBookings,
@@ -25,20 +26,23 @@ router.get(
 
 // UPDATE STATUS
 router.put(
-  "/:bookingId",
-  updateBookingStatus
+ "/:bookingId",
+ authMiddleware,
+ updateBookingStatus
 )
 
 // CLEAR ALL BOOKINGS
 router.delete(
-  "/clear/all",
-  clearAllBookings
+ "/clear/all",
+ authMiddleware,
+ clearAllBookings
 )
 
 // DELETE SINGLE BOOKING
 router.delete(
-  "/:bookingId",
-  deleteBooking
+ "/:bookingId",
+ authMiddleware,
+ deleteBooking
 )
 
 module.exports = router
