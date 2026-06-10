@@ -1,0 +1,73 @@
+.admin-invoice-form{
+
+ display:flex;
+ flex-direction:column;
+
+ gap:20px;
+
+ max-width:800px;
+
+ margin:auto;
+
+}
+
+.admin-invoice-form input,
+.admin-invoice-form select{
+
+ padding:14px;
+
+ border-radius:12px;
+
+ border:none;
+
+ background:#111;
+
+ color:white;
+
+}
+
+.service-list{
+
+ display:grid;
+
+ grid-template-columns:
+ repeat(
+  auto-fit,
+  minmax(220px,1fr)
+ );
+
+ gap:15px;
+
+}
+
+.service-item{
+
+ background:#111;
+
+ border-radius:14px;
+
+ padding:15px;
+
+ border:
+ 1px solid
+ rgba(255,0,0,0.2);
+
+}
+
+.invoice-summary{
+
+ margin-top:30px;
+
+ background:#111;
+
+ padding:25px;
+
+ border-radius:20px;
+
+}
+
+.invoice-summary h2{
+
+ color:#ff2b2b;
+
+}

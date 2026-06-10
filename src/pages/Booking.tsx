@@ -58,6 +58,8 @@ export default function Booking() {
 
     phone: userPhone || "",
 
+    
+
 service:
 serviceMap[selectedService || ""] || "",
 
@@ -79,7 +81,10 @@ serviceMap[selectedService || ""] || "",
       ...formData,
 
       [e.target.name]: e.target.value,
+      
+      vehicleNumber: "",
 
+      vehicleType: "",
     })
 
   }
@@ -199,6 +204,35 @@ if (!response.success) {
             required
           />
 
+          <input
+            type="text"
+            name="vehicleNumber"
+            placeholder="Vehicle Number"
+            value={formData.vehicleNumber}
+            onChange={handleChange}
+            required
+/>
+
+      
+          <select
+  name="vehicleType"
+  value={formData.vehicleType}
+  onChange={handleChange}
+  required
+>
+  <option value="">
+    Select Vehicle Type
+  </option>
+
+  <option value="Bike">
+    Bike
+  </option>
+
+  <option value="Car">
+    Car
+  </option>
+
+</select>
           <select
             name="service"
             value={formData.service}

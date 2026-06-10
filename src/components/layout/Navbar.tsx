@@ -2,22 +2,20 @@ import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { motion, useScroll } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
-import wheelImage from '../../assets/logo3.png'
+import wheelImage from '../../assets/logo4.png'
 import './Navbar.css'
 
 const primaryLinks = [
   { to: '/', label: 'Home', end: true },
   { to: '/services', label: 'Services' },
   { to: '/booking', label: 'Booking' },
-  
   { to: '/contact', label: 'Contact' },
+  { to: '/about', label: 'About' },
 ]
 
 const extraLinks = [
   { to: '/gallery', label: 'Gallery' },
-    { to: '/tracking', label: 'Track' },
-
-  { to: '/about', label: 'About' },
+  
 ]
 
 export default function Navbar() {

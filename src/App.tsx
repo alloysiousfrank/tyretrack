@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/AdminDashboard"
 import AdminCustomers from "./pages/AdminCustomers"
 import AdminAnalytics from "./pages/AdminAnalytics"
 import AdminReports from "./pages/AdminReports"
+import AdminInvoices from "./pages/AdminInvoices"
 
 function App() {
   return (
@@ -133,6 +134,14 @@ function App() {
         }
       />
 
+<Route
+ path="/admin-invoices"
+ element={
+  localStorage.getItem("adminToken")
+   ? <AdminInvoices />
+   : <AdminLogin />
+ }
+/>
     </Routes>
 
   )

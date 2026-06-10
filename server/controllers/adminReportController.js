@@ -41,7 +41,3 @@ require(
  "../controllers/adminReportController"
 )
 
-router.get(
- "/reports",
- getReports
-)

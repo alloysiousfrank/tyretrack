@@ -8,6 +8,11 @@ const authRoutes = require("./routes/authRoutes")
 const bookingRoutes = require("./routes/bookingRoutes")
 const adminRoutes = require("./routes/adminRoutes")
 
+const invoiceRoutes =
+require(
+ "./routes/invoiceRoutes"
+)
+
 
 const app = express()
 
@@ -32,7 +37,10 @@ app.use(express.json())
 app.use("/api/auth", authRoutes)
 app.use("/api/bookings", bookingRoutes)
 app.use("/api/admin", adminRoutes)
-
+app.use(
+ "/api/invoices",
+ invoiceRoutes
+)
 // TEST ROUTE
 app.get("/", (req, res) => {
   res.send("TyreTrack Server Running")

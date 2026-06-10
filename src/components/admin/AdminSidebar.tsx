@@ -34,7 +34,12 @@ export default function AdminSidebar() {
           📑 Reports
         </Link>
 
+      <Link to="/admin-invoices">
+       🧾 Invoices
+      </Link>
+
       </nav>
+
 
       <button
         className="logout-btn"
