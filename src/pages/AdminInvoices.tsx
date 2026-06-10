@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function AdminInvoices() {
 
@@ -10,9 +10,42 @@ export default function AdminInvoices() {
 
   const [vehicleType, setVehicleType] =
     useState("")
+const [email, setEmail] =
+useState("")
 
-  const [services, setServices] =
-    useState<string[]>([])
+const [phone, setPhone] =
+useState("")
+
+const [invoices,
+ setInvoices] =
+ useState<any[]>([])
+
+  
+
+const fetchInvoices =
+async () => {
+
+ try {
+
+  const response =
+   await fetch(
+    "https://tyretrack-server.onrender.com/api/invoices"
+   )
+
+  const data =
+   await response.json()
+
+  setInvoices(
+   data.invoices
+  )
+
+ } catch(error){
+
+  console.log(error)
+
+ }
+
+}
 
 const servicePrices:any = {
 
@@ -98,7 +131,11 @@ const [total,
  )
 
 }
+ useEffect(() => {
 
+ fetchInvoices()
+
+}, [])
 const saveInvoice =
 async()=>{
 
@@ -120,26 +157,28 @@ async()=>{
 
     body:JSON.stringify({
 
-     customerName,
+ customerName,
 
-     vehicleNumber,
+ email,
 
-     vehicleType,
+ phone,
 
-     services:
-     selectedServices,
+ vehicleNumber,
 
-     subtotal,
+ vehicleType,
 
-     gst,
+ services:
+ selectedServices,
 
-     totalAmount:
-     total
+ subtotal,
 
-    })
+ gst,
 
-   }
+ totalAmount:
+ total
 
+})
+    }
   )
 
   const data =
@@ -147,11 +186,13 @@ async()=>{
 
   if(data.success){
 
-   alert(
-    "Invoice Created ✅"
-   )
+ alert(
+  "Invoice Created ✅"
+ )
 
-  }
+ fetchInvoices()
+
+}
 
  }catch(error){
 
@@ -190,6 +231,24 @@ async()=>{
             )
           }
         />
+
+        <input
+ type="email"
+ placeholder="Customer Email"
+ value={email}
+ onChange={(e)=>
+  setEmail(e.target.value)
+ }
+/>
+
+<input
+ type="text"
+ placeholder="Customer Phone"
+ value={phone}
+ onChange={(e)=>
+  setPhone(e.target.value)
+ }
+/>
 
         <select
           value={vehicleType}
@@ -257,65 +316,70 @@ Object.keys(
 
 </div>
 
-{
- Object.keys(
-  servicePrices
- ).map(service => (
+<div className="invoice-summary">
 
-<div key={service}>
+  <h3>
+    Subtotal : ₹ {subtotal}
+  </h3>
 
-<label>
+  <h3>
+    GST : ₹ {gst}
+  </h3>
 
-<input
- type="checkbox"
+  <h2>
+    Total : ₹ {total}
+  </h2>
 
- checked={
-  selectedServices.includes(
-   service
-  )
- }
-
- onChange={()=>
-  toggleService(
-   service
-  )
- }
-/>
-
-{service}
-
-</label>
+  <button
+    className="update-btn"
+    onClick={saveInvoice}
+  >
+    Generate Invoice
+  </button>
 
 </div>
 
-))
-}
-
-<div className="invoice-summary">
-
-<h3>
-Subtotal :
-₹ {subtotal}
-</h3>
-
-<h3>
-GST :
-₹ {gst}
-</h3>
-
-<h2>
-Total :
-₹ {total}
+<h2
+  style={{
+    marginTop: "40px",
+  }}
+>
+  Generated Invoices
 </h2>
 
-<button
- className="update-btn"
- onClick={saveInvoice}
->
+<div className="admin-bookings">
 
-Generate Invoice
+{
+  invoices.map((invoice) => (
 
-</button>
+    <div
+      key={invoice._id}
+      className="admin-card"
+    >
+
+      <h3>
+        {invoice.invoiceId}
+      </h3>
+
+      <p>
+        Customer :
+        {invoice.customerName}
+      </p>
+
+      <p>
+        Vehicle :
+        {invoice.vehicleNumber}
+      </p>
+
+      <p>
+        Total :
+        ₹ {invoice.totalAmount}
+      </p>
+
+    </div>
+
+  ))
+}
 
 </div>
 
