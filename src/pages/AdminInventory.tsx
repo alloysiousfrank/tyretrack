@@ -7,7 +7,8 @@ from "react"
 export default function
 AdminInventory(){
 
-
+const [search,setSearch] =
+useState("")
   
  const [
   productName,
@@ -232,6 +233,16 @@ Inventory Management
 </div>
 
 <input
+ placeholder="Search Product"
+ value={search}
+ onChange={(e)=>
+ setSearch(
+  e.target.value
+ )
+}
+/>
+
+<input
  placeholder="Product Name"
  value={productName}
  onChange={(e)=>
@@ -239,7 +250,7 @@ Inventory Management
   e.target.value
  )}
 />
-
+<select>
 <input
  placeholder="Category"
  value={category}
@@ -248,6 +259,28 @@ Inventory Management
   e.target.value
  )}
 />
+
+<option value="">
+Category
+</option>
+
+<option value="Tyres">
+Tyres
+</option>
+
+<option value="Oil">
+Oil
+</option>
+
+<option value="Accessories">
+Accessories
+</option>
+
+<option value="Cleaning">
+Cleaning
+</option>
+
+</select>
 
 <input
  type="number"
@@ -297,7 +330,17 @@ Add Product
 <hr/>
 
 {
- products.map(product=>(
+ products
+.filter(product=>
+
+ product.productName
+ .toLowerCase()
+ .includes(
+  search.toLowerCase()
+ )
+
+)
+.map(
 
 <div
  key={product._id}
@@ -380,6 +423,16 @@ Buy :
 <p>
 Sell :
 ₹{product.sellingPrice}
+</p>
+<p>
+
+Profit :
+
+₹{
+ product.sellingPrice -
+ product.purchasePrice
+}
+
 </p>
 <button
  className="delete-booking-btn"

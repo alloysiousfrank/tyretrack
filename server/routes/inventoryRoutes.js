@@ -41,5 +41,6 @@ router.get(
  "/stats",
  getInventoryStats
 )
+
 module.exports =
 router

@@ -41,24 +41,32 @@ await Invoice.create({
 })
 
 
-// AUTO INVENTORY DEDUCTION
+// AUTO INVENTORY UPDATE
 
-if(req.body.items){
+for(
+ const service
+ of req.body.services
+){
 
- for(const item of req.body.items){
+ if(
+  service ===
+  "Multi Branded Tyres"
+ ){
 
-  await Inventory.findByIdAndUpdate(
+  const tyreProduct =
+  await Inventory.findOne({
 
-   item.productId,
+   category:"Tyres"
 
-   {
-    $inc:{
-     quantity:
-     -item.quantity
-    }
-   }
+  })
 
-  )
+  if(tyreProduct){
+
+   tyreProduct.quantity -= 1
+
+   await tyreProduct.save()
+
+  }
 
  }
 
