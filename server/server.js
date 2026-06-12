@@ -7,7 +7,10 @@ const connectDB = require("./config/db")
 const authRoutes = require("./routes/authRoutes")
 const bookingRoutes = require("./routes/bookingRoutes")
 const adminRoutes = require("./routes/adminRoutes")
-
+const inventoryRoutes =
+require(
+ "./routes/inventoryRoutes"
+)
 const invoiceRoutes =
 require(
  "./routes/invoiceRoutes"
@@ -41,6 +44,12 @@ app.use(
  "/api/invoices",
  invoiceRoutes
 )
+app.use(
+ "/api/inventory",
+ inventoryRoutes
+)
+
+
 // TEST ROUTE
 app.get("/", (req, res) => {
   res.send("TyreTrack Server Running")

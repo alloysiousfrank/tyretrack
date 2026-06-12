@@ -20,7 +20,7 @@ import AdminCustomers from "./pages/AdminCustomers"
 import AdminAnalytics from "./pages/AdminAnalytics"
 import AdminReports from "./pages/AdminReports"
 import AdminInvoices from "./pages/AdminInvoices"
-
+import AdminInventory from "./pages/AdminInventory"
 function App() {
   return (
 
@@ -142,7 +142,23 @@ function App() {
    : <AdminLogin />
  }
 />
+
+<Route
+ path="/admin-inventory"
+ element={
+  localStorage.getItem(
+   "adminToken"
+  )
+  ?
+  <AdminInventory/>
+  :
+  <AdminLogin/>
+ }
+/>
+
     </Routes>
+
+
 
   )
 }

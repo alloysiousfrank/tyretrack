@@ -71,3 +71,107 @@
  color:#ff2b2b;
 
 }
+
+.invoice-preview p,
+.invoice-preview h1,
+.invoice-preview h2,
+.invoice-preview h3,
+.invoice-preview td,
+.invoice-preview th{
+
+color:#000 !important;
+
+}
+
+.invoice-preview{
+
+margin-top:40px;
+
+background:#ffffff;
+
+color:#000000;
+
+padding:30px;
+
+border-radius:20px;
+
+border:2px solid #e10600;
+
+font-family:Arial,sans-serif;
+
+}
+
+.invoice-header{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+margin-bottom:20px;
+
+}
+
+.invoice-logo{
+
+width:120px;
+
+}
+
+.invoice-customer{
+
+display:grid;
+
+grid-template-columns:
+repeat(2,1fr);
+
+gap:15px;
+
+margin:25px 0;
+
+}
+
+.invoice-table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:20px;
+
+}
+
+.invoice-table th,
+.invoice-table td{
+
+padding:14px;
+
+border:1px solid
+rgba(255,255,255,.1);
+
+}
+
+.invoice-table th{
+
+background:#e10600;
+
+color:white;
+
+}
+
+.invoice-total{
+
+margin-top:30px;
+
+text-align:right;
+
+}
+
+.invoice-total h2{
+
+color:#e10600;
+
+font-size:28px;
+
+}

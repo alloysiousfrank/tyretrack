@@ -5,10 +5,13 @@ const router =
 express.Router()
 
 const {
+
  createInvoice,
  getInvoices,
  getInvoiceById,
- getInvoicesByVehicle
+ getInvoicesByVehicle,
+ getInvoicesByCustomer
+
 }
 =
 require(
@@ -31,10 +34,14 @@ router.get(
 )
 
 router.get(
+ "/customer/:email",
+ getInvoicesByCustomer
+)
+
+router.get(
  "/:id",
  getInvoiceById
 )
-
 
 module.exports =
 router

@@ -50,44 +50,44 @@ export default function Booking() {
   "ceramic-coating": "Ceramic Coating",
 }
 
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
 
-    name: userName || "",
+  name: userName || "",
 
-    email: userEmail || "",
+  email: userEmail || "",
 
-    phone: userPhone || "",
+  phone: userPhone || "",
 
-    
+  vehicleNumber: "",
 
-service:
-serviceMap[selectedService || ""] || "",
+  vehicleType: "",
 
-    date: today,
+  service:
+    serviceMap[selectedService || ""] || "",
 
-    time: "",
+  date: today,
 
-  })
+  time: "",
+
+})
 
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement
-    >
-  ) => {
+  e: React.ChangeEvent<
+    HTMLInputElement | HTMLSelectElement
+  >
+) => {
 
-    setFormData({
+  setFormData({
 
-      ...formData,
+    ...formData,
 
-      [e.target.name]: e.target.value,
-      
-      vehicleNumber: "",
+    [e.target.name]:
+      e.target.value,
 
-      vehicleType: "",
-    })
+  })
 
-  }
+}
 
   const handleSubmit = async (
     e: React.FormEvent
@@ -136,15 +136,19 @@ if (!response.success) {
       )
 
       // RESET ONLY SERVICE + TIME
-      setFormData({
+setFormData({
 
-        ...formData,
+  ...formData,
 
-        service: "",
+  vehicleNumber: "",
 
-        time: "",
+  vehicleType: "",
 
-      })
+  service: "",
+
+  time: "",
+
+})
 
       // REDIRECT TO CURRENT BOOKING
       window.location.href =

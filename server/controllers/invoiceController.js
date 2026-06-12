@@ -1,36 +1,86 @@
 const Invoice = require("../models/Invoice")
 const Booking = require("../models/Booking")
-
+const Inventory = require("../models/Inventory")
 exports.createInvoice = async (req,res)=>{
 
  try{
 
-  const invoiceId =
-   "INV" +
-   Math.floor(
-    100000 +
-    Math.random()*900000
-   )
+const lastInvoice =
+await Invoice
+.findOne()
+.sort({
+ createdAt:-1
+})
 
-  const invoice =
-   await Invoice.create({
+let nextNumber = 1
 
-    ...req.body,
+if(lastInvoice){
 
-    invoiceId
+ nextNumber =
+ (
+  lastInvoice.invoiceNumber || 0
+ ) + 1
 
-   })
+}
 
-   await Booking.findOneAndUpdate(
-    {
-      bookingId:
-      req.body.bookingId
-    },
-    {
-      invoiceGenerated:true,
-      invoiceId
+const invoiceId =
+`INV-${String(
+ nextNumber
+).padStart(6,"0")}`
+
+const invoice =
+await Invoice.create({
+
+ ...req.body,
+
+ invoiceId,
+
+ invoiceNumber:
+ nextNumber
+
+})
+
+
+// AUTO INVENTORY DEDUCTION
+
+if(req.body.items){
+
+ for(const item of req.body.items){
+
+  await Inventory.findByIdAndUpdate(
+
+   item.productId,
+
+   {
+    $inc:{
+     quantity:
+     -item.quantity
     }
-   )
+   }
+
+  )
+
+ }
+
+}
+
+await Booking.findOneAndUpdate(
+ {
+  bookingId:
+  req.body.bookingId
+ },
+ {
+  invoiceGenerated:true,
+
+  invoiceId,
+
+  status:"Completed",
+
+  currentStage:4,
+
+  completed:true
+ }
+)
 
    res.json({
     success:true,
@@ -133,3 +183,43 @@ async(req,res)=>{
  }
 
   }
+
+exports.getInvoicesByCustomer =
+async (req,res)=>{
+
+ try{
+
+  const invoices =
+   await Invoice.find({
+
+    email:
+    req.params.email
+
+   })
+
+   .sort({
+    createdAt:-1
+   })
+
+  res.json({
+
+   success:true,
+
+   invoices
+
+  })
+
+ }catch(error){
+
+  console.log(error)
+
+  res.status(500).json({
+
+   success:false
+
+  })
+
+ }
+
+}
+

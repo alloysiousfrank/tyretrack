@@ -2,6 +2,11 @@ import { useEffect, useState } from "react"
 import "./CurrentBooking.css"
 
 export default function CurrentBooking() {
+  const [allBookings,setAllBookings] =
+useState<any[]>([])
+
+const [totalSpent,setTotalSpent] =
+useState(0)
 
   const [booking, setBooking] = useState<any>(null)
 
@@ -30,6 +35,27 @@ export default function CurrentBooking() {
           setBooking(data.bookings[0])
 
         }
+       setAllBookings(
+ data.bookings || []
+)
+
+let spent = 0;
+
+(data.bookings || [])
+.forEach(
+ (booking:any)=>{
+
+  spent +=
+  Number(
+   booking.price || 2500
+  )
+
+ }
+)
+
+setTotalSpent(
+ spent
+)
 
       } catch (error) {
 
@@ -50,6 +76,34 @@ export default function CurrentBooking() {
       <div className="current-booking-card">
 
         <h1>Current Booking</h1>
+
+        <div className="customer-stats">
+
+<div className="stat-box">
+
+<h3>
+Total Visits
+</h3>
+
+<p>
+{allBookings.length}
+</p>
+
+</div>
+
+<div className="stat-box">
+
+<h3>
+Total Spent
+</h3>
+
+<p>
+₹{totalSpent}
+</p>
+
+</div>
+
+</div>
 
         {!booking ? (
 
@@ -82,6 +136,29 @@ export default function CurrentBooking() {
                 <span>Phone</span>
                 <h3>{booking.phone}</h3>
               </div>
+              <div className="booking-item">
+
+<span>
+Vehicle Number
+</span>
+
+<h3>
+{booking.vehicleNumber}
+</h3>
+
+</div>
+<div className="booking-item">
+
+<span>
+Vehicle Type
+</span>
+
+<h3>
+{booking.vehicleType}
+</h3>
+
+</div>
+             
 
               <div className="booking-item">
                 <span>Service</span>
@@ -90,7 +167,13 @@ export default function CurrentBooking() {
 
               <div className="booking-item">
                 <span>Date</span>
-                <h3>{booking.date}</h3>
+                <h3>
+{
+ new Date(
+  booking.date
+ ).toLocaleDateString()
+}
+</h3>
               </div>
 
               <div className="booking-item">
@@ -104,7 +187,23 @@ export default function CurrentBooking() {
                   {booking.status}
                 </h3>
               </div>
+              <div className="booking-item">
 
+<span>
+Invoice
+</span>
+
+<h3>
+
+{
+ booking.invoiceGenerated
+ ? "Available"
+ : "Pending"
+}
+
+</h3>
+
+</div>
             </div>
 
             <div className="booking-progress">
@@ -119,7 +218,25 @@ export default function CurrentBooking() {
             >
               Open Live Tracking
             </button>
+            {
+ booking.invoiceGenerated && (
 
+<button
+ className="track-booking-btn"
+
+ onClick={()=>{
+  window.location.href =
+  "/history"
+ }}
+
+>
+
+View Invoice
+
+</button>
+
+)
+}
             <button
               className="cancel-booking-btn"
               onClick={async () => {

@@ -8,7 +8,14 @@ new mongoose.Schema({
     unique: true,
   },
 
-  bookingId: String,
+  invoiceNumber: {
+ type:Number
+},
+
+  bookingId: {
+ type:String,
+ default:""
+},
 
   customerName: String,
 
@@ -42,6 +49,23 @@ new mongoose.Schema({
 {
   timestamps: true,
 })
+
+items:[
+ {
+   productId:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Inventory"
+   },
+
+   productName:String,
+
+   quantity:Number,
+
+   price:Number,
+
+   total:Number
+ }
+]
 
 module.exports =
 mongoose.model(

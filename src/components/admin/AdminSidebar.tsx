@@ -38,6 +38,10 @@ export default function AdminSidebar() {
        🧾 Invoices
       </Link>
 
+      <Link to="/admin-inventory">
+ 📦 Inventory
+</Link>
+
       </nav>
 
 
