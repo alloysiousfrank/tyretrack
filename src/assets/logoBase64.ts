@@ -1,0 +1,1 @@
+export const logoBase64 = "PASTE_BASE64_STRING_HERE"   

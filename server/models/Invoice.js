@@ -1,57 +1,40 @@
 const mongoose = require("mongoose")
 
-const invoiceSchema =
-new mongoose.Schema({
+const invoiceSchema = new mongoose.Schema({
 
-  invoiceId: {
-    type: String,
-    unique: true,
-  },
+ invoiceId:{
+  type:String,
+  unique:true
+ },
 
-  invoiceNumber: {
- type:Number
-},
+ invoiceNumber:Number,
 
-  bookingId: {
+ bookingId:{
+  type:String,
+  default:""
+ },
+
+ customerName:String,
+
+ email:String,
+
+ phone:String,
+
+ vehicleNumber:String,
+
+ vehicleType:String,
+
+ vehicleKm:{
  type:String,
  default:""
 },
 
-  customerName: String,
+ services:[String],
 
-  email: String,
+ items:[
 
-  phone: String,
+  {
 
-  vehicleNumber: String,
-
-  vehicleType: String,
-
-  services: [String],
-
-  subtotal: Number,
-
-  gst: Number,
-
-  totalAmount: Number,
-
-  status: {
-    type: String,
-    default: "Draft",
-  },
-
-  pdfUrl: {
-    type: String,
-    default: "",
-  },
-
-},
-{
-  timestamps: true,
-})
-
-items:[
- {
    productId:{
     type:mongoose.Schema.Types.ObjectId,
     ref:"Inventory"
@@ -64,8 +47,30 @@ items:[
    price:Number,
 
    total:Number
+
+  }
+
+ ],
+
+ subtotal:Number,
+
+ gst:Number,
+
+ totalAmount:Number,
+
+ status:{
+  type:String,
+  default:"Draft"
+ },
+
+ pdfUrl:{
+  type:String,
+  default:""
  }
-]
+
+},{
+ timestamps:true
+})
 
 module.exports =
 mongoose.model(

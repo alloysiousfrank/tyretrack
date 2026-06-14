@@ -330,17 +330,9 @@ Add Product
 <hr/>
 
 {
- products
-.filter(product=>
-
- product.productName
- .toLowerCase()
- .includes(
-  search.toLowerCase()
- )
-
-)
-.map(
+ products.filter(product =>
+  product.productName.toLowerCase().includes(search.toLowerCase())
+ ).map(product=>(
 
 <div
  key={product._id}
