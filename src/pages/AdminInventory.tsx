@@ -40,6 +40,21 @@ useState("")
   setProducts
  ] = useState<any[]>([])
 
+ const [brand,setBrand] =
+useState("")
+
+const [tyreSize,setTyreSize] =
+useState("")
+
+const [supplier,setSupplier] =
+useState("")
+
+const [minStock,setMinStock] =
+useState(5)
+
+const [description,setDescription] =
+useState("")
+
 const [stats,setStats] =
 useState<any>({})
 
@@ -100,15 +115,28 @@ async()=>{
      "application/json"
     },
 
-    body:JSON.stringify({
+body:JSON.stringify({
 
-     productName,
-     category,
-     quantity,
-     purchasePrice,
-     sellingPrice
+ productName,
+ category,
 
-    })
+ brand,
+
+ tyreSize,
+
+ supplier,
+
+ description,
+
+ minStock,
+
+ quantity,
+
+ purchasePrice,
+
+ sellingPrice
+
+})
 
    }
 
@@ -250,18 +278,17 @@ Inventory Management
   e.target.value
  )}
 />
-<select>
-<input
- placeholder="Category"
+<select
  value={category}
  onChange={(e)=>
  setCategory(
   e.target.value
- )}
-/>
+ )
+}
+>
 
 <option value="">
-Category
+Select Category
 </option>
 
 <option value="Tyres">
@@ -281,6 +308,81 @@ Cleaning
 </option>
 
 </select>
+
+<option value="">
+Category
+</option>
+
+<input
+ placeholder="Brand"
+ value={brand}
+ onChange={(e)=>
+ setBrand(
+  e.target.value
+ )
+}
+/>
+
+<input
+ placeholder="Tyre Size"
+ value={tyreSize}
+ onChange={(e)=>
+ setTyreSize(
+  e.target.value
+ )
+}
+/>
+
+<input
+ placeholder="Supplier"
+ value={supplier}
+ onChange={(e)=>
+ setSupplier(
+  e.target.value
+ )
+}
+/>
+
+<input
+ type="number"
+ placeholder="Min Stock"
+ value={minStock}
+ onChange={(e)=>
+ setMinStock(
+  Number(
+   e.target.value
+  )
+ )
+}
+/>
+
+<input
+ placeholder="Description"
+ value={description}
+ onChange={(e)=>
+ setDescription(
+  e.target.value
+ )
+}
+/>
+
+<option value="Tyres">
+Tyres
+</option>
+
+<option value="Oil">
+Oil
+</option>
+
+<option value="Accessories">
+Accessories
+</option>
+
+<option value="Cleaning">
+Cleaning
+</option>
+
+
 
 <input
  type="number"

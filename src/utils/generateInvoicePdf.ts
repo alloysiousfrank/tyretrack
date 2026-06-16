@@ -54,7 +54,7 @@ export const generateInvoicePdf = (
   doc.setFontSize(10)
 
   doc.text(
-    "Owner : Rtn Charles A",
+    "👥 Owner : Rtn Charles A",
     14,
     48
   )
@@ -92,7 +92,7 @@ export const generateInvoicePdf = (
   doc.text(
     "HSN/SAC : 40111010",
     14,
-    78
+    84
   )
 
   // =====================
@@ -201,13 +201,69 @@ export const generateInvoicePdf = (
   // SERVICES TABLE
   // =====================
 
-  const rows =
-    invoice.services.map(
-      (service:string)=>[
-        service,
-        `Rs ${servicePrices[service] || 0}`
-      ]
-    )
+const rows:any[] = []
+
+// Normal Services
+
+invoice.services?.forEach(
+(service:string)=>{
+
+ rows.push([
+
+  service,
+
+  `Rs ${servicePrices[service] || 0}`
+
+ ])
+
+}
+)
+
+// Tyre Brand
+
+if(invoice.tyreBrand){
+
+ rows.push([
+
+  `${invoice.tyreBrand} Tyres x ${invoice.tyreQuantity}`,
+
+  `Rs ${
+   (
+    servicePrices[
+     "Multi Branded Tyres"
+    ] *
+    Number(invoice.tyreQuantity || 1)
+   )
+  }`
+
+ ])
+
+}
+
+// Custom Services
+
+if(invoice.customServices){
+
+ invoice.customServices.forEach(
+
+  (service:any)=>{
+
+   rows.push([
+
+    `${service.serviceName} x ${service.quantity}`,
+
+    `Rs ${
+      Number(service.amount) *
+      Number(service.quantity)
+    }`
+
+   ])
+
+  }
+
+ )
+
+}
 
   autoTable(doc,{
 

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-
 import {
  generateInvoicePdf
 }
@@ -10,7 +9,22 @@ from
 export default function AdminInvoices() {
 
 
+const [selectedTyreBrand,setSelectedTyreBrand] =
+useState("")
 
+const [tyreQuantity,setTyreQuantity] =
+useState(1)
+
+const [customServices,setCustomServices] =
+useState([
+
+ {
+  serviceName:"",
+  quantity:1,
+  amount:0
+ }
+
+])
 
 
 const [bookingId,setBookingId] =
@@ -42,6 +56,22 @@ const [invoices,
  vehicleHistory,
  setVehicleHistory
 ] = useState<any[]>([])
+
+const addCustomService = ()=>{
+
+ setCustomServices([
+
+  ...customServices,
+
+  {
+   serviceName:"",
+   quantity:1,
+   amount:0
+  }
+
+ ])
+
+}
 
 useEffect(()=>{
 
@@ -175,6 +205,46 @@ const [total,
  setTotal] =
  useState(0)
 
+ useEffect(()=>{
+
+ let amount = 0
+
+ selectedServices.forEach(
+ service=>{
+
+  amount +=
+  servicePrices[service]
+
+ }
+ )
+
+ customServices.forEach(
+ service=>{
+
+  amount +=
+  Number(service.quantity) *
+  Number(service.amount)
+
+ }
+ )
+
+ const gstAmount =
+ amount * 0.18
+
+ setSubtotal(amount)
+
+ setGst(gstAmount)
+
+ setTotal(
+  amount + gstAmount
+ )
+
+},
+[
+ selectedServices,
+ customServices
+])
+
 
  const toggleService =
 (service:string)=>{
@@ -207,6 +277,20 @@ const [total,
 
  })
 
+ customServices.forEach(
+ service=>{
+
+ amount +=
+ Number(
+  service.quantity
+ ) *
+ Number(
+  service.amount
+ )
+
+ }
+)
+
  const gstAmount =
   amount * 0.18
 
@@ -224,6 +308,34 @@ const [total,
  fetchInvoices()
 
 }, [])
+
+const updateCustomService = (
+
+ index:number,
+
+ field:string,
+
+ value:any
+
+)=>{
+
+ const updated =
+ [...customServices]
+
+ updated[index] = {
+
+  ...updated[index],
+
+  [field]:value
+
+ }
+
+ setCustomServices(
+  updated
+ )
+
+}
+
 const saveInvoice =
 async()=>{
 
@@ -260,6 +372,13 @@ async()=>{
  vehicleKm,
 
  services:selectedServices,
+
+ customServices,
+
+ tyreBrand:
+selectedTyreBrand,
+
+tyreQuantity,
 
  subtotal,
 
@@ -445,6 +564,8 @@ Services :
 }
 
        <h3>Select Services</h3>
+
+
        <div className="service-list">
 
 {
@@ -469,17 +590,99 @@ Object.keys(
  )
  }
 
+ 
+
  onChange={()=>
  toggleService(
   service
  )
- }
+}
+ 
+
+
 />
 
  {service}
 
 </label>
 
+
+
+{
+selectedServices.includes(
+ "Multi Branded Tyres"
+) && (
+
+<div className="admin-card">
+
+<h3>
+Select Tyre Brand
+</h3>
+
+<select
+ value={selectedTyreBrand}
+ onChange={(e)=>
+  setSelectedTyreBrand(
+   e.target.value
+  )
+ }
+>
+
+<option value="">
+Select Brand
+</option>
+
+<option value="Continental">
+Continental
+</option>
+
+<option value="Bridgestone">
+Bridgestone
+</option>
+
+<option value="Michelin">
+Michelin
+</option>
+
+<option value="MRF">
+MRF
+</option>
+
+<option value="Firelli">
+Firelli
+</option>
+
+<option value="Apollo">
+Apollo
+</option>
+
+<option value="Yokohama">
+Yokohama
+</option>
+
+<option value="Other">
+Other
+</option>
+
+</select>
+
+<input
+ type="number"
+ min="1"
+ value={tyreQuantity}
+ onChange={(e)=>
+ setTyreQuantity(
+  Number(
+   e.target.value
+  )
+ )
+ }
+/>
+
+</div>
+
+)
+}
 </div>
 
 ))
@@ -487,6 +690,89 @@ Object.keys(
 }
 
 </div>
+
+<h3>
+Custom Services
+</h3>
+
+{
+customServices.map(
+(service,index)=>(
+
+<div
+ key={index}
+ className="admin-card"
+>
+
+<input
+ placeholder="Service Name"
+ value={service.serviceName}
+ onChange={(e)=>
+ updateCustomService(
+
+  index,
+
+  "serviceName",
+
+  e.target.value
+
+ )
+}
+/>
+
+<input
+ type="number"
+ placeholder="Qty"
+ value={service.quantity}
+ onChange={(e)=>
+ updateCustomService(
+
+  index,
+
+  "quantity",
+
+  Number(
+   e.target.value
+  )
+
+ )
+}
+/>
+
+<input
+ type="number"
+ placeholder="Amount"
+ value={service.amount}
+ onChange={(e)=>
+ updateCustomService(
+
+  index,
+
+  "amount",
+
+  Number(
+   e.target.value
+  )
+
+ )
+}
+/>
+
+</div>
+
+))
+}
+
+<button
+ className="update-btn"
+ onClick={
+  addCustomService
+ }
+>
+
++ Add Another Service
+
+</button>
 
 <div className="invoice-summary">
 
@@ -611,6 +897,30 @@ Date :
  {vehicleKm}
 </p>
 
+{
+selectedTyreBrand && (
+
+<p>
+Tyre Brand :
+{selectedTyreBrand}
+</p>
+
+)
+}
+
+{
+selectedServices.includes(
+ "Multi Branded Tyres"
+) && (
+
+<p>
+Tyre Qty :
+{tyreQuantity}
+</p>
+
+)
+}
+
   </div>
 
   <table className="invoice-table">
@@ -655,9 +965,37 @@ Date :
         ))
       }
 
-    </tbody>
+        {
+customServices.map(
+(service,index)=>(
 
-  </table>
+<tr key={index}>
+
+<td>
+
+{service.serviceName}
+
+x
+
+{service.quantity}
+
+</td>
+
+<td>
+
+₹
+
+{
+ service.amount *
+ service.quantity
+}
+
+</td>
+
+</tr>
+
+))
+}
 
   <div className="invoice-total">
 
@@ -677,6 +1015,12 @@ Date :
     </h2>
 
   </div>
+
+    </tbody>
+
+  </table>
+
+
 
 </div>
 

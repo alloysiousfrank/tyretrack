@@ -31,6 +31,32 @@ const invoiceSchema = new mongoose.Schema({
 
  services:[String],
 
+ customServices:[
+
+ {
+
+  serviceName:String,
+
+  quantity:Number,
+
+  amount:Number,
+
+  total:Number
+
+ }
+
+],
+
+ tyreBrand:{
+ type:String,
+ default:""
+},
+
+tyreQuantity:{
+ type:Number,
+ default:0
+},
+
  items:[
 
   {

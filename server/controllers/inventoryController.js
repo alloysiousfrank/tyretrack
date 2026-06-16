@@ -6,6 +6,13 @@ async(req,res)=>{
 
  try{
 
+    if(req.body.brand){
+
+ req.body.brand =
+ req.body.brand.toUpperCase()
+
+}
+
   const product =
   await Inventory.create(
    req.body
@@ -151,9 +158,11 @@ async(req,res)=>{
    req.params.id,
 
    {
-    quantity:
-    req.body.quantity
-   },
+ quantity:
+ Number(
+  req.body.quantity
+ )
+},
 
    {
     new:true

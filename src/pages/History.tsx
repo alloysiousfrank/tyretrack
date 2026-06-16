@@ -25,11 +25,19 @@ export default function History() {
   const [loading, setLoading] =
     useState(true)
 
-  useEffect(() => {
+useEffect(() => {
 
-    fetchHistory()
+ fetchHistory()
 
-  }, [])
+ const interval = setInterval(
+  fetchHistory,
+  3000
+ )
+
+ return () =>
+ clearInterval(interval)
+
+}, [])
 
   const fetchHistory = async () => {
 
@@ -70,9 +78,14 @@ if(
  invoiceResponse.success
 ){
 
- setInvoices(
-  invoiceResponse.invoices
+setInvoices(
+
+ invoiceResponse.invoices.filter(
+  (invoice:any)=>
+   invoice.status === "Completed"
  )
+
+)
 
 }
 
@@ -104,6 +117,13 @@ Invoice History
 </h1>
 
 {
+ bookings
+ .filter(
+  booking =>
+   booking.invoiceGenerated
+ )
+ .length > 0
+ &&
  invoices.map(invoice=>(
 
 <div

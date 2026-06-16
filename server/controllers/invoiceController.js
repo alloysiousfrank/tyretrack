@@ -5,33 +5,126 @@ exports.createInvoice = async (req,res)=>{
 
  try{
 
-const lastInvoice =
-await Invoice
-.findOne()
-.sort({
- createdAt:-1
-})
+  const lastInvoice =
+  await Invoice.findOne()
+  .sort({
+   createdAt:-1
+  })
 
-let nextNumber = 1
+  let nextNumber = 1
 
-if(lastInvoice){
+  if(lastInvoice){
 
- nextNumber =
- (
-  lastInvoice.invoiceNumber || 0
- ) + 1
+   nextNumber =
+   (
+    lastInvoice.invoiceNumber || 0
+   ) + 1
+
+  }
+
+  const invoiceId =
+  `INV-${String(
+   nextNumber
+  ).padStart(6,"0")}`
+
+  // =====================
+  // TYRE STOCK UPDATE
+  // =====================
+
+  if(
+   req.body.tyreBrand &&
+   req.body.tyreQuantity > 0
+  ){
+
+   const tyreProduct =
+   await Inventory.findOne({
+
+    brand:req.body.tyreBrand
+
+   })
+
+   if(tyreProduct){
+
+const requiredQty =
+Number(
+ req.body.tyreQuantity || 1
+)
+
+if(
+ tyreProduct.quantity <
+ requiredQty
+){
+
+ return res.status(400).json({
+
+  success:false,
+
+  message:
+  `${req.body.tyreBrand} stock not available`
+
+ })
 
 }
 
-const invoiceId =
-`INV-${String(
- nextNumber
-).padStart(6,"0")}`
+tyreProduct.quantity -=
+requiredQty
+
+await tyreProduct.save()
+
+   }
+
+  }
+
+  // =====================
+  // CUSTOM SERVICES TOTAL
+  // =====================
+
+const customServices =
+(req.body.customServices || [])
+.map(service => ({
+
+ ...service,
+
+ total:
+ Number(service.quantity || 0)
+ *
+ Number(service.amount || 0)
+
+}))
+
+  if(
+ req.body.vehicleNumber
+){
+
+ req.body.vehicleNumber =
+ req.body.vehicleNumber
+ .toUpperCase()
+
+}
+
+const invoice = await Invoice.create({
+
+ ...req.body,
+
+ email:req.body.email.toLowerCase(),
+
+ vehicleNumber:
+ req.body.vehicleNumber.toUpperCase(),
+
+ invoiceId,
+
+ invoiceNumber:nextNumber
+
+})
 
 const invoice =
 await Invoice.create({
 
  ...req.body,
+
+ status:"Completed",
+
+ customServices,
 
  invoiceId,
 
@@ -40,67 +133,49 @@ await Invoice.create({
 
 })
 
+  // =====================
+  // BOOKING COMPLETE
+  // =====================
 
-// AUTO INVENTORY UPDATE
+  await Booking.findOneAndUpdate(
 
-for(
- const service
- of req.body.services
-){
+   {
+    bookingId:
+    req.body.bookingId
+   },
 
- if(
-  service ===
-  "Multi Branded Tyres"
- ){
+   {
 
-  const tyreProduct =
-  await Inventory.findOne({
+    invoiceGenerated:true,
 
-   category:"Tyres"
+    invoiceId,
+
+    status:"Completed",
+
+    currentStage:4,
+
+    completed:true
+
+   }
+
+  )
+
+  res.json({
+
+   success:true,
+
+   invoice
 
   })
-
-  if(tyreProduct){
-
-   tyreProduct.quantity -= 1
-
-   await tyreProduct.save()
-
-  }
-
- }
-
-}
-
-await Booking.findOneAndUpdate(
- {
-  bookingId:
-  req.body.bookingId
- },
- {
-  invoiceGenerated:true,
-
-  invoiceId,
-
-  status:"Completed",
-
-  currentStage:4,
-
-  completed:true
- }
-)
-
-   res.json({
-    success:true,
-    invoice
-   })
 
  }catch(error){
 
   console.log(error)
 
   res.status(500).json({
+
    success:false
+
   })
 
  }
