@@ -589,6 +589,16 @@ tyreQuantity,
   setPhone(e.target.value)
  }
 />
+   <input
+ type="number"
+ placeholder="Vehicle KM"
+ value={vehicleKm}
+ onChange={(e)=>
+  setVehicleKm(
+   e.target.value
+  )
+ }
+/>
 
         <select
   value={vehicleType}
@@ -598,6 +608,7 @@ tyreQuantity,
     )
   }
  >
+ 
           <option value="">
             Vehicle Type
           </option>
@@ -612,16 +623,7 @@ tyreQuantity,
 
         </select>
 
- <input
- type="number"
- placeholder="Vehicle KM"
- value={vehicleKm}
- onChange={(e)=>
-  setVehicleKm(
-   e.target.value
-  )
- }
-/>       
+      
 
 
        
@@ -990,16 +992,16 @@ Date :
       Vehicle :
       {vehicleNumber}
     </p>
-
+    <p>
+ KM :
+ {vehicleKm}
+</p>
     <p>
       Type :
       {vehicleType}
     </p>
 
-    <p>
- KM :
- {vehicleKm}
-</p>
+
 
 {
 selectedTyreBrand && (

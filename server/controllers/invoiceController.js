@@ -101,25 +101,20 @@ const customServices =
 
 }
 
-const invoice = await Invoice.create({
-
- ...req.body,
-
- email:req.body.email.toLowerCase(),
-
- vehicleNumber:
- req.body.vehicleNumber.toUpperCase(),
-
- invoiceId,
-
- invoiceNumber:nextNumber
-
-})
-
 const invoice =
 await Invoice.create({
 
  ...req.body,
+
+ email:
+ req.body.email
+ ? req.body.email.toLowerCase()
+ : "",
+
+ vehicleNumber:
+ req.body.vehicleNumber
+ ? req.body.vehicleNumber.toUpperCase()
+ : "",
 
  status:"Completed",
 
@@ -127,8 +122,7 @@ await Invoice.create({
 
  invoiceId,
 
- invoiceNumber:
- nextNumber
+ invoiceNumber:nextNumber
 
 })
 
@@ -241,10 +235,13 @@ async (req,res)=>{
  try{
 
   const invoices =
-   await Invoice.find({
-    vehicleNumber:
-    req.params.vehicleNumber
-   })
+await Invoice.find({
+
+ vehicleNumber:
+ req.params.vehicleNumber
+ .toUpperCase()
+
+})
    .sort({
     createdAt:-1
    })
