@@ -28,52 +28,51 @@ exports.createInvoice = async (req,res)=>{
   ).padStart(6,"0")}`
 
   // =====================
-  // TYRE STOCK UPDATE
-  // =====================
-
-  if(
-   req.body.tyreBrand &&
-   req.body.tyreQuantity > 0
-  ){
-
-   const tyreProduct =
-   await Inventory.findOne({
-
-    brand:req.body.tyreBrand
-
-   })
-
-   if(tyreProduct){
-
-const requiredQty =
-Number(
- req.body.tyreQuantity || 1
-)
+// STOCK VALIDATION
+// =====================
 
 if(
- tyreProduct.quantity <
- requiredQty
+ req.body.tyreBrand &&
+ Number(req.body.tyreQuantity) > 0
 ){
 
- return res.status(400).json({
+ const tyreProduct =
+ await Inventory.findOne({
 
-  success:false,
-
-  message:
-  `${req.body.tyreBrand} stock not available`
+  brand:req.body.tyreBrand
 
  })
 
+ if(!tyreProduct){
+
+  return res.status(400).json({
+
+   success:false,
+
+   message:
+   "Selected tyre brand not found in inventory"
+
+  })
+
+ }
+
+ if(
+  tyreProduct.quantity <
+  Number(req.body.tyreQuantity)
+ ){
+
+  return res.status(400).json({
+
+   success:false,
+
+   message:
+   `Only ${tyreProduct.quantity} tyre(s) available in stock`
+
+  })
+
+ }
+
 }
-
-tyreProduct.quantity -=
-requiredQty
-
-await tyreProduct.save()
-
-   }
-
-  }
 
   // =====================
   // CUSTOM SERVICES TOTAL
@@ -132,6 +131,33 @@ await Invoice.create({
  nextNumber
 
 })
+
+// =====================
+// STOCK DEDUCTION
+// =====================
+
+if(
+ req.body.tyreBrand &&
+ Number(req.body.tyreQuantity) > 0
+){
+
+ const tyreProduct =
+ await Inventory.findOne({
+
+  brand:req.body.tyreBrand
+
+ })
+
+ if(tyreProduct){
+
+  tyreProduct.quantity -=
+  Number(req.body.tyreQuantity)
+
+  await tyreProduct.save()
+
+ }
+
+}
 
   // =====================
   // BOOKING COMPLETE

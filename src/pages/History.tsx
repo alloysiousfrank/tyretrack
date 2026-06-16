@@ -108,63 +108,75 @@ setInvoices(
     <div className="history-page">
 
       <div className="history-container">
-        <h1
+       <h1
  style={{
   marginBottom:"30px"
  }}
 >
-Invoice History
+ Invoice History
 </h1>
 
 {
- bookings
- .filter(
-  booking =>
-   booking.invoiceGenerated
- )
- .length > 0
- &&
- invoices.map(invoice=>(
+ bookings.filter(
+  booking => booking.invoiceGenerated
+ ).length > 0 &&
 
-<div
- key={invoice._id}
- className="history-card"
->
+ invoices.map(invoice => (
 
-<h2>
-{invoice.invoiceId}
-</h2>
+  <div
+   key={invoice._id}
+   className="history-card"
+  >
 
-<p>
-Vehicle :
-{invoice.vehicleNumber}
-</p>
+   <h2>
+    {invoice.invoiceId}
+   </h2>
 
-<p>
-Amount :
-₹{invoice.totalAmount}
-</p>
+   <p>
+    Vehicle :
+    {invoice.vehicleNumber}
+   </p>
 
-<button
+   <p>
+    Amount :
+    ₹{invoice.totalAmount}
+   </p>
 
- className="track-booking-btn"
+   {
+    invoice.status === "Completed"
+    ? (
 
- onClick={()=>
- generateInvoicePdf(
-  invoice
- )
- }
+      <button
+       className="track-booking-btn"
+       onClick={() =>
+        generateInvoicePdf(invoice)
+       }
+      >
 
->
+       Download Invoice
 
-Download Invoice
+      </button>
 
-</button>
+     )
+    : (
 
-</div>
+      <button
+       className="cancel-booking-btn"
+       disabled
+      >
 
-))
+       Invoice Pending
+
+      </button>
+
+     )
+   }
+
+  </div>
+
+ ))
 }
+
         <h1>
           Service History
         </h1>

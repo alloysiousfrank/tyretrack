@@ -278,17 +278,19 @@ Inventory Management
   e.target.value
  )}
 />
-<select
- value={category}
+
+<input
+ placeholder="Brand"
+ value={brand}
  onChange={(e)=>
- setCategory(
+ setBrand(
   e.target.value
  )
 }
->
+/>
 
 <option value="">
-Select Category
+Category
 </option>
 
 <option value="Tyres">
@@ -305,12 +307,6 @@ Accessories
 
 <option value="Cleaning">
 Cleaning
-</option>
-
-</select>
-
-<option value="">
-Category
 </option>
 
 <input
@@ -432,9 +428,23 @@ Add Product
 <hr/>
 
 {
- products.filter(product =>
-  product.productName.toLowerCase().includes(search.toLowerCase())
- ).map(product=>(
+products.filter(product =>
+
+ product.productName
+ .toLowerCase()
+ .includes(
+  search.toLowerCase()
+ )
+
+ ||
+
+ product.brand
+ ?.toLowerCase()
+ .includes(
+  search.toLowerCase()
+ )
+
+).map(product=>(
 
 <div
  key={product._id}
@@ -457,7 +467,30 @@ Add Product
 Category :
 {product.category}
 </p>
+<p>
+Brand :
+{product.brand}
+</p>
 
+<p>
+Tyre Size :
+{product.tyreSize}
+</p>
+
+<p>
+Supplier :
+{product.supplier}
+</p>
+
+<p>
+Min Stock :
+{product.minStock}
+</p>
+
+<p>
+Description :
+{product.description}
+</p>
 <p>
 
 Stock :

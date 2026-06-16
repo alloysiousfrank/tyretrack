@@ -23,10 +23,17 @@ new mongoose.Schema({
  },
 
 
- category:{
-  type:String,
-  default:"Tyre",
- },
+category:{
+ type:String,
+ enum:[
+  "Tyres",
+  "Oil",
+  "Accessories",
+  "Cleaning",
+  "Service"
+ ],
+ default:"Tyres"
+},
 
 
  quantity:{

@@ -54,7 +54,7 @@ export const generateInvoicePdf = (
   doc.setFontSize(10)
 
   doc.text(
-    "👥 Owner : Rtn Charles A",
+    "Owner : Rtn Charles A",
     14,
     48
   )

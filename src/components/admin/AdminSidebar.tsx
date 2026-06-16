@@ -12,14 +12,26 @@ useState(false)
   return (
 
 <>
-  <button
-    className="menu-btn"
-    onClick={() =>
-      setOpen(!open)
-    }
-  >
-    ☰
-  </button>
+return (
+
+<>
+
+<button
+ className="menu-btn"
+ onClick={()=>
+ setOpen(!open)
+}
+>
+☰
+</button>
+
+<aside
+ className={
+  open
+  ? "admin-sidebar open"
+  : "admin-sidebar"
+ }
+>
 
   <aside
     className={
@@ -103,7 +115,9 @@ useState(false)
 
     <button
       className="logout-btn"
-      onClick={() => {
+      onClick={()=>{
+
+ setOpen(false)
 
         localStorage.removeItem(
           "adminToken"
@@ -122,6 +136,10 @@ useState(false)
     </button>
 
   </aside>
+  </aside>
+
+</>
+)
 </>
 
 )

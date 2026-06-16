@@ -218,17 +218,17 @@ Invoice
             >
               Open Live Tracking
             </button>
-            {
- booking.invoiceGenerated && (
+            
+{
+ booking.invoiceGenerated &&
+ booking.status === "Completed" && (
 
 <button
  className="track-booking-btn"
-
  onClick={()=>{
   window.location.href =
   "/history"
  }}
-
 >
 
 View Invoice

@@ -16,7 +16,7 @@ const [tyreQuantity,setTyreQuantity] =
 useState(1)
 
 const [customServices,setCustomServices] =
-useState([
+useState<any[]>([
 
  {
   serviceName:"",
@@ -51,6 +51,9 @@ useState("")
 const [invoices,
  setInvoices] =
  useState<any[]>([])
+
+ const [tyreBrands,setTyreBrands] =
+useState<any[]>([])
 
   const [
  vehicleHistory,
@@ -89,33 +92,61 @@ useEffect(()=>{
 
 },[])
 
+const fetchBookingByEmail =
+async()=>{
+
+ if(!email) return
+
+ try{
+
+  const response =
+  await fetch(
+
+`https://tyretrack-server.onrender.com/api/bookings/user/${email}`
+
+  )
+
+  const data =
+  await response.json()
+
+  if(
+   data.success &&
+   data.bookings.length > 0
+  ){
+
+const latestBooking =
+data.bookings.find(
+ (booking:any)=>
+ !booking.invoiceGenerated
+)
+
+if(latestBooking){
+
+ setBookingId(
+  latestBooking.bookingId
+ )
+
+}
+
+  }
+
+ }catch(error){
+
+  console.log(error)
+
+ }
+
+}
+
+useEffect(()=>{
+
+ fetchBookingByEmail()
+
+},[email])
+
 const fetchInvoices = async () => {
 
  try {
-
-  if(email){
-
-   const bookingResponse =
-   await fetch(
-    `https://tyretrack-server.onrender.com/api/bookings/user/${email}`
-   )
-
-   const bookingData =
-   await bookingResponse.json()
-
-   if(
-    bookingData.success &&
-    bookingData.bookings.length > 0
-   ){
-
-    setBookingId(
-     bookingData.bookings[0]
-     .bookingId
-    )
-
-   }
-
-  }
   const response =
    await fetch(
     "https://tyretrack-server.onrender.com/api/invoices"
@@ -127,6 +158,23 @@ const fetchInvoices = async () => {
   setInvoices(
    data.invoices
   )
+
+  const inventoryResponse =
+await fetch(
+ "https://tyretrack-server.onrender.com/api/inventory"
+)
+
+const inventoryData =
+await inventoryResponse.json()
+
+setTyreBrands(
+
+ inventoryData.products.filter(
+  (product:any)=>
+   product.category === "Tyres"
+ )
+
+)
 
  } catch(error){
 
@@ -338,9 +386,63 @@ const updateCustomService = (
 
 const saveInvoice =
 async()=>{
+if(!customerName){
+ alert("Enter Customer Name")
+ return
+}
 
+if(!email){
+ alert("Enter Email")
+ return
+}
+
+if(!phone){
+ alert("Enter Phone")
+ return
+}
+
+if(!vehicleNumber){
+ alert("Enter Vehicle Number")
+ return
+}
  try{
+  if(
+ selectedServices.includes(
+  "Multi Branded Tyres"
+ )
+){
 
+ const selectedTyre =
+ tyreBrands.find(
+  tyre =>
+   tyre.brand ===
+   selectedTyreBrand
+ )
+
+ if(!selectedTyre){
+
+  alert(
+   "Select Tyre Brand"
+  )
+
+  return
+
+ }
+
+ if(
+  tyreQuantity >
+  selectedTyre.quantity
+ ){
+
+  alert(
+   `Only ${selectedTyre.quantity} tyres available`
+  )
+
+  return
+
+ }
+
+}
   const response =
   await fetch(
 
@@ -395,7 +497,18 @@ tyreQuantity,
   const data =
   await response.json()
 
- if(data.success){
+  if(!data.success){
+
+ alert(
+  data.message ||
+  "Invoice Generation Failed"
+ )
+
+ return
+
+}
+
+
 
  alert(
   "Invoice Created ✅"
@@ -407,7 +520,7 @@ tyreQuantity,
   data.invoice
 )
 
-}
+
 
  }catch(error){
 
@@ -458,25 +571,8 @@ tyreQuantity,
 
   }}
 />
-        {
- vehicleHistory.length > 0 && (
 
-<div
- className="admin-card"
->
-<input
- type="number"
- placeholder="Vehicle KM"
- value={vehicleKm}
- onChange={(e)=>
-  setVehicleKm(
-   e.target.value
-  )
- }
-/>
-
-
-        <input
+ <input
  type="email"
  placeholder="Customer Email"
  value={email}
@@ -516,9 +612,28 @@ tyreQuantity,
 
         </select>
 
+ <input
+ type="number"
+ placeholder="Vehicle KM"
+ value={vehicleKm}
+ onChange={(e)=>
+  setVehicleKm(
+   e.target.value
+  )
+ }
+/>       
+
+
+       
         <h3>
 Previous Vehicle History
 </h3>
+{
+ vehicleHistory.length > 0 && (
+
+<div
+ className="admin-card"
+>
 
 <p>
 Total Visits :
@@ -608,6 +723,14 @@ Object.keys(
 
 
 
+
+</div>
+
+))
+
+}
+
+</div>
 {
 selectedServices.includes(
  "Multi Branded Tyres"
@@ -629,40 +752,29 @@ Select Tyre Brand
 >
 
 <option value="">
-Select Brand
+ Select Brand
 </option>
 
-<option value="Continental">
-Continental
-</option>
+{
+ tyreBrands.map(
+  (brand:any)=>(
 
-<option value="Bridgestone">
-Bridgestone
-</option>
+   <option
+    key={brand._id}
+    value={brand.brand}
+   >
 
-<option value="Michelin">
-Michelin
-</option>
+    {brand.brand}
+    (
+    {brand.quantity}
+    in stock
+    )
 
-<option value="MRF">
-MRF
-</option>
+   </option>
 
-<option value="Firelli">
-Firelli
-</option>
-
-<option value="Apollo">
-Apollo
-</option>
-
-<option value="Yokohama">
-Yokohama
-</option>
-
-<option value="Other">
-Other
-</option>
+  )
+ )
+}
 
 </select>
 
@@ -671,97 +783,89 @@ Other
  min="1"
  value={tyreQuantity}
  onChange={(e)=>
- setTyreQuantity(
-  Number(
-   e.target.value
+  setTyreQuantity(
+   Number(e.target.value)
   )
- )
  }
 />
 
-</div>
+<p>
 
+Available Stock :
+
+{
+
+ tyreBrands.find(
+  tyre =>
+  tyre.brand ===
+  selectedTyreBrand
+ )?.quantity || 0
+
+}
+
+</p>
+</div>
 )
 }
-</div>
-
-))
-
-}
-
-</div>
-
 <h3>
 Custom Services
 </h3>
 
 {
 customServices.map(
-(service,index)=>(
+ (service,index)=>(
 
-<div
- key={index}
- className="admin-card"
->
+  <div
+   key={index}
+   className="admin-card"
+  >
 
-<input
- placeholder="Service Name"
- value={service.serviceName}
- onChange={(e)=>
- updateCustomService(
+   <input
+    placeholder="Service Name"
+    value={service.serviceName}
+    onChange={(e)=>
+     updateCustomService(
+      index,
+      "serviceName",
+      e.target.value
+     )
+    }
+   />
 
-  index,
+   <input
+    type="number"
+    placeholder="Qty"
+    value={service.quantity}
+    onChange={(e)=>
+     updateCustomService(
+      index,
+      "quantity",
+      Number(e.target.value)
+     )
+    }
+   />
 
-  "serviceName",
+   <input
+    type="number"
+    placeholder="Amount"
+    value={service.amount}
+    onChange={(e)=>
+     updateCustomService(
+      index,
+      "amount",
+      Number(e.target.value)
+     )
+    }
+   />
 
-  e.target.value
+  </div>
 
- )
+ ))
 }
-/>
 
-<input
- type="number"
- placeholder="Qty"
- value={service.quantity}
- onChange={(e)=>
- updateCustomService(
 
-  index,
 
-  "quantity",
 
-  Number(
-   e.target.value
-  )
-
- )
-}
-/>
-
-<input
- type="number"
- placeholder="Amount"
- value={service.amount}
- onChange={(e)=>
- updateCustomService(
-
-  index,
-
-  "amount",
-
-  Number(
-   e.target.value
-  )
-
- )
-}
-/>
-
-</div>
-
-))
-}
 
 <button
  className="update-btn"
@@ -925,105 +1029,92 @@ Tyre Qty :
 
   <table className="invoice-table">
 
-    <thead>
+ <thead>
 
-      <tr>
+  <tr>
 
-        <th>Service</th>
+   <th>Service</th>
 
-        <th>Price</th>
+   <th>Price</th>
 
-      </tr>
+  </tr>
 
-    </thead>
+ </thead>
 
-    <tbody>
+ <tbody>
 
-      {
-        selectedServices.map(
-          service => (
+  {
+   selectedServices.map(
+    service => (
 
-          <tr
-            key={service}
-          >
+     <tr key={service}>
 
-            <td>
-              {service}
-            </td>
+      <td>{service}</td>
 
-            <td>
-              ₹
-              {
-                servicePrices[
-                  service
-                ]
-              }
-            </td>
+      <td>
+       ₹{
+        servicePrices[service]
+       }
+      </td>
 
-          </tr>
+     </tr>
 
-        ))
-      }
-
-        {
-customServices.map(
-(service,index)=>(
-
-<tr key={index}>
-
-<td>
-
-{service.serviceName}
-
-x
-
-{service.quantity}
-
-</td>
-
-<td>
-
-₹
+    )
+   )
+  }
 
 {
- service.amount *
- service.quantity
+customServices
+ .filter(
+  service =>
+   service.serviceName.trim() !== ""
+ )
+ .map(
+  (service,index)=>(
+
+   <tr key={index}>
+
+    <td>
+     {service.serviceName}
+     ×
+     {service.quantity}
+    </td>
+
+    <td>
+     ₹{
+      Number(service.amount) *
+      Number(service.quantity)
+     }
+    </td>
+
+   </tr>
+
+  ))
 }
 
-</td>
+ </tbody>
 
-</tr>
+</table>
 
-))
-}
+<div className="invoice-total">
 
-  <div className="invoice-total">
+ <p>
+  Subtotal :
+  ₹ {subtotal}
+ </p>
 
-    <p>
-      Subtotal :
-      ₹ {subtotal}
-    </p>
+ <p>
+  GST :
+  ₹ {gst}
+ </p>
 
-    <p>
-      GST :
-      ₹ {gst}
-    </p>
-
-    <h2>
-      Total :
-      ₹ {total}
-    </h2>
-
-  </div>
-
-    </tbody>
-
-  </table>
-
-
+ <h2>
+  Total :
+  ₹ {total}
+ </h2>
 
 </div>
-
+</div>
 <div className="admin-bookings">
 
 {
@@ -1069,12 +1160,12 @@ x
   ))
 }
 
-</div>
+</div> {/* admin-bookings */}
 
-      </div>
+</div> {/* admin-container */}
 
-    </div>
+</div> 
 
-  )
+)
 
 }
