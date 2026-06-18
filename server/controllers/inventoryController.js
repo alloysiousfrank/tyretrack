@@ -25,13 +25,17 @@ async(req,res)=>{
 
  }catch(error){
 
-  console.log(error)
+ console.log(
+  "CREATE PRODUCT ERROR:",
+  error
+ )
 
-  res.status(500).json({
-   success:false
-  })
+ res.status(500).json({
+  success:false,
+  error:error.message
+ })
 
- }
+}
 
 }
 

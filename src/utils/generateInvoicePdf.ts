@@ -1,6 +1,6 @@
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
-
+import watermark from "../assets/watermark.png"
 const servicePrices:any = {
 
   "Wheel Alignment":800,
@@ -21,6 +21,50 @@ export const generateInvoicePdf = (
 ) => {
 
   const doc = new jsPDF()
+  try{
+
+ doc.saveGraphicsState()
+
+ doc.setGState(
+  new (doc as any).GState({
+   opacity:0.05
+  })
+ )
+
+ doc.addImage(
+  watermark,
+  "PNG",
+  20,
+  110,
+  170,
+  40
+ )
+
+ doc.restoreGraphicsState()
+
+}catch(error){}
+  try {
+
+  doc.saveGraphicsState()
+
+  doc.setGState(
+    new (doc as any).GState({
+      opacity: 0.08
+    })
+  )
+
+  doc.addImage(
+    "/logo5.png",
+    "PNG",
+    20,
+    90,
+    170,
+    40
+  )
+
+  doc.restoreGraphicsState()
+
+} catch {}
 
   // =====================
   // LOGO
@@ -103,33 +147,35 @@ export const generateInvoicePdf = (
 
   doc.text(
     "TAX INVOICE",
-    140,
-    25
+    145,
+    30
   )
 
   doc.setFontSize(10)
 
-  doc.text(
-    `Invoice No : ${invoice.invoiceId}`,
-    130,
-    35
-  )
-
-  doc.text(
-  `Booking ID : ${invoice.bookingId}`,
-  130,
-  49
+doc.text(
+ `Invoice No : ${invoice.invoiceId}`,
+ 140,
+ 42
 )
 
-  doc.text(
+doc.text(
     `Date : ${
       new Date(
         invoice.createdAt || Date.now()
       ).toLocaleDateString()
     }`,
-    130,
-    42
+    140,
+    50
   )
+
+doc.text(
+ `Booking ID : ${invoice.bookingId || "-"}`,
+ 140,
+ 58
+)
+
+  
 
   // =====================
   // CUSTOMER BOX
@@ -141,15 +187,15 @@ export const generateInvoicePdf = (
     245
   )
 
-  doc.roundedRect(
-    10,
-    88,
-    190,
-    35,
-    3,
-    3,
-    "F"
-  )
+doc.roundedRect(
+ 10,
+ 95,
+ 190,
+ 40,
+ 3,
+ 3,
+ "F"
+)
 
   doc.setFontSize(12)
 
@@ -188,7 +234,7 @@ export const generateInvoicePdf = (
   doc.text(
     `Vehicle Type : ${invoice.vehicleType}`,
     110,
-    112
+    111.5
   )
 
   doc.text(
@@ -208,12 +254,17 @@ const rows:any[] = []
 invoice.services?.forEach(
 (service:string)=>{
 
+ if(
+  service ===
+  "Multi Branded Tyres"
+ ){
+
+  return
+ }
+
  rows.push([
-
   service,
-
   `Rs ${servicePrices[service] || 0}`
-
  ])
 
 }
@@ -228,12 +279,8 @@ if(invoice.tyreBrand){
   `${invoice.tyreBrand} Tyres x ${invoice.tyreQuantity}`,
 
   `Rs ${
-   (
-    servicePrices[
-     "Multi Branded Tyres"
-    ] *
-    Number(invoice.tyreQuantity || 1)
-   )
+   Number(invoice.tyrePrice || 0) *
+   Number(invoice.tyreQuantity || 1)
   }`
 
  ])
@@ -267,7 +314,7 @@ if(invoice.customServices){
 
   autoTable(doc,{
 
-    startY:130,
+    startY:145,
 
     head:[[
       "Service",
@@ -293,12 +340,14 @@ if(invoice.customServices){
   // TOTAL BOX
   // =====================
 
-  doc.rect(
-    125,
-    finalY + 8,
-    70,
-    40
-  )
+doc.roundedRect(
+ 120,
+ finalY + 10,
+ 75,
+ 45,
+ 3,
+ 3
+)
 
   doc.setFontSize(10)
 
@@ -346,7 +395,7 @@ if(invoice.customServices){
       "/qr.png",
       "PNG",
       15,
-      220,
+      finalY + 70,
       40,
       40
     )
@@ -371,24 +420,24 @@ if(invoice.customServices){
       "/signature.png",
       "PNG",
       145,
-      225,
+finalY + 65,
       40,
       18
     )
 
   } catch {}
 
-  doc.text(
-    "For TYRETRACK",
-    145,
-    250
-  )
+doc.text(
+ "For TYRETRACK",
+ 145,
+ 265
+)
 
-  doc.text(
-    "Authorized Signatory",
-    135,
-    258
-  )
+doc.text(
+ "Authorized Signatory",
+ 138,
+ 272
+)
 
   // =====================
   // FOOTER

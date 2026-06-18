@@ -257,14 +257,36 @@ const [total,
 
  let amount = 0
 
- selectedServices.forEach(
- service=>{
+selectedServices.forEach(
+ service => {
 
-  amount +=
-  servicePrices[service]
+  if(
+   service ===
+   "Multi Branded Tyres"
+  ){
+
+   const tyrePrice =
+tyreBrands.find(
+ tyre =>
+ tyre.brand ===
+ selectedTyreBrand
+)?.sellingPrice || 5000
+
+amount +=
+tyrePrice *
+tyreQuantity
+
+  }
+
+  else{
+
+   amount +=
+   servicePrices[service]
+
+  }
 
  }
- )
+)
 
  customServices.forEach(
  service=>{
@@ -290,7 +312,9 @@ const [total,
 },
 [
  selectedServices,
- customServices
+ customServices,
+  tyreQuantity,
+  selectedTyreBrand
 ])
 
 
@@ -443,6 +467,12 @@ if(!vehicleNumber){
  }
 
 }
+
+const selectedTyrePrice =
+tyreBrands.find(
+ tyre =>
+ tyre.brand === selectedTyreBrand
+)?.sellingPrice || 0
   const response =
   await fetch(
 
@@ -457,35 +487,32 @@ if(!vehicleNumber){
      "application/json"
     },
 
-    body:JSON.stringify({
+body:JSON.stringify({
 
  bookingId,
-
  customerName,
-
  email,
-
  phone,
-
  vehicleNumber,
-
  vehicleType,
-
  vehicleKm,
 
  services:selectedServices,
 
- customServices,
+ customServices:
+ customServices.filter(
+  service =>
+  service.serviceName.trim() !== ""
+ ),
 
- tyreBrand:
-selectedTyreBrand,
+ tyreBrand:selectedTyreBrand,
 
-tyreQuantity,
+ tyreQuantity,
+
+ tyrePrice:selectedTyrePrice,
 
  subtotal,
-
  gst,
-
  totalAmount:total
 
 })
@@ -537,8 +564,14 @@ tyreQuantity,
 
       <div className="admin-container">
 
-        <h1>Invoice Generator</h1>
+        <div className="invoice-form-grid">
 
+        <h1>Invoice Generator</h1>
+        <div className="form-group">
+
+<label>
+Customer Name
+</label>
         <input
           type="text"
           placeholder="Customer Name"
@@ -549,7 +582,12 @@ tyreQuantity,
             )
           }
         />
+</div>
+<div className="form-group">
 
+<label>
+Vehicle Number
+</label>
         <input
   type="text"
   placeholder="Vehicle Number"
@@ -571,7 +609,13 @@ tyreQuantity,
 
   }}
 />
+</div>
 
+<div className="form-group">
+
+<label>
+Customer Mail ID
+</label>
  <input
  type="email"
  placeholder="Customer Email"
@@ -580,7 +624,13 @@ tyreQuantity,
   setEmail(e.target.value)
  }
 />
+</div>
 
+<div className="form-group">
+
+<label>
+Customer Phone Number
+</label>
 <input
  type="text"
  placeholder="Customer Phone"
@@ -589,6 +639,13 @@ tyreQuantity,
   setPhone(e.target.value)
  }
 />
+</div>
+
+<div className="form-group">
+
+<label>
+Vehicle KM
+</label>
    <input
  type="number"
  placeholder="Vehicle KM"
@@ -599,7 +656,12 @@ tyreQuantity,
   )
  }
 />
+</div>
+<div className="form-group">
 
+<label>
+Vehicle Type
+</label>
         <select
   value={vehicleType}
   onChange={(e)=>
@@ -623,9 +685,9 @@ tyreQuantity,
 
         </select>
 
-      
+    </div>  
 
-
+</div>
        
         <h3>
 Previous Vehicle History
@@ -1053,11 +1115,23 @@ Tyre Qty :
 
       <td>{service}</td>
 
-      <td>
-       ₹{
-        servicePrices[service]
-       }
-      </td>
+     <td>
+ ₹{
+ service === "Multi Branded Tyres"
+ ?
+ (
+  Number(
+   tyreBrands.find(
+    tyre =>
+    tyre.brand === selectedTyreBrand
+   )?.sellingPrice || 5000
+  ) *
+  Number(tyreQuantity)
+ )
+ :
+ servicePrices[service]
+ }
+</td>
 
      </tr>
 

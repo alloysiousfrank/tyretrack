@@ -90,7 +90,90 @@ const customServices =
  Number(service.amount || 0)
 
 }))
+// =====================
+// CALCULATE TOTALS
+// =====================
 
+let subtotal = 0
+
+const servicePrices = {
+
+ "Wheel Alignment":800,
+ "Wheel Balancing":400,
+ "Foam Wash":500,
+ "Automatic Car Spa":1500,
+ "Interior Cleaning":1000,
+ "Teflon Coating":3000,
+ "Ceramic Coating":8000,
+ "General Service":2500,
+ "Accessories":1000
+
+}
+
+// Normal Services
+
+(req.body.services || []).forEach(service=>{
+
+ if(service !== "Multi Branded Tyres"){
+
+  subtotal +=
+  servicePrices[service] || 0
+
+ }
+
+})
+
+// Tyres
+
+let tyrePrice = 0
+
+if(
+ req.body.tyreBrand &&
+ Number(req.body.tyreQuantity) > 0
+){
+
+ const tyreProduct =
+ await Inventory.findOne({
+
+  brand:req.body.tyreBrand
+
+ })
+
+ if(tyreProduct){
+
+  tyrePrice =
+  Number(
+   tyreProduct.sellingPrice
+  )
+
+  subtotal +=
+  tyrePrice *
+  Number(req.body.tyreQuantity)
+
+ }
+
+}
+
+// Custom Services
+
+customServices.forEach(service=>{
+
+ subtotal +=
+ Number(service.total || 0)
+
+})
+
+const gst =
+ Number(
+  (subtotal * 0.18)
+  .toFixed(2)
+ )
+
+const totalAmount =
+ Number(
+  (subtotal + gst)
+  .toFixed(2)
+ )
   if(
  req.body.vehicleNumber
 ){
@@ -105,6 +188,15 @@ const invoice =
 await Invoice.create({
 
  ...req.body,
+
+ subtotal,
+
+ gst,
+
+ totalAmount,
+
+ tyrePrice:
+Number(req.body.tyrePrice || 0),
 
  email:
  req.body.email
@@ -125,7 +217,6 @@ await Invoice.create({
  invoiceNumber:nextNumber
 
 })
-
 // =====================
 // STOCK DEDUCTION
 // =====================

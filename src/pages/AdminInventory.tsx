@@ -99,9 +99,24 @@ async()=>{
 
  },[])
 
+
+
  const addProduct =
  async()=>{
+ if(!productName.trim()){
+  alert("Enter Product Name")
+  return
+ }
 
+ if(!category){
+  alert("Select Category")
+  return
+ }
+
+ if(quantity <= 0){
+  alert("Enter Quantity")
+  return
+ }
   await fetch(
 
 "https://tyretrack-server.onrender.com/api/inventory",
@@ -222,7 +237,9 @@ Inventory Management
 </h1>
 <div className="dashboard-grid">
 
- <div className="admin-card">
+<div
+ className="admin-card inventory-form"
+>
 
   <h3>
    Total Products
@@ -260,37 +277,46 @@ Inventory Management
 
 </div>
 
+<div className="admin-card">
+
+<h2>Add Inventory Item</h2>
 <input
- placeholder="Search Product"
- value={search}
- onChange={(e)=>
- setSearch(
-  e.target.value
- )
-}
+ className="inventory-search"
+ placeholder=" Search Product"
 />
+<div className="field-group">
+
+<label>
+Product Name
+</label>
 
 <input
- placeholder="Product Name"
+ className="inventory-input"
+ placeholder="Michelin Tyre"
  value={productName}
  onChange={(e)=>
- setProductName(
-  e.target.value
- )}
-/>
-
-<input
- placeholder="Brand"
- value={brand}
- onChange={(e)=>
- setBrand(
-  e.target.value
- )
+ setProductName(e.target.value)
 }
 />
+
+</div>
+
+<div className="field-group">
+
+<label>
+Category
+</label>
+
+<select
+ className="inventory-input"
+ value={category}
+ onChange={(e)=>
+ setCategory(e.target.value)
+}
+>
 
 <option value="">
-Category
+Select Category
 </option>
 
 <option value="Tyres">
@@ -309,124 +335,167 @@ Accessories
 Cleaning
 </option>
 
+</select>
+
+</div>
+
+<div className="field-group">
+
+<label>
+Brand
+</label>
+
 <input
- placeholder="Brand"
+ className="inventory-input"
+ placeholder="Michelin / MRF"
  value={brand}
  onChange={(e)=>
- setBrand(
-  e.target.value
- )
+ setBrand(e.target.value)
 }
 />
 
+</div>
+
+<div className="field-group">
+
+<label>
+Tyre Size
+</label>
+
 <input
- placeholder="Tyre Size"
+ className="inventory-input"
+ placeholder="90/90 R17"
  value={tyreSize}
  onChange={(e)=>
- setTyreSize(
-  e.target.value
- )
+ setTyreSize(e.target.value)
 }
 />
 
+</div>
+
+<div className="field-group">
+
+<label>
+Supplier Name
+</label>
+
 <input
- placeholder="Supplier"
+ className="inventory-input"
+ placeholder="Supplier Name"
  value={supplier}
  onChange={(e)=>
- setSupplier(
-  e.target.value
- )
+ setSupplier(e.target.value)
 }
 />
 
-<input
- type="number"
- placeholder="Min Stock"
- value={minStock}
- onChange={(e)=>
- setMinStock(
-  Number(
-   e.target.value
-  )
- )
-}
-/>
+</div>
 
-<input
- placeholder="Description"
+<div className="field-group">
+
+<label>
+Description
+</label>
+
+<textarea
+ className="inventory-input"
+ placeholder="Product Description"
  value={description}
  onChange={(e)=>
- setDescription(
-  e.target.value
- )
+ setDescription(e.target.value)
 }
 />
 
-<option value="Tyres">
-Tyres
-</option>
+</div>
 
-<option value="Oil">
-Oil
-</option>
+<div className="field-group">
 
-<option value="Accessories">
-Accessories
-</option>
-
-<option value="Cleaning">
-Cleaning
-</option>
-
-
+<label>
+Available Stock
+</label>
 
 <input
+ className="inventory-input"
+placeholder="Available Stock"
  type="number"
- placeholder="Quantity"
  value={quantity}
  onChange={(e)=>
  setQuantity(
- Number(
-  e.target.value
+  Number(e.target.value)
  )
- )}
+}
 />
 
+</div>
+
+<div className="field-group">
+
+<label>
+Minimum Stock Alert
+</label>
+
 <input
+ className="inventory-input"
+placeholder="Minimum Stock"
  type="number"
- placeholder="Purchase Price"
+ value={minStock}
+ onChange={(e)=>
+ setMinStock(
+  Number(e.target.value)
+ )
+}
+/>
+
+</div>
+
+<div className="field-group">
+
+<label>
+Purchase Price (₹)
+</label>
+
+<input
+ className="inventory-input"
+ type="number"
  value={purchasePrice}
  onChange={(e)=>
  setPurchasePrice(
- Number(
-  e.target.value
+  Number(e.target.value)
  )
- )}
+}
 />
 
+</div>
+
+<div className="field-group">
+
+<label>
+Selling Price (₹)
+</label>
+
 <input
+ className="inventory-input"
  type="number"
- placeholder="Selling Price"
  value={sellingPrice}
  onChange={(e)=>
  setSellingPrice(
- Number(
-  e.target.value
+  Number(e.target.value)
  )
- )}
+}
 />
+
+</div>
 
 <button
  className="update-btn"
  onClick={addProduct}
 >
-
-Add Product
-
+ Add Product
 </button>
 
-<hr/>
+</div>
 
+<hr/>
+<div className="inventory-grid"> 
 {
 products.filter(product =>
 
@@ -464,52 +533,33 @@ products.filter(product =>
 </h3>
 
 <p>
-Category :
-{product.category}
-</p>
-<p>
-Brand :
-{product.brand}
+ Category :
+ <strong>
+  {product.category}
+ </strong>
 </p>
 
 <p>
-Tyre Size :
-{product.tyreSize}
+ Brand :
+ <strong>
+  {product.brand}
+ </strong>
 </p>
 
 <p>
-Supplier :
-{product.supplier}
+ Stock :
+ <strong
+  style={{
+   color:
+    product.quantity <= product.minStock
+    ? "red"
+    : "#00ff88"
+  }}
+ >
+  {product.quantity}
+ </strong>
 </p>
 
-<p>
-Min Stock :
-{product.minStock}
-</p>
-
-<p>
-Description :
-{product.description}
-</p>
-<p>
-
-Stock :
-
-<span
- style={{
-  color:
-   product.quantity <= 5
-   ? "red"
-   : "lime",
-  fontWeight:"bold"
- }}
->
-
- {product.quantity}
-
-</span>
-
-</p>
 <input
  type="number"
  defaultValue={
@@ -530,14 +580,27 @@ Stock :
 {
  product.quantity <= 5 && (
 
-<p
+<div
  style={{
+  background:
+   "rgba(255,0,0,.15)",
+
+  border:
+   "1px solid red",
+
+  padding:"10px",
+
+  borderRadius:"10px",
+
   color:"red",
-  fontWeight:"bold"
+
+  marginTop:"10px"
  }}
 >
-⚠ Low Stock
-</p>
+
+⚠ Low Stock Alert
+
+</div>
 
 )
 }
@@ -551,16 +614,20 @@ Buy :
 Sell :
 ₹{product.sellingPrice}
 </p>
-<p>
 
+<p
+ style={{
+  color:"#00ff88",
+  fontWeight:"bold"
+ }}
+>
 Profit :
-
 ₹{
  product.sellingPrice -
  product.purchasePrice
 }
-
 </p>
+
 <button
  className="delete-booking-btn"
  onClick={()=>
@@ -576,7 +643,7 @@ Delete Product
 
 ))
 }
-
+</div>
 </div>
 
 </div>

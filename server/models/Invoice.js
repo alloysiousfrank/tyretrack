@@ -57,6 +57,11 @@ tyreQuantity:{
  default:0
 },
 
+tyrePrice:{
+ type:Number,
+ default:0
+},
+
  items:[
 
   {
