@@ -55,6 +55,14 @@ const [invoices,
  const [tyreBrands,setTyreBrands] =
 useState<any[]>([])
 
+const [applyGST,setApplyGST] =
+useState(true)
+
+const [expandedInvoice,
+setExpandedInvoice] =
+useState("")
+
+
   const [
  vehicleHistory,
  setVehicleHistory
@@ -308,7 +316,8 @@ useEffect(() => {
  customServices,
  tyreQuantity,
  selectedTyreBrand,
- tyreBrands
+ tyreBrands,
+  applyGST
 ])
 
 
@@ -409,10 +418,7 @@ if(!customerName){
  return
 }
 
-if(!email){
- alert("Enter Email")
- return
-}
+
 
 if(!phone){
  alert("Enter Phone")
@@ -424,7 +430,9 @@ if(!vehicleNumber){
  return
 }
  try{
-  if(
+ let selectedTyrePrice = 0
+
+if(
  selectedServices.includes(
   "Multi Branded Tyres"
  )
@@ -433,8 +441,8 @@ if(!vehicleNumber){
  const selectedTyre =
  tyreBrands.find(
   tyre =>
-   tyre.brand ===
-   selectedTyreBrand
+  tyre.brand ===
+  selectedTyreBrand
  )
 
  if(!selectedTyre){
@@ -460,58 +468,53 @@ if(!vehicleNumber){
 
  }
 
+ selectedTyrePrice =
+ selectedTyre.sellingPrice
+
 }
 
-const selectedTyrePrice =
-tyreBrands.find(
- tyre =>
- tyre.brand === selectedTyreBrand
-)?.sellingPrice || 0
-  const response =
-  await fetch(
 
-   "https://tyretrack-server.onrender.com/api/invoices",
+const response =
+await fetch(
+ "https://tyretrack-server.onrender.com/api/invoices",
+ {
+  method:"POST",
+  headers:{
+   "Content-Type":"application/json"
+  },
+  body:JSON.stringify({
+   bookingId,
+   customerName,
+email: email || "",
+   phone,
+   vehicleNumber,
+   vehicleType,
+   vehicleKm,
+   services:selectedServices,
+   customServices:
+   customServices.filter(
+    service =>
+    service.serviceName.trim() !== ""
+   ),
+   tyreBrand:selectedTyreBrand,
+   tyreQuantity,
+   tyrePrice:selectedTyrePrice,
+   subtotal,
+   gst,
+   totalAmount:total
+  })
+ }
+)
 
-   {
+if(!response.ok){
 
-    method:"POST",
+ const errorText =
+ await response.text()
 
-    headers:{
-     "Content-Type":
-     "application/json"
-    },
-
-body:JSON.stringify({
-
- bookingId,
- customerName,
- email,
- phone,
- vehicleNumber,
- vehicleType,
- vehicleKm,
-
- services:selectedServices,
-
- customServices:
- customServices.filter(
-  service =>
-  service.serviceName.trim() !== ""
- ),
-
- tyreBrand:selectedTyreBrand,
-
- tyreQuantity,
-
- tyrePrice:selectedTyrePrice,
-
- subtotal,
- gst,
- totalAmount:total
-
-})
-    }
-  )
+ console.error("Server Error Full:", errorText)
+alert(errorText)
+ return
+}
 
 
 
@@ -610,14 +613,15 @@ Vehicle Number
 <label>
 Customer Mail ID
 </label>
- <input
+<input
  type="email"
- placeholder="Customer Email"
+ placeholder="Customer Email (Optional)"
  value={email}
  onChange={(e)=>
   setEmail(e.target.value)
  }
 />
+
 </div>
 
 <div className="form-group">
@@ -701,35 +705,112 @@ Total Visits :
 </p>
 
 {
- vehicleHistory.map(
-  invoice => (
+vehicleHistory.map(invoice=>(
 
 <div
  key={invoice._id}
+ className="admin-card"
 >
 
-<p>
-Invoice :
+<button
+ className="update-btn"
+ onClick={()=>
+
+setExpandedInvoice(
+
+expandedInvoice ===
+invoice._id
+
+? ""
+
+: invoice._id
+
+)
+
+}
+>
+
 {
- invoice.invoiceId
+expandedInvoice ===
+invoice._id
+
+? "Hide"
+
+: "View Details"
+
+}
+
+</button>
+
+<p>
+
+Invoice :
+{invoice.invoiceId}
+
+</p>
+
+{
+expandedInvoice ===
+invoice._id && (
+
+<div>
+
+<p>
+Customer :
+{invoice.customerName}
+</p>
+
+<p>
+Vehicle :
+{invoice.vehicleNumber}
+</p>
+
+<p>
+Date :
+{
+new Date(
+ invoice.createdAt
+).toLocaleDateString()
 }
 </p>
 
 <p>
 Services :
 {
- invoice.services.join(
-  ", "
- )
+invoice.services.join(", ")
 }
 </p>
 
-<hr/>
+<p>
+Total :
+₹{invoice.totalAmount}
+</p>
+
+<button
+className="update-btn"
+onClick={()=>
+generateInvoicePdf(
+ invoice
+)
+}
+>
+
+Download PDF
+
+</button>
+
+</div>
+
+)
+
+}
 
 </div>
 
 ))
 }
+
+<hr/>
 
 </div>
 
@@ -935,6 +1016,26 @@ customServices.map(
 + Add Another Service
 
 </button>
+
+<div className="gst-toggle">
+
+<label>
+
+<input
+ type="checkbox"
+ checked={applyGST}
+ onChange={(e)=>
+  setApplyGST(
+   e.target.checked
+  )
+ }
+/>
+
+ Apply GST (18%)
+
+</label>
+
+</div>
 
 <div className="invoice-summary">
 

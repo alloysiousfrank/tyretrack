@@ -79,17 +79,17 @@ if(
   // =====================
 
 const customServices =
-(req.body.customServices || [])
-.map(service => ({
+Array.isArray(req.body.customServices)
+? req.body.customServices.map(service => ({
 
  ...service,
 
  total:
- Number(service.quantity || 0)
- *
+ Number(service.quantity || 0) *
  Number(service.amount || 0)
 
 }))
+: [];
 // =====================
 // CALCULATE TOTALS
 // =====================
@@ -97,7 +97,6 @@ const customServices =
 let subtotal = 0
 
 const servicePrices = {
-
  "Wheel Alignment":800,
  "Wheel Balancing":400,
  "Foam Wash":500,
@@ -107,21 +106,21 @@ const servicePrices = {
  "Ceramic Coating":8000,
  "General Service":2500,
  "Accessories":1000
+};
 
-}
+const services = Array.isArray(req.body.services)
+ ? req.body.services
+ : [];
 
-// Normal Services
-
-(req.body.services || []).forEach(service=>{
+services.forEach((service) => {
 
  if(service !== "Multi Branded Tyres"){
 
-  subtotal +=
-  servicePrices[service] || 0
+  subtotal += servicePrices[service] || 0;
 
  }
 
-})
+});
 
 // Tyres
 
@@ -195,8 +194,7 @@ await Invoice.create({
 
  totalAmount,
 
- tyrePrice:
-Number(req.body.tyrePrice || 0),
+ tyrePrice,
 
  email:
  req.body.email
@@ -248,51 +246,53 @@ if(
   // BOOKING COMPLETE
   // =====================
 
-  await Booking.findOneAndUpdate(
+if(req.body.bookingId){
 
-   {
-    bookingId:
-    req.body.bookingId
-   },
-
-   {
-
-    invoiceGenerated:true,
-
-    invoiceId,
-
-    status:"Completed",
-
-    currentStage:4,
-
-    completed:true
-
-   }
-
-  )
-
-  res.json({
-
-   success:true,
-
-   invoice
-
-  })
-
- }catch(error){
-
-  console.log(error)
-
-  res.status(500).json({
-
-   success:false
-
-  })
-
+ await Booking.findOneAndUpdate(
+ {
+  bookingId:req.body.bookingId
+ },
+ {
+  invoiceGenerated:true,
+  invoiceId,
+  status:"Completed",
+  currentStage:4,
+  completed:true
  }
+ )
+
+}
+res.json({
+
+ success:true,
+
+ invoice
+
+})
+
+}catch(error){
+
+ console.error(
+  "CREATE INVOICE ERROR:"
+ )
+
+ console.error(error)
+
+ console.error(error.stack)
+
+ return res.status(500).json({
+
+  success:false,
+
+  message:error.message,
+
+  stack:error.stack
+
+ })
 
 }
 
+}
 exports.getInvoices =
 async(req,res)=>{
 
@@ -369,15 +369,19 @@ async(req,res)=>{
    invoice
   })
 
- }catch(error){
+}catch(error){
 
-  console.log(error)
+ console.error("CREATE INVOICE ERROR");
+ console.error(error);
+ console.error(error.stack);
 
-  res.status(500).json({
-   success:false
-  })
+ return res.status(500).json({
+   success:false,
+   message:error.message,
+   stack:error.stack
+ });
 
- }
+}
 
   }
 
@@ -408,15 +412,22 @@ async (req,res)=>{
 
  }catch(error){
 
-  console.log(error)
+ console.error(
+  "CREATE INVOICE ERROR:"
+ )
 
-  res.status(500).json({
+ console.error(error)
 
-   success:false
+ console.error(error.stack)
 
-  })
+ res.status(500).json({
 
- }
+  success:false,
 
+  message:error.message,
+
+  stack:error.stack
+
+ })
 }
-
+}

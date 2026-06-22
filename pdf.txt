@@ -1,0 +1,546 @@
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import watermark from "../assets/watermark.png"
+import QRCode from "qrcode"
+const servicePrices:any = {
+
+  "Wheel Alignment":800,
+  "Wheel Balancing":400,
+  "Foam Wash":500,
+  "Automatic Car Spa":1500,
+  "Multi Branded Tyres":5000,
+  "Interior Cleaning":1000,
+  "Teflon Coating":3000,
+  "Ceramic Coating":8000,
+  "General Service":2500,
+  "Accessories":1000,
+
+}
+
+export const generateInvoicePdf =
+async(invoice:any)=>{
+
+  const doc = new jsPDF()
+  try{
+
+ doc.saveGraphicsState()
+
+ doc.setGState(
+  new (doc as any).GState({
+   opacity:0.12
+  })
+ )
+
+ doc.addImage(
+  watermark,
+  "PNG",
+  25,
+120,
+160,
+50  
+ )
+
+ doc.restoreGraphicsState()
+
+}catch(error){}
+  try {
+
+  doc.saveGraphicsState()
+
+  doc.setGState(
+    new (doc as any).GState({
+      opacity: 0.08
+    })
+  )
+
+  doc.addImage(
+    "/logo5.png",
+    "PNG",
+    20,
+    90,
+    170,
+    40
+  )
+
+  doc.restoreGraphicsState()
+
+} catch {}
+
+  // =====================
+  // LOGO
+  // =====================
+
+  try {
+
+    doc.addImage(
+      "/logo5.png",
+      "PNG",
+      10,
+      8,
+      75,
+      22
+    )
+
+  } catch {}
+
+  // =====================
+  // COMPANY
+  // =====================
+
+  doc.setFontSize(18)
+
+doc.setFont(
+ "helvetica",
+ "bold"
+)
+
+doc.setFontSize(19)
+
+doc.text(
+ "TYRETRACK PREMIUM AUTO CARE",
+ 14,
+ 38
+)
+
+  doc.setFontSize(10)
+
+  doc.text(
+    "Owner : Rtn Charles A",
+    14,
+    48
+  )
+
+  doc.text(
+    "107/2 Pasumai Nagar",
+    14,
+    54
+  )
+
+  doc.text(
+    "Mangalam Road, Tiruppur",
+    14,
+    60
+  )
+
+  doc.text(
+    "Phone : 9443738487",
+    14,
+    66
+  )
+
+  doc.text(
+    "GSTIN : 33AAWFT5612K1ZP",
+    14,
+    72
+  )
+
+  doc.text(
+    "PAN : AKDPP7420L",
+    14,
+    78
+  )
+
+  doc.text(
+    "HSN/SAC : 40111010",
+    14,
+    84
+  )
+
+  // =====================
+  // TAX INVOICE
+  // =====================
+
+  doc.setFontSize(18)
+
+  doc.text(
+    "TAX INVOICE",
+    145,
+    35
+  )
+
+  doc.setFontSize(10)
+
+doc.text(
+ `Invoice No : ${invoice.invoiceId}`,
+ 140,
+ 48
+)
+
+doc.text(
+    `Date : ${
+      new Date(
+        invoice.createdAt || Date.now()
+      ).toLocaleDateString()
+    }`,
+    140,
+    56
+  )
+
+doc.text(
+ `Booking ID : ${invoice.bookingId || "-"}`,
+ 140,
+ 64
+)
+
+  
+
+  // =====================
+  // CUSTOMER BOX
+  // =====================
+
+  doc.setFillColor(
+    245,
+    245,
+    245
+  )
+
+doc.roundedRect(
+ 10,
+ 95,
+ 190,
+ 40,
+ 3,
+ 3,
+ "F"
+)
+
+  doc.setFontSize(12)
+
+  doc.text(
+    "Customer Details",
+    14,
+    97
+  )
+
+  doc.setFontSize(10)
+
+  doc.text(
+    `Name : ${invoice.customerName}`,
+    14,
+    105
+  )
+
+  doc.text(
+    `Phone : ${invoice.phone}`,
+    14,
+    112
+  )
+
+  doc.text(
+    `Email : ${invoice.email}`,
+    14,
+    119
+  )
+
+  doc.text(
+    `Vehicle No : ${invoice.vehicleNumber}`,
+    110,
+    105
+  )
+
+  doc.text(
+    `Vehicle Type : ${invoice.vehicleType}`,
+    110,
+    111.5
+  )
+
+  doc.text(
+ `Vehicle KM : ${invoice.vehicleKm || "-"}`,
+ 110,
+ 118
+)
+
+  // =====================
+  // SERVICES TABLE
+  // =====================
+
+const rows:any[] = []
+
+// Normal Services
+
+invoice.services?.forEach(
+(service:string)=>{
+
+ if(
+  service ===
+  "Multi Branded Tyres"
+ ){
+
+  return
+ }
+
+ rows.push([
+  service,
+  `Rs ${servicePrices[service] || 0}`
+ ])
+
+}
+)
+
+// Tyre Brand
+
+if(invoice.tyreBrand){
+
+ rows.push([
+
+  `${invoice.tyreBrand} Tyres x ${invoice.tyreQuantity}`,
+
+  `Rs ${
+   Number(invoice.tyrePrice || 0) *
+   Number(invoice.tyreQuantity || 1)
+  }`
+
+ ])
+
+}
+
+// Custom Services
+
+if(invoice.customServices){
+
+ invoice.customServices.forEach(
+
+  (service:any)=>{
+
+   rows.push([
+
+    `${service.serviceName} x ${service.quantity}`,
+
+    `Rs ${
+      Number(service.amount) *
+      Number(service.quantity)
+    }`
+
+   ])
+
+  }
+
+ )
+
+}
+
+autoTable(doc,{
+ startY:145,
+
+ head:[[
+  "SERVICE",
+  "AMOUNT (₹)"
+ ]],
+
+ body:rows,
+
+ theme:"grid",
+
+ styles:{
+  fontSize:10,
+  textColor:[20,20,20],
+  lineColor:[180,180,180],
+  lineWidth:0.2
+ },
+
+ headStyles:{
+  fillColor:[225,0,0],
+  textColor:[255,255,255],
+  fontStyle:"bold",
+  halign:"center"
+ },
+
+ columnStyles:{
+  0:{
+   cellWidth:120
+  },
+
+  1:{
+   cellWidth:50,
+   halign:"right"
+  }
+ },
+
+ margin:{
+  left:10,
+  right:10
+ }
+})
+
+  const finalY =
+    (doc as any)
+    .lastAutoTable
+    .finalY
+
+  // =====================
+  // TOTAL BOX
+  // =====================
+
+doc.setDrawColor(
+ 220,
+ 0,
+ 0
+)
+
+doc.roundedRect(
+ 118,
+ finalY+10,
+ 78,
+ 48,
+ 4,
+ 4
+)
+
+  doc.setFontSize(10)
+
+  doc.text(
+    `Subtotal : Rs ${invoice.subtotal}`,
+    130,
+    finalY + 18
+  )
+
+  doc.text(
+    `CGST (9%) : Rs ${
+      Number(
+        invoice.gst/2
+      ).toFixed(2)
+    }`,
+    130,
+    finalY + 25
+  )
+
+  doc.text(
+    `SGST (9%) : Rs ${
+      Number(
+        invoice.gst/2
+      ).toFixed(2)
+    }`,
+    130,
+    finalY + 32
+  )
+
+  doc.setFontSize(16)
+
+  doc.text(
+    `Total : Rs ${invoice.totalAmount}`,
+    130,
+    finalY + 42
+  )
+
+  // =====================
+  // QR
+  // =====================
+doc.setFontSize(12)
+
+doc.setTextColor(
+ 220,
+ 0,
+ 0
+)
+
+doc.text(
+ "SCAN & PAY",
+ 18,
+ finalY + 55
+)
+  try {
+
+const upiLink =
+
+`upi://pay?pa=7448787979@ybl&pn=TYRETRACK&am=${invoice.totalAmount}&cu=INR`
+
+const qrImage =
+await QRCode.toDataURL(
+ upiLink
+)
+
+doc.addImage(
+ qrImage,
+ "PNG",
+ 15,
+ finalY + 60,
+ 45,
+ 45
+)
+doc.setTextColor(
+ 0,
+ 0,
+ 0
+)
+
+doc.setFontSize(9)
+
+doc.text(
+ `UPI : 7448787979@ybl`,
+ 15,
+ finalY + 110
+)
+  } catch {}
+
+  doc.setFontSize(9)
+
+  doc.text(
+    "Scan & Pay",
+    20,
+    265
+  )
+
+  // =====================
+  // SIGNATURE
+  // =====================
+
+  try {
+
+    doc.addImage(
+      "/signature.png",
+      "PNG",
+      145,
+finalY + 65,
+      40,
+      18
+    )
+
+  } catch {}
+
+doc.text(
+ "For TYRETRACK",
+ 145,
+ 265
+)
+
+doc.text(
+ "Authorized Signatory",
+ 138,
+ 272
+)
+
+  // =====================
+  // FOOTER
+  // =====================
+
+  doc.setFontSize(9)
+
+  doc.text(
+    "Thank you for choosing TYRETRACK Premium Auto Care",
+    14,
+    280
+  )
+
+  doc.save(
+    `${invoice.invoiceId}.pdf`
+  )
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
