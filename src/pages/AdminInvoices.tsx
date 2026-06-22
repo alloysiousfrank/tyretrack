@@ -70,6 +70,58 @@ useState(true)
  setVehicleHistory
 ] = useState<any[]>([])
 
+const totalVisits =
+vehicleHistory.length
+
+const totalSpent =
+vehicleHistory.reduce(
+ (sum,invoice)=>
+ sum +
+ Number(
+  invoice.totalAmount || 0
+ ),
+ 0
+)
+
+const lastVisit =
+vehicleHistory.length > 0
+? new Date(
+ vehicleHistory[0].createdAt
+).toLocaleDateString()
+: "-"
+
+const favouriteService =
+vehicleHistory.length > 0
+? vehicleHistory
+   .flatMap(
+    invoice =>
+    invoice.services || []
+   )
+   .sort(
+    (a,b)=>
+     vehicleHistory
+      .flatMap(
+       invoice =>
+       invoice.services || []
+      )
+      .filter(
+       x=>x===b
+      ).length
+     -
+     vehicleHistory
+      .flatMap(
+       invoice =>
+       invoice.services || []
+      )
+      .filter(
+       x=>x===a
+      ).length
+   )[0]
+: "-"
+
+const [showHistory,setShowHistory] =
+useState(false)
+
 const addCustomService = ()=>{
 
  setCustomServices([
@@ -693,10 +745,129 @@ Vehicle Type
 
 </div>
        
-        <h3>
-Previous Vehicle History
-</h3>
+<div
+ className="history-dashboard"
+>
+
+<div
+ className="history-dashboard-header"
+ onClick={()=>
+  setShowHistory(
+   !showHistory
+  )
+ }
+>
+
+<div
+ className="history-stats"
+>
+
+<div
+ className="history-stat-card visits"
+>
+
+<h4>
+TOTAL VISITS
+</h4>
+
+<h2>
+{totalVisits}
+</h2>
+
+</div>
+
+<div
+ className="history-stat-card spent"
+>
+
+<h4>
+TOTAL SPENT
+</h4>
+
+<h2>
+₹
 {
+totalSpent.toLocaleString()
+}
+</h2>
+
+</div>
+
+<div
+ className="history-stat-card last"
+>
+
+<h4>
+LAST VISIT
+</h4>
+
+<h2>
+{lastVisit}
+</h2>
+
+</div>
+
+<div
+ className="history-stat-card favourite"
+>
+
+<h4>
+FAVOURITE SERVICE
+</h4>
+
+<h2>
+{favouriteService}
+</h2>
+
+</div>
+
+</div>
+
+<div
+ className="history-title"
+>
+
+<div
+ className="history-icon"
+>
+📜
+</div>
+
+<div>
+
+<h2>
+Vehicle Service History
+</h2>
+
+<p>
+{totalVisits}
+ Service Visits Found
+</p>
+
+</div>
+
+</div>
+
+<div
+ className="history-expand"
+>
+
+{
+showHistory
+? "▲"
+: "▼"
+}
+
+</div>
+</div>
+</div>
+
+</div>
+<div
+ className="history-invoices"
+>
+{
+ showHistory &&
  vehicleHistory.length > 0 && (
 
 <div
@@ -711,95 +882,27 @@ Total Visits :
 </p>
 
 {
-vehicleHistory.map(invoice=>(
+vehicleHistory.map(
+(invoice)=>(
+
+
 
 <div
  key={invoice._id}
- className="admin-card"
+ className="history-card"
 >
-  
+
+<div className="history-header">
+
+<h4>
+📄 {invoice.invoiceId}
+</h4>
 
 <button
  className="update-btn"
  onClick={()=>
-
-setExpandedInvoice(
-
-expandedInvoice ===
-invoice._id
-
-? ""
-
-: invoice._id
-
-)
-
-}
->
-
-{
-expandedInvoice ===
-invoice._id
-
-? "Hide"
-
-: "View Details"
-
-}
-
-</button>
-
-<p>
-
-Invoice :
-{invoice.invoiceId}
-
-</p>
-
-{
-expandedInvoice ===
-invoice._id && (
-
-<div>
-
-<p>
-Customer :
-{invoice.customerName}
-</p>
-
-<p>
-Vehicle :
-{invoice.vehicleNumber}
-</p>
-
-<p>
-Date :
-{
-new Date(
- invoice.createdAt
-).toLocaleDateString()
-}
-</p>
-
-<p>
-Services :
-{
-invoice.services.join(", ")
-}
-</p>
-
-<p>
-Total :
-₹{invoice.totalAmount}
-</p>
-
-<button
-className="update-btn"
-onClick={()=>
-generateInvoicePdf(
- invoice
-)
-}
+  generateInvoicePdf(invoice)
+ }
 >
 
 Download PDF
@@ -807,6 +910,50 @@ Download PDF
 </button>
 
 </div>
+
+<p>
+🚘 Vehicle :
+{invoice.vehicleNumber}
+</p>
+
+<p>
+💰 Amount :
+₹ {invoice.totalAmount}
+</p>
+
+<p>
+📅 Date :
+{
+ new Date(
+  invoice.createdAt
+ ).toLocaleDateString()
+}
+</p>
+
+<p>
+🛠 Services :
+{
+ invoice.services?.join(", ")
+}
+</p>
+
+{
+invoice.customServices?.length > 0 && (
+
+<p>
+
+➕ Extra Services :
+
+{
+invoice.customServices
+.map(
+(service:any)=>
+service.serviceName
+)
+.join(", ")
+}
+
+</p>
 
 )
 
