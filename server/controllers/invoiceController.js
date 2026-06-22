@@ -163,10 +163,12 @@ customServices.forEach(service=>{
 })
 
 const gst =
- Number(
-  (subtotal * 0.18)
-  .toFixed(2)
- )
+ req.body.includeGST
+ ? Number(
+    (subtotal * 0.18)
+    .toFixed(2)
+   )
+ : 0
 
 const totalAmount =
  Number(

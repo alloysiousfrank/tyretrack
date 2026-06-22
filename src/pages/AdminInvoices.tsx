@@ -62,6 +62,8 @@ const [expandedInvoice,
 setExpandedInvoice] =
 useState("")
 
+const [includeGST,setIncludeGST] =
+useState(true)
 
   const [
  vehicleHistory,
@@ -300,8 +302,10 @@ useEffect(() => {
 
  })
 
- const gstAmount =
- amount * 0.18
+const gstAmount =
+includeGST
+ ? amount * 0.18
+ : 0
 
  setSubtotal(amount)
 
@@ -317,7 +321,8 @@ useEffect(() => {
  tyreQuantity,
  selectedTyreBrand,
  tyreBrands,
-  applyGST
+  applyGST,
+   includeGST
 ])
 
 
@@ -500,6 +505,7 @@ email: email || "",
    tyreQuantity,
    tyrePrice:selectedTyrePrice,
    subtotal,
+    includeGST,
    gst,
    totalAmount:total
   })
@@ -711,6 +717,7 @@ vehicleHistory.map(invoice=>(
  key={invoice._id}
  className="admin-card"
 >
+  
 
 <button
  className="update-btn"
@@ -1023,15 +1030,15 @@ customServices.map(
 
 <input
  type="checkbox"
- checked={applyGST}
+ checked={includeGST}
  onChange={(e)=>
-  setApplyGST(
+  setIncludeGST(
    e.target.checked
   )
  }
 />
 
- Apply GST (18%)
+Apply GST (18%)
 
 </label>
 
