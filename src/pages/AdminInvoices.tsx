@@ -253,12 +253,11 @@ const [total,
  setTotal] =
  useState(0)
 
- useEffect(()=>{
+useEffect(() => {
 
  let amount = 0
 
-selectedServices.forEach(
- service => {
+ selectedServices.forEach(service => {
 
   if(
    service ===
@@ -266,37 +265,32 @@ selectedServices.forEach(
   ){
 
    const tyrePrice =
-tyreBrands.find(
- tyre =>
- tyre.brand ===
- selectedTyreBrand
-)?.sellingPrice || 5000
+   tyreBrands.find(
+    tyre =>
+    tyre.brand ===
+    selectedTyreBrand
+   )?.sellingPrice || 5000
 
-amount +=
-tyrePrice *
-tyreQuantity
+   amount +=
+   tyrePrice *
+   tyreQuantity
 
-  }
-
-  else{
+  }else{
 
    amount +=
    servicePrices[service]
 
   }
 
- }
-)
+ })
 
- customServices.forEach(
- service=>{
+ customServices.forEach(service => {
 
   amount +=
   Number(service.quantity) *
   Number(service.amount)
 
- }
- )
+ })
 
  const gstAmount =
  amount * 0.18
@@ -309,12 +303,12 @@ tyreQuantity
   amount + gstAmount
  )
 
-},
-[
+},[
  selectedServices,
  customServices,
-  tyreQuantity,
-  selectedTyreBrand
+ tyreQuantity,
+ selectedTyreBrand,
+ tyreBrands
 ])
 
 
