@@ -901,8 +901,8 @@ Vehicle Service History
 
 {
 showHistory
-? "▲"
-: "Click to view▼"
+? "Close ▲"
+: "Click to view ▼"
 }
 
 </div>
@@ -945,16 +945,31 @@ vehicleHistory.map(
 📄 {invoice.invoiceId}
 </h4>
 
+<div className="invoice-actions">
+
+<button
+ className="view-btn"
+ onClick={() =>
+ setExpandedInvoice(
+  expandedInvoice === invoice._id
+  ? ""
+  : invoice._id
+ )
+}
+>
+👁 View
+</button>
+
 <button
  className="update-btn"
- onClick={()=>
-  generateInvoicePdf(invoice)
- }
+ onClick={() =>
+ generateInvoicePdf(invoice)
+}
 >
-
-Download PDF
-
+⬇ Download
 </button>
+
+</div>
 
 </div>
 
@@ -967,7 +982,78 @@ Download PDF
 💰 Amount :
 ₹ {invoice.totalAmount}
 </p>
+{
+expandedInvoice === invoice._id && (
 
+<div className="invoice-details">
+
+<h4>
+Customer Details
+</h4>
+
+<p>
+👤 {invoice.customerName}
+</p>
+
+<p>
+📱 {invoice.phone}
+</p>
+
+<p>
+🚘 {invoice.vehicleNumber}
+</p>
+
+<p>
+🚗 {invoice.vehicleType}
+</p>
+
+<hr/>
+
+<h4>
+Services
+</h4>
+
+{
+invoice.services?.map(
+(service:string,index:number)=>(
+<p key={index}>
+✅ {service}
+</p>
+))
+}
+
+{
+invoice.customServices?.map(
+(service:any,index:number)=>(
+<p key={index}>
+➕ {service.serviceName}
+ ×
+ {service.quantity}
+</p>
+))
+}
+
+<hr/>
+
+<p>
+Subtotal :
+₹ {invoice.subtotal}
+</p>
+
+<p>
+GST :
+₹ {invoice.gst}
+</p>
+
+<h3>
+Total :
+₹ {invoice.totalAmount}
+</h3>
+
+</div>
+
+)
+}
 <p>
 📅 Date :
 {
