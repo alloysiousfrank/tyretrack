@@ -55,6 +55,9 @@ const [invoices,
  const [tyreBrands,setTyreBrands] =
 useState<any[]>([])
 
+const [customerProfile,setCustomerProfile] =
+useState<any>(null)
+
 const [applyGST,setApplyGST] =
 useState(true)
 
@@ -268,7 +271,43 @@ async (
    setVehicleHistory(
     data.invoices
    )
+if(data.invoices.length > 0){
 
+ const latest =
+ data.invoices[0]
+
+ const totalRevenue =
+ data.invoices.reduce(
+  (sum:number,invoice:any)=>
+   sum +
+   Number(
+    invoice.totalAmount || 0
+   ),
+ 0
+ )
+
+ setCustomerProfile({
+
+  customerName:
+  latest.customerName,
+
+  phone:
+  latest.phone,
+
+  vehicleNumber:
+  latest.vehicleNumber,
+
+  totalVisits:
+  data.invoices.length,
+
+  totalRevenue,
+
+  lastVisit:
+  latest.createdAt
+
+ })
+
+}
   }
 
  }catch(error){
@@ -744,7 +783,83 @@ Vehicle Type
     </div>  
 
 </div>
-       
+{
+customerProfile && (
+
+<div className="customer-profile-card">
+
+<div className="profile-top">
+
+<div className="profile-avatar">
+
+👤
+
+</div>
+
+<div className="profile-details">
+
+<h2>
+{customerProfile.customerName}
+</h2>
+
+<p>
+📞 {customerProfile.phone}
+</p>
+
+<p>
+🚘 {customerProfile.vehicleNumber}
+</p>
+
+</div>
+
+</div>
+
+<div className="profile-stats">
+
+<div className="stat-box">
+
+<span>💰 Revenue</span>
+
+<h3>
+₹{
+customerProfile.totalRevenue
+.toLocaleString()
+}
+</h3>
+
+</div>
+
+<div className="stat-box">
+
+<span>📜 Visits</span>
+
+<h3>
+{customerProfile.totalVisits}
+</h3>
+
+</div>
+
+<div className="stat-box">
+
+<span>📅 Last Visit</span>
+
+<h3>
+{
+new Date(
+ customerProfile.lastVisit
+).toLocaleDateString()
+}
+</h3>
+
+</div>
+
+</div>
+
+</div>
+
+)
+}
+    
 <div
  className="history-dashboard"
 >
@@ -759,80 +874,12 @@ Vehicle Type
 >
 
 <div
- className="history-stats"
->
-
-<div
- className="history-stat-card visits"
->
-
-<h4>
-TOTAL VISITS
-</h4>
-
-<h2>
-{totalVisits}
-</h2>
+ className="history-stats">
 
 </div>
 
 <div
- className="history-stat-card spent"
->
-
-<h4>
-TOTAL SPENT
-</h4>
-
-<h2>
-₹
-{
-totalSpent.toLocaleString()
-}
-</h2>
-
-</div>
-
-<div
- className="history-stat-card last"
->
-
-<h4>
-LAST VISIT
-</h4>
-
-<h2>
-{lastVisit}
-</h2>
-
-</div>
-
-<div
- className="history-stat-card favourite"
->
-
-<h4>
-FAVOURITE SERVICE
-</h4>
-
-<h2>
-{favouriteService}
-</h2>
-
-</div>
-
-</div>
-
-<div
- className="history-title"
->
-
-<div
- className="history-icon"
->
-📜
-</div>
-
+ className="history-title">
 <div>
 
 <h2>
@@ -855,7 +902,7 @@ Vehicle Service History
 {
 showHistory
 ? "▲"
-: "▼"
+: "Click to view▼"
 }
 
 </div>
