@@ -860,27 +860,20 @@ new Date(
 )
 }
 <div className="history-glass-container">
-<div className="history-section-wrapper">
-<div
- className="history-dashboard"
->
 
 <div
- className="history-dashboard-header"
+ className="history-highlight-card"
  onClick={()=>
-  setShowHistory(
-   !showHistory
-  )
+  setShowHistory(!showHistory)
  }
 >
 
-<div
- className="history-stats">
+<div className="history-title">
 
+<div className="history-icon">
+📜
 </div>
 
-<div
- className="history-title">
 <div>
 
 <h2>
@@ -888,27 +881,23 @@ Vehicle Service History
 </h2>
 
 <p>
-{totalVisits}
- Service Visits Found
+{totalVisits} Service Visits Found
 </p>
 
 </div>
 
 </div>
 
-<div
- className="history-expand"
->
+<div className="history-expand">
 
 {
 showHistory
-? "Close ▲"
-: "Click to view ▼"
+? "▲ Close"
+: "▼ View History"
 }
 
 </div>
-</div>
-</div>
+
 </div>
 </div>
 </div>
