@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom"
 
 import Layout from "./components/layout/Layout"
+import AdminLayout from "./components/admin/AdminLayout"
 
 import Home from "./pages/Home"
 import Services from "./pages/Services"
@@ -84,79 +85,58 @@ function App() {
 
       {/* ADMIN WEBSITE */}
 
-      <Route
-        path="/admin-login"
-        element={<AdminLogin />}
-      />
+<Route
+ path="/admin-login"
+ element={<AdminLogin/>}
+/>
 
-      <Route
-        path="/admin"
-        element={
-          localStorage.getItem("adminToken")
-            ? <Admin />
-            : <AdminLogin />
-        }
-      />
+<Route
+ element={
+  localStorage.getItem("adminToken")
+   ? <AdminLayout/>
+   : <AdminLogin/>
+ }
+>
 
-      <Route
-        path="/admin-dashboard"
-        element={
-          localStorage.getItem("adminToken")
-            ? <AdminDashboard />
-            : <AdminLogin />
-        }
-      />
+<Route
+ path="/admin"
+ element={<Admin/>}
+/>
 
-      <Route
-        path="/admin-customers"
-        element={
-          localStorage.getItem("adminToken")
-            ? <AdminCustomers />
-            : <AdminLogin />
-        }
-      />
+<Route
+ path="/admin-dashboard"
+ element={<AdminDashboard/>}
+/>
 
-      <Route
-        path="/admin-analytics"
-        element={
-          localStorage.getItem("adminToken")
-            ? <AdminAnalytics />
-            : <AdminLogin />
-        }
-      />
+<Route
+ path="/admin-customers"
+ element={<AdminCustomers/>}
+/>
 
-      <Route
-        path="/admin-reports"
-        element={
-          localStorage.getItem("adminToken")
-            ? <AdminReports />
-            : <AdminLogin />
-        }
-      />
+<Route
+ path="/admin-analytics"
+ element={<AdminAnalytics/>}
+/>
+
+<Route
+ path="/admin-reports"
+ element={<AdminReports/>}
+/>
 
 <Route
  path="/admin-invoices"
- element={
-  localStorage.getItem("adminToken")
-   ? <AdminInvoices />
-   : <AdminLogin />
- }
+ element={<AdminInvoices/>}
 />
 
 <Route
  path="/admin-inventory"
- element={
-  localStorage.getItem(
-   "adminToken"
-  )
-  ?
-  <AdminInventory/>
-  :
-  <AdminLogin/>
- }
+ element={<AdminInventory/>}
 />
 
-    </Routes>
+</Route>
+</Routes>
+
+    
 
 
 

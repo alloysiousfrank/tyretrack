@@ -1,22 +1,39 @@
 import { Outlet } from "react-router-dom"
+import { useState } from "react"
+
 import AdminSidebar from "./AdminSidebar"
 
-export default function AdminLayout() {
+export default function AdminLayout(){
 
-  return (
+ const [open,setOpen] =
+ useState(false)
 
-    <div className="admin-layout">
+ return(
 
-      <AdminSidebar />
+<div className="admin-layout">
 
-      <div className="admin-content">
+<button
+ className="menu-btn"
+ onClick={()=>
+ setOpen(!open)
+ }
+>
+☰
+</button>
 
-        <Outlet />
+<AdminSidebar
+ open={open}
+ setOpen={setOpen}
+/>
 
-      </div>
+<div className="admin-content">
 
-    </div>
+<Outlet/>
 
-  )
+</div>
+
+</div>
+
+ )
 
 }

@@ -859,7 +859,8 @@ new Date(
 
 )
 }
-    
+<div className="history-glass-container">
+<div className="history-section-wrapper">
 <div
  className="history-dashboard"
 >
@@ -908,7 +909,8 @@ showHistory
 </div>
 </div>
 </div>
-
+</div>
+</div>
 </div>
 <div
  className="history-invoices"

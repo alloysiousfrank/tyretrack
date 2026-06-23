@@ -7,19 +7,28 @@
 }
 
 .admin-content{
-
- padding:40px;
-
- margin-left:0;
-
- width:100%;
-
- min-height:100vh;
-
- color:white;
-
+padding-left:0;
+min-height:100vh;
 }
 
+.admin-sidebar{
+position:fixed;
+left:-280px;
+top:0;
+
+width:280px;
+height:100vh;
+
+background:#0a0a0a;
+
+z-index:9999;
+
+transition:all .3s ease;
+}
+
+.admin-sidebar.open{
+left:0;
+}
 .admin-sidebar {
 
   width: 280px;
