@@ -13,6 +13,8 @@ import About from "./pages/About"
 import Login from "./pages/Login"
 import History from "./pages/History"
 import CurrentBooking from "./pages/CurrentBooking"
+import CustomerInvoices
+from "./pages/CustomerInvoices"
 
 import Admin from "./pages/Admin"
 import AdminLogin from "./pages/AdminLogin"
@@ -80,6 +82,13 @@ function App() {
           path="current-booking"
           element={<CurrentBooking />}
         />
+
+        <Route
+ path="my-invoices"
+ element={
+  <CustomerInvoices/>
+ }
+/>
 
       </Route>
 

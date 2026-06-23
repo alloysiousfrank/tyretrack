@@ -207,7 +207,9 @@ if(
               <span>
                 {stages[booking.currentStage]}
               </span>
-              {
+              
+            </div>
+{
 invoice && (
 
 <div className="customer-invoice-box">
@@ -315,8 +317,6 @@ onClick={()=>
 
 )
 }
-            </div>
-
           </div>
 
         )}

@@ -6,77 +6,172 @@ import {
 }
 from "../utils/generateInvoicePdf"
 
+import "./CustomerInvoices.css"
+
 export default function CustomerInvoices(){
 
- const [invoices,setInvoices] =
- useState<any[]>([])
+const [invoices,setInvoices] =
+useState<any[]>([])
 
- const [selectedInvoice,
- setSelectedInvoice] =
- useState<any>(null)
+const [selectedInvoice,
+setSelectedInvoice] =
+useState<any>(null)
 
- const user =
- JSON.parse(
-  localStorage.getItem("user")
-  || "{}"
+const [search,
+setSearch] =
+useState("")
+
+const userEmail =
+localStorage.getItem(
+ "userEmail"
+)
+
+useEffect(()=>{
+
+ fetchInvoices()
+
+},[])
+
+const fetchInvoices =
+async()=>{
+
+ try{
+
+const response =
+await fetch(
+
+`https://tyretrack-server.onrender.com/api/invoices/customer/${userEmail}`
+
+)
+
+const data =
+await response.json()
+
+if(data.success){
+
+ setInvoices(
+  data.invoices
  )
 
- useEffect(()=>{
+}
 
-  const loadInvoices =
-  async()=>{
+ }catch(error){
 
-   try{
+  console.log(error)
 
-    const response =
-    await fetch(
+ }
 
-`https://tyretrack-server.onrender.com/api/invoices/customer/${user.email}`
+}
 
-    )
+const totalSpent =
+invoices.reduce(
 
-    const data =
-    await response.json()
+(sum,invoice)=>
 
-    if(data.success){
+sum +
+Number(
+ invoice.totalAmount || 0
+),
 
-     setInvoices(
-      data.invoices
-     )
+0
 
-    }
+)
 
-   }catch(error){
+return(
 
-    console.log(error)
+<div className="customer-invoice-page">
 
-   }
+<h1>
+📄 My Service History
+</h1>
 
-  }
+<div className="customer-history-stats">
 
-  if(user.email){
+<div className="history-box">
 
-   loadInvoices()
-
-  }
-
- },[])
-
- return (
-
- <>
- <div className="customer-invoices">
+<h4>
+Total Visits
+</h4>
 
 <h2>
-📄 My Invoices
+{
+ invoices.length
+}
 </h2>
 
+</div>
+
+<div className="history-box">
+
+<h4>
+Total Spent
+</h4>
+
+<h2>
+₹
 {
-invoices.map(invoice=>(
+ totalSpent.toLocaleString()
+}
+</h2>
+
+</div>
+
+<div className="history-box">
+
+<h4>
+Latest Invoice
+</h4>
+
+<h2>
+
+{
+ invoices[0]?.invoiceId ||
+ "-"
+}
+
+</h2>
+
+</div>
+
+</div>
+
+<input
+
+className="invoice-search"
+
+placeholder=
+"Search Invoice Number..."
+
+value={search}
+
+onChange={(e)=>
+setSearch(
+ e.target.value
+)
+}
+
+/>
+
+<div className="invoice-history-grid">
+
+{
+invoices
+
+.filter(invoice=>
+
+invoice.invoiceId
+.toLowerCase()
+.includes(
+ search.toLowerCase()
+)
+
+)
+
+.map(invoice=>(
 
 <div
 key={invoice._id}
-className="invoice-card"
+className="invoice-history-card"
 >
 
 <h3>
@@ -84,21 +179,53 @@ className="invoice-card"
 </h3>
 
 <p>
-₹ {invoice.totalAmount}
+
+Vehicle :
+
+{
+invoice.vehicleNumber
+}
+
 </p>
 
 <p>
+
+Amount :
+
+₹
+{
+invoice.totalAmount
+}
+
+</p>
+
+<p>
+
+Date :
+
 {
 new Date(
  invoice.createdAt
-).toLocaleDateString()
+)
+.toLocaleDateString()
 }
+
 </p>
 
+<div
+className="invoice-actions"
+>
+
 <button
+
+className="view-btn"
+
 onClick={()=>
- setSelectedInvoice(invoice)
+setSelectedInvoice(
+ invoice
+)
 }
+
 >
 
 👁 View
@@ -106,9 +233,15 @@ onClick={()=>
 </button>
 
 <button
+
+className="download-btn"
+
 onClick={()=>
- generateInvoicePdf(invoice)
+generateInvoicePdf(
+ invoice
+)
 }
+
 >
 
 ⬇ Download
@@ -117,10 +250,13 @@ onClick={()=>
 
 </div>
 
+</div>
+
 ))
 }
 
 </div>
+
 {
 selectedInvoice && (
 
@@ -131,33 +267,72 @@ className="invoice-modal-content"
 >
 
 <h2>
-{selectedInvoice.invoiceId}
+{
+selectedInvoice.invoiceId
+}
 </h2>
 
 <p>
+
 Customer :
-{selectedInvoice.customerName}
+
+{
+selectedInvoice.customerName
+}
+
 </p>
 
 <p>
-Phone :
-{selectedInvoice.phone}
-</p>
 
-<p>
 Vehicle :
-{selectedInvoice.vehicleNumber}
+
+{
+selectedInvoice.vehicleNumber
+}
+
 </p>
 
 <p>
-Total :
-₹ {selectedInvoice.totalAmount}
+
+Phone :
+
+{
+selectedInvoice.phone
+}
+
+</p>
+
+<p>
+
+Amount :
+
+₹
+{
+selectedInvoice.totalAmount
+}
+
+</p>
+
+<p>
+
+Services :
+
+{
+selectedInvoice.services?.join(
+ ", "
+)
+}
+
 </p>
 
 <button
+
+className="close-btn"
+
 onClick={()=>
- setSelectedInvoice(null)
+setSelectedInvoice(null)
 }
+
 >
 
 Close
@@ -169,8 +344,11 @@ Close
 </div>
 
 )
-}  
- </>
- )
+
+}
+
+</div>
+
+)
 
 }

@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react"
+import {
+ generateInvoicePdf
+}
+from "../utils/generateInvoicePdf"
 import { getBookings } from "../api/bookingApi"
 import AdminSidebar from
 "../components/admin/AdminSidebar"
@@ -53,7 +57,12 @@ const fetchBookings = async () => {
 
   // UPDATE STATUS
 const updateBookingStatus = async (bookingId: string) => {
+const token =
+localStorage.getItem(
+"adminToken"
+)
 
+console.log(token)
   try {
 
     const updatedBookings = bookings.map((booking) => {
@@ -87,35 +96,7 @@ const updateBookingStatus = async (bookingId: string) => {
     )
 
     // UPDATE DATABASE
-    await fetch(
-      `https://tyretrack-server.onrender.com/api/bookings/${bookingId}`,
-      {
-        method: "PUT",
-
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-
-        body: JSON.stringify({
-          currentStage: updatedBooking.currentStage,
-          status: updatedBooking.status,
-        }),
-      }
-    )
-
-    alert("Service Updated Successfully ✅")
-
-  } catch (error) {
-
-    console.log(error)
-
-    alert("Update Failed")
-
-  }
-
-}
-
+    
 const clearAllBookings = async () => {
 
   const confirmDelete =
@@ -248,7 +229,6 @@ window.location.href =
 
   return (
 <>
-<AdminSidebar />
 
 <div
  className="admin-page"
@@ -486,7 +466,33 @@ window.location.href =
                     >
                       Update Service Status
                     </button>
+<button
+ className="invoice-download-btn"
+ onClick={() =>
+ generateInvoicePdf({
+  invoiceId:
+   booking.bookingId,
 
+  customerName:
+   booking.name,
+
+  vehicleNumber:
+   booking.vehicleNumber,
+
+  services:[
+   booking.service
+  ],
+
+  totalAmount:
+   booking.price || 2500,
+
+  createdAt:
+   booking.date
+ })
+}
+>
+⬇ Download Invoice
+</button>
 {role === "Admin" && (
 
 <button
@@ -518,7 +524,6 @@ window.location.href =
     </div>
 
 </>
-
-)
-
+  )
+}
 }
