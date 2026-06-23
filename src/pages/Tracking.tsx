@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react"
 import "./Tracking.css"
-
+import {
+ generateInvoicePdf
+}
+from "../utils/generateInvoicePdf"
 export default function Tracking() {
-
+const [invoice,setInvoice] =
+useState<any>(null)
   const [booking, setBooking] = useState<any>(null)
 
   const stages = [
@@ -41,7 +45,54 @@ const fetchLatestBooking = async () => {
       setBooking(
         data.bookings[0]
       )
+const currentBooking =
+data.bookings[0]
 
+if(
+ currentBooking.invoiceGenerated
+){
+
+ try{
+
+  const invoiceResponse =
+  await fetch(
+
+`https://tyretrack-server.onrender.com/api/invoices/customer/${currentUserEmail}`
+
+  )
+
+  const invoiceData =
+  await invoiceResponse.json()
+
+  if(
+   invoiceData.success &&
+   invoiceData.invoices.length > 0
+  ){
+
+   const customerInvoice =
+   invoiceData.invoices.find(
+    (inv:any)=>
+    inv.bookingId ===
+    currentBooking.bookingId
+   )
+
+   if(customerInvoice){
+
+    setInvoice(
+     customerInvoice
+    )
+
+   }
+
+  }
+
+ }catch(error){
+
+  console.log(error)
+
+ }
+
+}
     }
 
   } catch (error) {
@@ -156,7 +207,114 @@ const fetchLatestBooking = async () => {
               <span>
                 {stages[booking.currentStage]}
               </span>
+              {
+invoice && (
 
+<div className="customer-invoice-box">
+
+<h2>
+📄 Invoice Available
+</h2>
+
+<div className="invoice-info">
+
+<p>
+
+Invoice No :
+
+<b>
+{invoice.invoiceId}
+</b>
+
+</p>
+
+<p>
+
+Amount :
+
+<b>
+₹
+{
+invoice.totalAmount
+}
+</b>
+
+</p>
+
+<p>
+
+Generated :
+
+<b>
+
+{
+new Date(
+ invoice.createdAt
+).toLocaleDateString()
+}
+
+</b>
+
+</p>
+
+</div>
+
+<div className="invoice-buttons">
+
+<button
+
+className="invoice-view-btn"
+
+onClick={()=>{
+
+ alert(
+
+`Invoice :
+${invoice.invoiceId}
+
+Customer :
+${invoice.customerName}
+
+Vehicle :
+${invoice.vehicleNumber}
+
+Total :
+₹${invoice.totalAmount}`
+
+ )
+
+}}
+
+>
+
+👁 View Invoice
+
+</button>
+
+<button
+
+className="invoice-download-btn"
+
+onClick={()=>
+
+ generateInvoicePdf(
+  invoice
+ )
+
+}
+
+>
+
+⬇ Download Invoice
+
+</button>
+
+</div>
+
+</div>
+
+)
+}
             </div>
 
           </div>

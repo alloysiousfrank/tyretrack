@@ -4,6 +4,7 @@ import {
 }
 from
 "../utils/generateInvoicePdf"
+import "./AdminInvoices.css"
 
 
 export default function AdminInvoices() {
@@ -658,10 +659,13 @@ alert(errorText)
 
       <div className="admin-container">
 
-        <div className="invoice-form-grid">
+<h1 className="invoice-page-title">
+Invoice Generator
+</h1>
 
-        <h1>Invoice Generator</h1>
-        <div className="form-group">
+<div className="invoice-form-grid">
+
+<div className="form-group">
 
 <label>
 Customer Name
