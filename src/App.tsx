@@ -13,8 +13,7 @@ import About from "./pages/About"
 import Login from "./pages/Login"
 import History from "./pages/History"
 import CurrentBooking from "./pages/CurrentBooking"
-import CustomerInvoices
-from "./pages/CustomerInvoices"
+import CustomerInvoices from "./pages/CustomerInvoices"
 
 import Admin from "./pages/Admin"
 import AdminLogin from "./pages/AdminLogin"
@@ -24,7 +23,9 @@ import AdminAnalytics from "./pages/AdminAnalytics"
 import AdminReports from "./pages/AdminReports"
 import AdminInvoices from "./pages/AdminInvoices"
 import AdminInventory from "./pages/AdminInventory"
+
 function App() {
+
   return (
 
     <Routes>
@@ -84,72 +85,70 @@ function App() {
         />
 
         <Route
- path="my-invoices"
- element={
-  <CustomerInvoices/>
- }
-/>
+          path="my-invoices"
+          element={<CustomerInvoices />}
+        />
 
       </Route>
 
-      {/* ADMIN WEBSITE */}
+      {/* ADMIN LOGIN */}
 
-<Route
- path="/admin-login"
- element={<AdminLogin/>}
-/>
+      <Route
+        path="/admin-login"
+        element={<AdminLogin />}
+      />
 
-<Route
- element={
-  localStorage.getItem("adminToken")
-   ? <AdminLayout/>
-   : <AdminLogin/>
- }
->
+      {/* PROTECTED ADMIN ROUTES */}
 
-<Route
- path="/admin"
- element={<Admin/>}
-/>
+      <Route
+        element={
+          localStorage.getItem("adminToken")
+            ? <AdminLayout />
+            : <AdminLogin />
+        }
+      >
 
-<Route
- path="/admin-dashboard"
- element={<AdminDashboard/>}
-/>
+        <Route
+          path="/admin"
+          element={<Admin />}
+        />
 
-<Route
- path="/admin-customers"
- element={<AdminCustomers/>}
-/>
+        <Route
+          path="/admin-dashboard"
+          element={<AdminDashboard />}
+        />
 
-<Route
- path="/admin-analytics"
- element={<AdminAnalytics/>}
-/>
+        <Route
+          path="/admin-customers"
+          element={<AdminCustomers />}
+        />
 
-<Route
- path="/admin-reports"
- element={<AdminReports/>}
-/>
+        <Route
+          path="/admin-analytics"
+          element={<AdminAnalytics />}
+        />
 
-<Route
- path="/admin-invoices"
- element={<AdminInvoices/>}
-/>
+        <Route
+          path="/admin-reports"
+          element={<AdminReports />}
+        />
 
-<Route
- path="/admin-inventory"
- element={<AdminInventory/>}
-/>
+        <Route
+          path="/admin-invoices"
+          element={<AdminInvoices />}
+        />
 
-</Route>
-</Routes>
+        <Route
+          path="/admin-inventory"
+          element={<AdminInventory />}
+        />
 
-    
+      </Route>
 
-
+    </Routes>
 
   )
+
 }
 
 export default App

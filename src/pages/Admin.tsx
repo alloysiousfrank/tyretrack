@@ -3,13 +3,8 @@ import {
  generateInvoicePdf
 }
 from "../utils/generateInvoicePdf"
-import { getBookings } from "../api/bookingApi"
-import AdminSidebar from
-"../components/admin/AdminSidebar"
-const token =
-  localStorage.getItem(
-    "adminToken"
-  )
+
+
 import "./Admin.css"
 
 export default function Admin() {
@@ -43,9 +38,12 @@ const fetchBookings = async () => {
       "https://tyretrack-server.onrender.com/api/bookings"
     )
 
-    const data = await response.json()
+const data =
+await response.json()
 
-    setBookings(data)
+setBookings(
+  data.bookings || []
+)
 
   } catch (error) {
 
@@ -56,47 +54,108 @@ const fetchBookings = async () => {
 }
 
   // UPDATE STATUS
-const updateBookingStatus = async (bookingId: string) => {
-const token =
-localStorage.getItem(
-"adminToken"
-)
+const updateBookingStatus = async (
+  bookingId: string
+) => {
 
-console.log(token)
-  try {
-
-    const updatedBookings = bookings.map((booking) => {
-
-      if (booking.bookingId === bookingId) {
-
-        let nextStage = booking.currentStage || 0
-
-        if (nextStage < serviceStages.length - 1) {
-          nextStage += 1
-        }
-
-        return {
-          ...booking,
-          currentStage: nextStage,
-          status: serviceStages[nextStage],
-        }
-
-      }
-
-      return booking
-
-    })
-
-    // UPDATE STATE
-    setBookings(updatedBookings)
-
-    // FIND UPDATED BOOKING
-    const updatedBooking = updatedBookings.find(
-      (booking) => booking.bookingId === bookingId
+  const token =
+    localStorage.getItem(
+      "adminToken"
     )
 
-    // UPDATE DATABASE
-    
+  try {
+
+    const updatedBookings =
+      bookings.map((booking) => {
+
+        if (
+          booking.bookingId === bookingId
+        ) {
+
+          let nextStage =
+            booking.currentStage || 0
+
+          if (
+            nextStage <
+            serviceStages.length - 1
+          ) {
+            nextStage += 1
+          }
+
+          return {
+            ...booking,
+            currentStage: nextStage,
+            status:
+              serviceStages[nextStage]
+          }
+
+        }
+
+        return booking
+
+      })
+
+    setBookings(updatedBookings)
+
+    const updatedBooking =
+      updatedBookings.find(
+        (booking) =>
+          booking.bookingId === bookingId
+      )
+
+    const response =
+      await fetch(
+        `https://tyretrack-server.onrender.com/api/bookings/${bookingId}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`
+          },
+
+          body: JSON.stringify({
+            currentStage:
+              updatedBooking?.currentStage,
+
+            status:
+              updatedBooking?.status
+          })
+        }
+      )
+
+    const result =
+      await response.json()
+
+    console.log(result)
+
+    if (!response.ok) {
+
+      throw new Error(
+        result.message
+      )
+
+    }
+
+    alert(
+      "Service Updated Successfully ✅"
+    )
+
+  } catch (error) {
+
+    console.log(error)
+
+    alert(
+      "Failed to update service status"
+    )
+
+  }
+
+}
+
 const clearAllBookings = async () => {
 
   const confirmDelete =
@@ -107,30 +166,46 @@ const clearAllBookings = async () => {
   if (!confirmDelete) return
 
   try {
-const token =
-  localStorage.getItem("adminToken")
-    await fetch(
-      "https://tyretrack-server.onrender.com/api/bookings/clear/all",
-      {
-        method: "DELETE",
 
-        headers: {
-     Authorization:
-       `Bearer ${token}`
-    }     
-  }
+    const token =
+      localStorage.getItem(
+        "adminToken"
+      )
 
-    )
+    const response =
+      await fetch(
+        "https://tyretrack-server.onrender.com/api/bookings/clear/all",
+        {
+          method: "DELETE",
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      )
+
+    if(!response.ok){
+
+      throw new Error(
+        "Failed to clear bookings"
+      )
+
+    }
+
     setBookings([])
 
+    alert(
+      "All bookings cleared successfully ✅"
+    )
 
-    alert("All bookings cleared")
-
-  } catch (error) {
+  } catch(error){
 
     console.log(error)
 
-    alert("Failed to clear bookings")
+    alert(
+      "Failed to clear bookings"
+    )
 
   }
 
@@ -469,26 +544,8 @@ window.location.href =
 <button
  className="invoice-download-btn"
  onClick={() =>
- generateInvoicePdf({
-  invoiceId:
-   booking.bookingId,
-
-  customerName:
-   booking.name,
-
-  vehicleNumber:
-   booking.vehicleNumber,
-
-  services:[
-   booking.service
-  ],
-
-  totalAmount:
-   booking.price || 2500,
-
-  createdAt:
-   booking.date
- })
+window.location.href =
+"/admin-invoices"
 }
 >
 ⬇ Download Invoice
@@ -525,5 +582,4 @@ window.location.href =
 
 </>
   )
-}
 }

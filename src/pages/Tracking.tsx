@@ -7,6 +7,9 @@ from "../utils/generateInvoicePdf"
 export default function Tracking() {
 const [invoice,setInvoice] =
 useState<any>(null)
+
+const [showInvoice,setShowInvoice] =
+useState(false)
   const [booking, setBooking] = useState<any>(null)
 
   const stages = [
@@ -264,33 +267,12 @@ new Date(
 <div className="invoice-buttons">
 
 <button
-
 className="invoice-view-btn"
-
-onClick={()=>{
-
- alert(
-
-`Invoice :
-${invoice.invoiceId}
-
-Customer :
-${invoice.customerName}
-
-Vehicle :
-${invoice.vehicleNumber}
-
-Total :
-₹${invoice.totalAmount}`
-
- )
-
-}}
-
+onClick={()=>
+ setShowInvoice(true)
+}
 >
-
 👁 View Invoice
-
 </button>
 
 <button
