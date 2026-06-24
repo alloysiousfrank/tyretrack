@@ -72,20 +72,25 @@ if(
    invoiceData.invoices.length > 0
   ){
 
-   const customerInvoice =
-   invoiceData.invoices.find(
-    (inv:any)=>
-    inv.bookingId ===
-    currentBooking.bookingId
-   )
+const customerInvoice =
+invoiceData.invoices.find(
+ (inv:any)=>
 
-   if(customerInvoice){
+ inv.bookingId ===
+ currentBooking.bookingId
 
-    setInvoice(
-     customerInvoice
-    )
+ &&
+ inv.isPublished === true
+)
 
-   }
+   if(
+ customerInvoice &&
+ customerInvoice.isPublished
+){
+
+ setInvoice(customerInvoice)
+
+}
 
   }
 

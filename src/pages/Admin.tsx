@@ -38,12 +38,10 @@ const fetchBookings = async () => {
       "https://tyretrack-server.onrender.com/api/bookings"
     )
 
-const data =
-await response.json()
+const data = await response.json()
 
-setBookings(
-  data.bookings || []
-)
+setBookings(data)
+
 
   } catch (error) {
 

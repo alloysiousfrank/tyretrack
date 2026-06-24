@@ -9,6 +9,11 @@ const invoiceSchema = new mongoose.Schema({
 
  invoiceNumber:Number,
 
+financialYear:{
+ type:String,
+ default:""
+},
+
  bookingId:{
   type:String,
   default:""
@@ -94,10 +99,22 @@ tyrePrice:{
   default:"Draft"
  },
 
- pdfUrl:{
-  type:String,
-  default:""
- }
+isPublished:{
+ type:Boolean,
+ default:false
+},
+
+publishedAt:{
+ type:Date,
+ default:null
+},
+
+
+
+pdfUrl:{
+ type:String,
+ default:""
+}
 
 },{
  timestamps:true

@@ -10,7 +10,9 @@ const {
  getInvoices,
  getInvoiceById,
  getInvoicesByVehicle,
- getInvoicesByCustomer
+ getInvoicesByCustomer,
+  publishInvoice,
+ updateInvoice
 
 }
 =
@@ -43,5 +45,18 @@ router.get(
  getInvoiceById
 )
 
+router.put(
+ "/publish/:id",
+ publishInvoice
+)
+
+router.put(
+ "/:id",
+ updateInvoice
+)
+router.put(
+ "/publish/:invoiceId",
+ publishInvoice
+)
 module.exports =
 router

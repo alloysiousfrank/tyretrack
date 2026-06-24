@@ -651,7 +651,42 @@ alert(errorText)
  }
 
 }
+const publishInvoice =
+async(id:string)=>{
 
+ try{
+
+  const response =
+  await fetch(
+
+`https://tyretrack-server.onrender.com/api/invoices/publish/${id}`,
+
+   {
+    method:"PUT"
+   }
+
+  )
+
+  const data =
+  await response.json()
+
+  if(data.success){
+
+   alert(
+    "Invoice Published ✅"
+   )
+
+   fetchInvoices()
+
+  }
+
+ }catch(error){
+
+  console.log(error)
+
+ }
+
+}
 
   return (
 
@@ -1588,6 +1623,28 @@ customServices
 >
  Download PDF
 </button>
+
+<div className="admin-card">
+
+<h3>{invoice.invoiceId}</h3>
+
+<button
+ className="publish-btn"
+ onClick={()=>
+  publishInvoice(
+   invoice._id
+  )
+ }
+ disabled={invoice.isPublished}
+>
+{
+ invoice.isPublished
+ ? "Published"
+ : "🚀 Publish"
+}
+</button>
+
+</div>
 
       <h3>
         {invoice.invoiceId}

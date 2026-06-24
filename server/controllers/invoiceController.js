@@ -5,11 +5,34 @@ exports.createInvoice = async (req,res)=>{
 
  try{
 
-  const lastInvoice =
-  await Invoice.findOne()
-  .sort({
-   createdAt:-1
-  })
+const now = new Date()
+
+const currentYear =
+now.getMonth() >= 3
+? now.getFullYear()
+: now.getFullYear() - 1
+
+const financialYear =
+`${currentYear}-${String(
+currentYear + 1
+).slice(-2)}`
+
+const lastInvoice =
+await Invoice.findOne({
+ financialYear
+})
+.sort({
+ invoiceNumber:-1
+})
+
+let nextNumber = 1
+
+if(lastInvoice){
+
+ nextNumber =
+ (lastInvoice.invoiceNumber || 0) + 1
+
+}
 
   let nextNumber = 1
 
@@ -22,10 +45,10 @@ exports.createInvoice = async (req,res)=>{
 
   }
 
-  const invoiceId =
-  `INV-${String(
-   nextNumber
-  ).padStart(6,"0")}`
+const invoiceId =
+`INV-${financialYear}-${String(
+ nextNumber
+).padStart(6,"0")}`
 
   // =====================
 // STOCK VALIDATION
@@ -213,7 +236,7 @@ await Invoice.create({
  customServices,
 
  invoiceId,
-
+ financialYear,
  invoiceNumber:nextNumber
 
 })
@@ -250,18 +273,15 @@ if(
 
 if(req.body.bookingId){
 
- await Booking.findOneAndUpdate(
- {
-  bookingId:req.body.bookingId
- },
- {
-  invoiceGenerated:true,
-  invoiceId,
-  status:"Completed",
-  currentStage:4,
-  completed:true
- }
- )
+await Booking.findOneAndUpdate(
+{
+ bookingId:req.body.bookingId
+},
+{
+ invoiceGenerated:true,
+ invoiceId
+}
+)
 
 }
 res.json({
@@ -432,4 +452,113 @@ async (req,res)=>{
 
  })
 }
+}
+
+exports.publishInvoice =
+async(req,res)=>{
+
+ try{
+
+  const invoice =
+  await Invoice.findById(
+   req.params.id
+  )
+
+  if(!invoice){
+
+   return res.status(404).json({
+    success:false,
+    message:"Invoice not found"
+   })
+
+  }
+
+  invoice.isPublished = true
+
+  invoice.publishedAt =
+  new Date()
+
+  await invoice.save()
+
+  if(invoice.bookingId){
+
+   await Booking.findOneAndUpdate(
+    {
+     bookingId:
+     invoice.bookingId
+    },
+    {
+     invoiceGenerated:true,
+     invoiceId:
+     invoice.invoiceId,
+
+     status:"Completed",
+
+     currentStage:4,
+
+     completed:true
+    }
+   )
+
+  }
+
+  res.json({
+
+   success:true,
+
+   message:
+   "Invoice Published"
+
+  })
+
+ }catch(error){
+
+  console.log(error)
+
+  res.status(500).json({
+   success:false
+  })
+
+ }
+
+}
+
+exports.updateInvoice =
+async(req,res)=>{
+
+ try{
+
+  const invoice =
+  await Invoice.findByIdAndUpdate(
+
+   req.params.id,
+
+   req.body,
+
+   {
+    new:true
+   }
+
+  )
+
+  res.json({
+
+   success:true,
+
+   invoice
+
+  })
+
+ }catch(error){
+
+  console.log(error)
+
+  res.status(500).json({
+
+   success:false
+
+  })
+
+ }
+
 }
