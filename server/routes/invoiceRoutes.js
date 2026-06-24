@@ -1,62 +1,44 @@
-const express =
-require("express")
+const express = require("express")
 
-const router =
-express.Router()
+const router = express.Router()
 
 const {
-
- createInvoice,
- getInvoices,
- getInvoiceById,
- getInvoicesByVehicle,
- getInvoicesByCustomer,
+  createInvoice,
+  getInvoices,
+  getInvoiceById,
+  getInvoicesByVehicle,
+  getInvoicesByCustomer,
   publishInvoice,
- updateInvoice
+  updateInvoice
+} = require("../controllers/invoiceController")
 
-}
-=
-require(
- "../controllers/invoiceController"
-)
+router.post("/", createInvoice)
 
-router.post(
- "/",
- createInvoice
+router.get("/", getInvoices)
+
+router.get(
+  "/vehicle/:vehicleNumber",
+  getInvoicesByVehicle
 )
 
 router.get(
- "/",
- getInvoices
-)
-
-router.get(
- "/vehicle/:vehicleNumber",
- getInvoicesByVehicle
-)
-
-router.get(
- "/customer/:email",
- getInvoicesByCustomer
-)
-
-router.get(
- "/:id",
- getInvoiceById
+  "/customer/:email",
+  getInvoicesByCustomer
 )
 
 router.put(
- "/publish/:id",
- publishInvoice
+  "/publish/:id",
+  publishInvoice
 )
 
 router.put(
- "/:id",
- updateInvoice
+  "/:id",
+  updateInvoice
 )
-router.put(
- "/publish/:invoiceId",
- publishInvoice
+
+router.get(
+  "/:id",
+  getInvoiceById
 )
-module.exports =
-router
+
+module.exports = router

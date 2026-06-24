@@ -5,21 +5,50 @@ exports.createInvoice = async (req,res)=>{
 
  try{
 
+
 const now = new Date()
 
-const currentYear =
-now.getMonth() >= 3
-? now.getFullYear()
-: now.getFullYear() - 1
-
 const financialYear =
-`${currentYear}-${String(
-currentYear + 1
-).slice(-2)}`
+
+now.getMonth() >= 3
+
+? `${now.getFullYear()}-${String(
+    now.getFullYear() + 1
+  ).slice(-2)}`
+
+: `${now.getFullYear() - 1}-${String(
+    now.getFullYear()
+  ).slice(-2)}`
+
+let financialYearStart
+
+if(now.getMonth() >= 3){
+
+ financialYearStart =
+ new Date(
+  now.getFullYear(),
+  3,
+  1
+ )
+
+}else{
+
+ financialYearStart =
+ new Date(
+  now.getFullYear()-1,
+  3,
+  1
+ )
+
+}
 
 const lastInvoice =
 await Invoice.findOne({
- financialYear
+
+ createdAt:{
+  $gte:financialYearStart
+ }
+
 })
 .sort({
  invoiceNumber:-1
@@ -33,17 +62,6 @@ if(lastInvoice){
  (lastInvoice.invoiceNumber || 0) + 1
 
 }
-
-  let nextNumber = 1
-
-  if(lastInvoice){
-
-   nextNumber =
-   (
-    lastInvoice.invoiceNumber || 0
-   ) + 1
-
-  }
 
 const invoiceId =
 `INV-${financialYear}-${String(
@@ -278,7 +296,6 @@ await Booking.findOneAndUpdate(
  bookingId:req.body.bookingId
 },
 {
- invoiceGenerated:true,
  invoiceId
 }
 )
@@ -459,27 +476,30 @@ async(req,res)=>{
 
  try{
 
-  const invoice =
-  await Invoice.findById(
-   req.params.id
-  )
+const invoice =
+await Invoice.findById(req.params.id)
 
-  if(!invoice){
+if (!invoice) {
+ return res.status(404).json({
+  success:false,
+  message:"Invoice not found"
+ })
+}
 
-   return res.status(404).json({
-    success:false,
-    message:"Invoice not found"
-   })
+  await Invoice.findByIdAndUpdate(
 
-  }
+ req.params.id,
 
-  invoice.isPublished = true
+ {
+  isPublished:true,
+  publishedAt:new Date()
+ },
 
-  invoice.publishedAt =
-  new Date()
+ {
+  new:true
+ }
 
-  await invoice.save()
-
+)
   if(invoice.bookingId){
 
    await Booking.findOneAndUpdate(
@@ -523,39 +543,38 @@ async(req,res)=>{
 
 }
 
-exports.updateInvoice =
-async(req,res)=>{
+exports.updateInvoice = async (req, res) => {
 
- try{
+ try {
 
   const invoice =
-  await Invoice.findByIdAndUpdate(
+   await Invoice.findByIdAndUpdate(
 
-   req.params.id,
+    req.params.id,
 
-   req.body,
+    req.body,
 
-   {
-    new:true
-   }
+    {
+     new: true
+    }
 
-  )
+   )
 
   res.json({
 
-   success:true,
+   success: true,
 
    invoice
 
   })
 
- }catch(error){
+ } catch (error) {
 
   console.log(error)
 
   res.status(500).json({
 
-   success:false
+   success: false
 
   })
 

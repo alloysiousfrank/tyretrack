@@ -87,6 +87,11 @@ vehicleHistory.reduce(
  0
 )
 
+const selectedBookingId =
+localStorage.getItem(
+ "selectedBookingId"
+)
+
 const lastVisit =
 vehicleHistory.length > 0
 ? new Date(
@@ -249,6 +254,48 @@ setTyreBrands(
  }
 
 }
+
+useEffect(()=>{
+
+ if(!selectedBookingId)
+ return
+
+ fetch(
+  `https://tyretrack-server.onrender.com/api/bookings`
+ )
+ .then(res=>res.json())
+ .then(data=>{
+
+  const booking =
+  data.find(
+   (b:any)=>
+   b.bookingId ===
+   selectedBookingId
+  )
+
+  if(booking){
+
+   setCustomerName(
+    booking.name
+   )
+
+   setEmail(
+    booking.email
+   )
+
+   setPhone(
+    booking.phone
+   )
+
+   setVehicleNumber(
+    booking.vehicleNumber
+   )
+
+  }
+
+ })
+
+},[])
 
 const fetchVehicleHistory =
 async (
@@ -656,19 +703,25 @@ async(id:string)=>{
 
  try{
 
-  const response =
-  await fetch(
+const response = await fetch(
+  `https://tyretrack-server.onrender.com/api/invoices/publish/${id}`,
+  {
+    method: "PUT"
+  }
+)
 
-`https://tyretrack-server.onrender.com/api/invoices/publish/${id}`,
+if (!response.ok) {
 
-   {
-    method:"PUT"
-   }
+  const text = await response.text()
 
+  console.log(text)
+
+  throw new Error(
+    `Server returned ${response.status}`
   )
+}
 
-  const data =
-  await response.json()
+const data = await response.json()
 
   if(data.success){
 
