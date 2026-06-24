@@ -3,42 +3,44 @@ const express = require("express")
 const router = express.Router()
 
 const {
-  createInvoice,
-  getInvoices,
-  getInvoiceById,
-  getInvoicesByVehicle,
-  getInvoicesByCustomer,
-  publishInvoice,
-  updateInvoice
-} = require("../controllers/invoiceController")
+ createInvoice,
+ getInvoices,
+ getInvoiceById,
+ getInvoicesByVehicle,
+ getInvoicesByCustomer,
+ publishInvoice,
+ updateInvoice
+}
+=
+require("../controllers/invoiceController")
 
 router.post("/", createInvoice)
 
 router.get("/", getInvoices)
 
 router.get(
-  "/vehicle/:vehicleNumber",
-  getInvoicesByVehicle
+ "/vehicle/:vehicleNumber",
+ getInvoicesByVehicle
 )
 
 router.get(
-  "/customer/:email",
-  getInvoicesByCustomer
+ "/customer/:email",
+ getInvoicesByCustomer
 )
 
 router.put(
-  "/publish/:id",
-  publishInvoice
+ "/publish/:id",
+ publishInvoice
 )
 
 router.put(
-  "/:id",
-  updateInvoice
+ "/:id",
+ updateInvoice
 )
 
 router.get(
-  "/:id",
-  getInvoiceById
+ "/:id",
+ getInvoiceById
 )
 
 module.exports = router
