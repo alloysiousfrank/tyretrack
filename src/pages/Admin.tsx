@@ -543,12 +543,19 @@ window.location.href =
                     </button>
 <button
  className="invoice-download-btn"
- onClick={() =>
-window.location.href =
-"/admin-invoices"
-}
+ onClick={() => {
+
+  localStorage.setItem(
+   "selectedBookingId",
+   booking.bookingId
+  )
+
+  window.location.href =
+  "/admin-invoices"
+
+ }}
 >
-⬇ Download Invoice
+📄 Generate Invoice
 </button>
 {role === "Admin" && (
 
