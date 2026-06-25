@@ -442,5 +442,11 @@ export const generateInvoicePdf = async (invoice: any) => {
   // ═══════════════════════════════════════════════════════════════════════
   // 13. SAVE PDF
   // ═══════════════════════════════════════════════════════════════════════
-  doc.save((invoice.invoiceId || "TyreTrack-Invoice") + ".pdf")
+  const pdfBlob = doc.output("blob")
+
+doc.save(
+  (invoice.invoiceId || "TyreTrack-Invoice") + ".pdf"
+)
+
+return pdfBlob
 }

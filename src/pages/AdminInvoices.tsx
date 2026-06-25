@@ -679,15 +679,59 @@ alert(errorText)
 
 
 
- alert(
-  "Invoice Created ✅"
- )
+alert("Invoice Created ✅")
 
- fetchInvoices()
+fetchInvoices()
 
- generateInvoicePdf(
+// Generate PDF
+const pdfBlob = await generateInvoicePdf(
   data.invoice
 )
+
+// Create FormData
+const formData = new FormData()
+
+formData.append(
+  "invoice",
+  pdfBlob,
+  `${data.invoice.invoiceId}.pdf`
+)
+
+formData.append(
+  "email",
+  data.invoice.email
+)
+
+formData.append(
+  "customerName",
+  data.invoice.customerName
+)
+
+formData.append(
+  "invoiceId",
+  data.invoice.invoiceId
+)
+
+// Send email
+const emailResponse = await fetch(
+  "https://tyretrack-server.onrender.com/api/invoices/send-email",
+  {
+    method: "POST",
+    body: formData,
+  }
+)
+
+const emailData = await emailResponse.json()
+
+if (emailData.success) {
+
+  console.log("Invoice email sent ✅")
+
+} else {
+
+  console.log(emailData)
+
+}
 
 
 
