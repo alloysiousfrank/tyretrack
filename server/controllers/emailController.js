@@ -1,5 +1,11 @@
 const { sendEmail } = require("../utils/sendEmail")
+console.log(req.body)
 
+console.log(req.file)
+
+console.log(req.file?.originalname)
+
+console.log(req.file?.size)
 exports.sendInvoiceEmail = async (req, res) => {
 
   try {

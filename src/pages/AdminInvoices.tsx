@@ -687,6 +687,9 @@ fetchInvoices()
 const pdfBlob = await generateInvoicePdf(
   data.invoice
 )
+console.log(pdfBlob)
+
+console.log(pdfBlob instanceof Blob)
 if (!pdfBlob) {
 
    alert("PDF Generation Failed")
@@ -741,9 +744,15 @@ if (!emailResponse.ok) {
 
 console.log("Invoice Email Sent ✅")
 
+} catch(error){
 
-const publishInvoice =
-async(id:string)=>{
+   console.log(error)
+
+}
+
+}   // <-- saveInvoice ends here
+
+const publishInvoice = async(id:string)=>{
 
  try{
 
