@@ -1,4 +1,7 @@
 const Booking = require("../models/Booking")
+const {
+  sendBookingConfirmationEmail,
+} = require("../utils/emailService")
 
 // CREATE BOOKING
 exports.createBooking = async (req, res) => {
@@ -7,9 +10,50 @@ exports.createBooking = async (req, res) => {
 
     const booking = await Booking.create(req.body)
 
+    // Send Booking Confirmation Email
+    try {
+
+      await sendBookingConfirmationEmail({
+
+        customerName: booking.name,
+
+        email: booking.email,
+
+        bookingId: booking.bookingId,
+
+        vehicleNumber: booking.vehicleNumber,
+
+        vehicleType: booking.vehicleType,
+
+        service: booking.service,
+
+        date: new Date(
+          booking.date
+        ).toLocaleDateString(),
+
+        time: booking.time,
+
+      })
+
+      console.log(
+        "Booking confirmation email sent successfully."
+      )
+
+    } catch (mailError) {
+
+      console.log(
+        "Booking Email Error:",
+        mailError.message
+      )
+
+    }
+
     res.status(201).json({
+
       success: true,
+
       booking,
+
     })
 
   } catch (error) {
@@ -17,14 +61,16 @@ exports.createBooking = async (req, res) => {
     console.log(error)
 
     res.status(500).json({
+
       success: false,
+
       message: "Booking Failed",
+
     })
 
   }
 
 }
-
 // GET ALL BOOKINGS
 exports.getBookings = async (req, res) => {
 

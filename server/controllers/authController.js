@@ -1,7 +1,9 @@
 const User = require("../models/User")
 const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer")
-
+const {
+  sendWelcomeEmail
+} = require("../services/emailService")
 exports.loginOrRegister = async (req, res) => {
 
 try {
@@ -58,6 +60,10 @@ user = await User.create({
   phone,
 
 })
+await sendWelcomeEmail(
+  user.name,
+  user.email
+)
 
 // SEND WELCOME EMAIL
 /*

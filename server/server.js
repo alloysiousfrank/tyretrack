@@ -15,7 +15,7 @@ const invoiceRoutes =
 require(
  "./routes/invoiceRoutes"
 )
-
+const emailRoutes = require("./routes/emailRoutes")
 
 const app = express()
 
@@ -48,7 +48,7 @@ app.use(
  "/api/inventory",
  inventoryRoutes
 )
-
+app.use("/api/email", emailRoutes)
 
 // TEST ROUTE
 app.get("/", (req, res) => {
