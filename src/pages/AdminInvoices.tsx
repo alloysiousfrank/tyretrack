@@ -687,7 +687,13 @@ fetchInvoices()
 const pdfBlob = await generateInvoicePdf(
   data.invoice
 )
+if (!pdfBlob) {
 
+   alert("PDF Generation Failed")
+
+   return
+
+}
 // Create FormData
 const formData = new FormData()
 
@@ -723,25 +729,19 @@ const emailResponse = await fetch(
 
 const emailData = await emailResponse.json()
 
-if (emailData.success) {
+console.log(emailData)
 
-  console.log("Invoice email sent ✅")
+if (!emailResponse.ok) {
 
-} else {
+   alert(emailData.message)
 
-  console.log(emailData)
-
-}
-
-
-
- }catch(error){
-
-  console.log(error)
-
- }
+   return
 
 }
+
+console.log("Invoice Email Sent ✅")
+
+
 const publishInvoice =
 async(id:string)=>{
 
@@ -1774,5 +1774,5 @@ customServices
 </div> 
 
 )
+  }
 
-}
