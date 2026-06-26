@@ -1,119 +1,78 @@
 import { useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, useNavigate } from "react-router-dom"
 import "./Login.css"
 
 import { loginOrRegister } from "../api/authApi"
 
 export default function Login() {
 
-  const [searchParams] =
-  useSearchParams()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()                    // ✅ FIX: useNavigate instead of window.location.href
 
-const selectedService =
-  searchParams.get("service")
+  const selectedService = searchParams.get("service")
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
-
-  const [loading, setLoading] =
-    useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleLogin = async () => {
+
+    // ✅ FIX: validate inputs before hitting the API
+    if (!email.trim() || !phone.trim()) {
+      alert("Please enter your email and phone number")
+      return
+    }
+
+    if (!email.includes("@")) {
+      alert("Please enter a valid email address")
+      return
+    }
 
     try {
 
       setLoading(true)
 
-      const data =
-        await loginOrRegister(
-          name,
-          email,
-          phone
-        )
-
-      console.log(data)
+      const data = await loginOrRegister(
+        name,
+        email,
+        phone
+      )
 
       if (!data.success) {
-
-        alert(
-          data.message ||
-          "Login Failed"
-        )
-
+        alert(data.message || "Login Failed")
         return
-
       }
 
-      localStorage.setItem(
-        "token",
-        data.token
-      )
-
-      localStorage.setItem(
-        "userName",
-        data.user.name
-      )
-
-      localStorage.setItem(
-        "userEmail",
-        data.user.email
-      )
-
-      localStorage.setItem(
-        "userPhone",
-        data.user.phone
-      )
-
-      localStorage.setItem(
-        "isLoggedIn",
-        "true"
-      )
+      // ✅ Store auth data
+      localStorage.setItem("token", data.token!)
+      localStorage.setItem("userName", data.user!.name)
+      localStorage.setItem("userEmail", data.user!.email)
+      localStorage.setItem("userPhone", data.user!.phone)
+      localStorage.setItem("isLoggedIn", "true")
 
       if (data.existingUser) {
-
-        alert(
-          "Welcome Back ✅"
-        )
-
+        alert("Welcome Back ✅")
       } else {
-
-        alert(
-          "Account Created Successfully ✅"
-        )
-
+        alert("Account Created Successfully ✅")
       }
 
+      // ✅ FIX: use navigate() — no page reload, no race condition
       if (selectedService) {
-
-  localStorage.setItem(
-    "selectedService",
-    selectedService
-  )
-
-}
-
-window.location.href =
-  selectedService
-    ? `/booking?service=${selectedService}`
-    : "/booking"
+        localStorage.setItem("selectedService", selectedService)
+        navigate(`/booking?service=${selectedService}`)
+      } else {
+        navigate("/booking")
+      }
 
     } catch (error) {
-
-      console.log(error)
-
-      alert(
-        "Something went wrong"
-      )
-
+      console.error("Login error:", error)
+      alert("Something went wrong. Please try again.")
     } finally {
-
       setLoading(false)
-
     }
 
   }
-
 
   return (
 
@@ -121,48 +80,34 @@ window.location.href =
 
       <div className="login-card">
 
-        <h1>
-          TyreTrack Login
-        </h1>
+        <h1>TyreTrack Login</h1>
 
         <input
           type="text"
           placeholder="Enter Name"
           value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
+          onChange={(e) => setName(e.target.value)}
         />
 
         <input
           type="email"
           placeholder="Enter Email"
           value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="text"
           placeholder="Enter Phone Number"
           value={phone}
-          onChange={(e) =>
-            setPhone(e.target.value)
-          }
+          onChange={(e) => setPhone(e.target.value)}
         />
 
         <button
           onClick={handleLogin}
           disabled={loading}
         >
-
-          {
-            loading
-              ? "Please Wait..."
-              : "Continue"
-          }
-
+          {loading ? "Please Wait..." : "Continue"}
         </button>
 
       </div>

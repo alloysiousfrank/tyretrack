@@ -1,159 +1,105 @@
 const User = require("../models/User")
 const jwt = require("jsonwebtoken")
-const nodemailer = require("nodemailer")
-const {
-  sendWelcomeEmail
-} = require("../utils/emailService")
+const { sendWelcomeEmail } = require("../utils/emailService")
+
 exports.loginOrRegister = async (req, res) => {
 
-try {
+  try {
 
-const { name, email, phone } = req.body
+    const { name, email, phone } = req.body
 
-if (!email || !phone) {
-
-  return res.status(400).json({
-    success: false,
-    message: "Email and Phone are required",
-  })
-
-}
-
-// FIND USER
-let user = await User.findOne({
-  email: email.toLowerCase(),
-})
-
-// EXISTING USER
-if (user) {
-
-  const token = jwt.sign(
-    {
-      id: user._id,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "7d",
+    // VALIDATION
+    if (!email || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Phone are required",
+      })
     }
-  )
 
-  return res.json({
-    success: true,
-    existingUser: true,
-    token,
+    // FIND USER
+    let user = await User.findOne({
+      email: email.toLowerCase(),
+    })
 
-    user: {
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-    },
-  })
+    // ==============================
+    // EXISTING USER — LOGIN
+    // ==============================
 
-}
+    if (user) {
 
-// CREATE NEW USER
+      const token = jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      )
 
-user = await User.create({
+      return res.json({
+        success: true,
+        existingUser: true,
+        token,
+        user: {
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+        },
+      })
 
-  name,
-  email: email.toLowerCase(),
-  phone,
+    }
 
-})
-await sendWelcomeEmail(
-  user.name,
-  user.email
-)
+    // ==============================
+    // NEW USER — REGISTER
+    // ==============================
 
-// SEND WELCOME EMAIL
-/*
-const transporter =
-  nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
-    secure: true,
+    // name is required only for new users
+    if (!name || name.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required for new accounts",
+      })
+    }
 
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  })
+    user = await User.create({
+      name: name.trim(),
+      email: email.toLowerCase(),
+      phone,
+    })
 
-await transporter.verify()
+    // ✅ FIX: wrapped in try/catch so email failure never crashes registration
+    // ✅ FIX: passing object { customerName, email } — matches sendWelcomeEmail signature
+    try {
+      await sendWelcomeEmail({
+        customerName: user.name,
+        email: user.email,
+      })
+      console.log("Welcome email sent to", user.email)
+    } catch (emailError) {
+      console.log("Welcome email failed (non-fatal):", emailError.message)
+      // User is already created — we continue and return success
+    }
 
-console.log(
-  "Brevo SMTP Connected ✅"
-)
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    )
 
-const info =
-  await transporter.sendMail({
-    from:
-      '"TyreTrack" <tyretrackoff@gmail.com@email.com>',
+    return res.json({
+      success: true,
+      existingUser: false,
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      },
+    })
 
-    to: email,
-
-    subject:
-      "Welcome to TyreTrack",
-
-    html: `
-      <div style="font-family:Arial;padding:20px">
-        <h2>Welcome to TyreTrack 🚗</h2>
-        <p>Hi ${name},</p>
-
-        <p>
-          Your account has been created
-          successfully.
-        </p>
-
-        <p>
-          Thank you for choosing
-          TyreTrack.
-        </p>
-      </div>
-    `,
-  })
-
-console.log(info.messageId)
-  .then(() => {
-    console.log("Welcome email sent")
-  })
-  .catch((err) => {
-    console.log("Mail failed:", err.message)
-  })
-*/
-const token = jwt.sign(
-  {
-    id: user._id,
-  },
-  process.env.JWT_SECRET,
-  {
-    expiresIn: "7d",
+  } catch (error) {
+    console.log("LOGIN OR REGISTER ERROR:", error)
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    })
   }
-)
 
-return res.json({
-
-  success: true,
-  existingUser: false,
-  token,
-
-  user: {
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-  },
-
-})
-
-} catch (error) {
-  console.log(
-    "LOGIN OR REGISTER ERROR:",
-    error
-  )
-
-  return res.status(500).json({
-    success: false,
-    message: "Server Error",
-  })
-}
 }
