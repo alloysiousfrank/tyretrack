@@ -1,21 +1,20 @@
 const nodemailer = require("nodemailer")
 
 const transporter = nodemailer.createTransport({
-
-  host: process.env.EMAIL_HOST,
-
-  port: Number(process.env.EMAIL_PORT),
-
-  secure: true,
-
+  host: "smtp.gmail.com",       // hardcoded — don't rely on env for host
+  port: 587,                    // 587 + secure:false = STARTTLS (works on Render)
+  secure: false,                // true only for port 465
+  family: 4,                    // ✅ force IPv4 — fixes ENETUNREACH on Render
   auth: {
-
     user: process.env.EMAIL_USER,
-
     pass: process.env.EMAIL_PASS,
-
   },
-
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
+  tls: {
+    rejectUnauthorized: false,
+  },
 })
 
 const sendEmail = async ({
