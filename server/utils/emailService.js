@@ -19,13 +19,10 @@ const transporter = nodemailer.createTransport({
 })
 
 const sendEmail = async ({
-
   to,
-
   subject,
-
   html,
-
+  attachments = []
 }) => {
 
   return transporter.sendMail({
@@ -37,6 +34,8 @@ const sendEmail = async ({
     subject,
 
     html,
+
+    attachments
 
   })
 

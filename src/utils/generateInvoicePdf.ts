@@ -53,8 +53,9 @@ function fmt(n: number | string): string {
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export const generateInvoicePdf = async (invoice: any) => {
-
+export const generateInvoicePdf = async (
+  invoice:any
+): Promise<Blob> => {
   // 0. Build dynamic UPI QR for this exact invoice amount
   const upiString =
     `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(MERCHANT)}` +

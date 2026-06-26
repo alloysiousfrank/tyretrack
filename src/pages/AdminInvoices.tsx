@@ -5,7 +5,8 @@ import {
 from
 "../utils/generateInvoicePdf"
 import "./AdminInvoices.css"
-
+import { sendInvoiceEmail }
+from "../utils/sendInvoiceEmail"
 
 export default function AdminInvoices() {
 
@@ -683,66 +684,7 @@ alert("Invoice Created ✅")
 
 fetchInvoices()
 
-// Generate PDF
-const pdfBlob = await generateInvoicePdf(
-  data.invoice
-)
-console.log(pdfBlob)
 
-console.log(pdfBlob instanceof Blob)
-if (!pdfBlob) {
-
-   alert("PDF Generation Failed")
-
-   return
-
-}
-// Create FormData
-const formData = new FormData()
-
-formData.append(
-  "invoice",
-  pdfBlob,
-  `${data.invoice.invoiceId}.pdf`
-)
-
-formData.append(
-  "email",
-  data.invoice.email
-)
-
-formData.append(
-  "customerName",
-  data.invoice.customerName
-)
-
-formData.append(
-  "invoiceId",
-  data.invoice.invoiceId
-)
-
-// Send email
-const emailResponse = await fetch(
-  "https://tyretrack-server.onrender.com/api/invoices/send-email",
-  {
-    method: "POST",
-    body: formData,
-  }
-)
-
-const emailData = await emailResponse.json()
-
-console.log(emailData)
-
-if (!emailResponse.ok) {
-
-   alert(emailData.message)
-
-   return
-
-}
-
-console.log("Invoice Email Sent ✅")
 
 } catch(error){
 
@@ -752,45 +694,81 @@ console.log("Invoice Email Sent ✅")
 
 }   // <-- saveInvoice ends here
 
-const publishInvoice = async(id:string)=>{
+const publishInvoice = async (id: string) => {
 
- try{
+  try {
 
-const response = await fetch(
-  `https://tyretrack-server.onrender.com/api/invoices/publish/${id}`,
-  {
-    method: "PUT"
+    const response = await fetch(
+
+      `https://tyretrack-server.onrender.com/api/invoices/publish/${id}`,
+
+      {
+
+        method: "PUT"
+
+      }
+
+    )
+
+    if (!response.ok) {
+
+      throw new Error("Publish failed")
+
+    }
+
+    const data = await response.json()
+
+    if (data.success) {
+
+      const publishedInvoice = invoices.find(
+
+        (inv: any) => inv._id === id
+
+      )
+
+      if (publishedInvoice) {
+
+        const pdfBlob =
+
+          await generateInvoicePdf(
+
+            publishedInvoice
+
+          )
+
+        const emailResult =
+
+          await sendInvoiceEmail(
+
+            publishedInvoice,
+
+            pdfBlob
+
+          )
+
+        console.log(emailResult)
+
+      }
+
+      alert(
+
+        "Invoice Published & Email Sent ✅"
+
+      )
+
+      fetchInvoices()
+
+    }
+
   }
-)
 
-if (!response.ok) {
+  catch (error) {
 
-  const text = await response.text()
+    console.log(error)
 
-  console.log(text)
-
-  throw new Error(
-    `Server returned ${response.status}`
-  )
-}
-
-const data = await response.json()
-
-  if(data.success){
-
-   alert(
-    "Invoice Published ✅"
-   )
-
-   fetchInvoices()
+    alert("Publish Failed")
 
   }
-
- }catch(error){
-
-  console.log(error)
-
- }
 
 }
 
