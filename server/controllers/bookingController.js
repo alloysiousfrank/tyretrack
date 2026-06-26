@@ -138,7 +138,7 @@ exports.updateBookingStatus = async (req, res) => {
       await Booking.findOneAndUpdate(
         { bookingId },
         req.body,
-        { new: true }
+        { returnDocument: "after" }
       )
 
     res.json({
