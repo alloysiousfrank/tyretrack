@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken")
 const nodemailer = require("nodemailer")
 const {
   sendWelcomeEmail
-} = require("../services/emailService")
+} = require("../utils/emailService")
 exports.loginOrRegister = async (req, res) => {
 
 try {
