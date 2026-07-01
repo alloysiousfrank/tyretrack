@@ -4,22 +4,17 @@ module.exports = (req, res, next) => {
 
   try {
 
+    console.log("Authorization Header:", req.headers.authorization)
+
     const token =
       req.headers.authorization?.split(" ")[1]
 
-    if (!token) {
+    console.log("Extracted Token:", token)
 
-      return res.status(401).json({
-        success: false,
-        message: "No Token",
-      })
+    const decoded =
+      jwt.verify(token, process.env.JWT_SECRET)
 
-    }
-
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    )
+    console.log("Decoded JWT:", decoded)
 
     req.admin = decoded
 
@@ -27,9 +22,11 @@ module.exports = (req, res, next) => {
 
   } catch (error) {
 
+    console.log("JWT ERROR:", error)
+
     return res.status(401).json({
       success: false,
-      message: "Unauthorized",
+      message: "Unauthorized"
     })
 
   }
