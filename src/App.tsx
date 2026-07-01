@@ -23,7 +23,7 @@ import AdminAnalytics from "./pages/AdminAnalytics"
 import AdminReports from "./pages/AdminReports"
 import AdminInvoices from "./pages/AdminInvoices"
 import AdminInventory from "./pages/AdminInventory"
-
+import GetQuote from "./pages/GetQuote"
 function App() {
 
   return (
@@ -48,7 +48,10 @@ function App() {
           path="booking"
           element={<Booking />}
         />
-
+        <Route
+  path="getquote"
+  element={<GetQuote />}
+/>
         <Route
           path="contact"
           element={<Contact />}

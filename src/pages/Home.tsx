@@ -69,6 +69,31 @@ export default function Home() {
         </RevealSection>
 
         <RevealSection className="section-gap">
+
+  <GlassCard className="glass-red" red>
+
+    <SectionHeading
+      eyebrow="New"
+      title="Need a Tyre Quotation?"
+      subtitle="Receive a personalized quotation based on your vehicle and tyre requirements."
+    />
+
+    <section className="home__center-cta">
+
+      <Link
+        to="/getquote"
+        className="btn btn-primary"
+      >
+        🚗 Get My Quote
+      </Link>
+
+    </section>
+
+  </GlassCard>
+
+</RevealSection>
+
+        <RevealSection className="section-gap">
           <GlassCard className="home__track-cta glass-red" red>
             <div className="home__track-content">
               <div className="home__track-text">

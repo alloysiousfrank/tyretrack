@@ -1,0 +1,336 @@
+/* =========================================
+   TYRETRACK PREMIUM QUOTATION PAGE
+========================================= */
+
+.quote-page{
+
+    min-height:100vh;
+
+    background:
+    radial-gradient(circle at top right,#ff1d2520,transparent 35%),
+    radial-gradient(circle at bottom left,#ff000015,transparent 35%),
+    linear-gradient(180deg,#090909,#111111);
+
+    padding:120px 0 80px;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+.quote-overlay{
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+    repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 80px,
+        rgba(255,255,255,.015) 81px
+    );
+
+    pointer-events:none;
+
+}
+
+.quote-container{
+
+    width:min(1180px,92%);
+
+    margin:auto;
+
+    position:relative;
+
+    z-index:5;
+
+}
+
+/* ================= HERO ================= */
+
+.quote-hero{
+
+    text-align:center;
+
+    margin-bottom:60px;
+
+}
+
+.quote-tag{
+
+    display:inline-block;
+
+    padding:8px 18px;
+
+    border-radius:40px;
+
+    background:#ff2d2d22;
+
+    border:1px solid #ff3434;
+
+    color:#ff5b5b;
+
+    letter-spacing:2px;
+
+    font-size:.82rem;
+
+    font-weight:700;
+
+    margin-bottom:18px;
+
+}
+
+.quote-hero h1{
+
+    font-size:3rem;
+
+    font-weight:800;
+
+    color:white;
+
+    margin-bottom:18px;
+
+}
+
+.quote-description{
+
+    max-width:760px;
+
+    margin:auto;
+
+    color:#bfbfbf;
+
+    line-height:1.8;
+
+    font-size:1.05rem;
+
+}
+
+/* ================= CARD ================= */
+
+.quote-card{
+
+    margin-bottom:35px;
+
+    padding:35px;
+
+    border-radius:24px;
+
+    background:rgba(20,20,20,.75);
+
+    border:1px solid rgba(255,255,255,.06);
+
+    backdrop-filter:blur(16px);
+
+    box-shadow:
+
+    0 10px 40px rgba(0,0,0,.45),
+
+    inset 0 0 0 1px rgba(255,255,255,.03);
+
+    transition:.35s;
+
+}
+
+.quote-card:hover{
+
+    border-color:#ff3030;
+
+    transform:translateY(-4px);
+
+    box-shadow:
+
+    0 18px 55px rgba(255,0,0,.18);
+
+}
+
+.quote-card h2{
+
+    color:white;
+
+    font-size:1.35rem;
+
+    margin-bottom:28px;
+
+}
+
+/* ================= GRID ================= */
+
+.quote-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:22px;
+
+}
+
+/* ================= INPUTS ================= */
+
+.quote-card input,
+
+.quote-card select,
+
+.quote-card textarea{
+
+    width:100%;
+
+    background:#181818;
+
+    border:1px solid #2b2b2b;
+
+    border-radius:16px;
+
+    padding:16px 18px;
+
+    color:white;
+
+    font-size:15px;
+
+    outline:none;
+
+    transition:.30s;
+
+}
+
+.quote-card textarea{
+
+    margin-top:22px;
+
+    resize:none;
+
+}
+
+.quote-card input::placeholder,
+
+.quote-card textarea::placeholder{
+
+    color:#8d8d8d;
+
+}
+
+.quote-card input:focus,
+
+.quote-card select:focus,
+
+.quote-card textarea:focus{
+
+    border-color:#ff3131;
+
+    box-shadow:
+
+    0 0 0 3px rgba(255,40,40,.18);
+
+}
+
+/* ================= BUTTON ================= */
+
+.quote-submit{
+
+    display:flex;
+
+    justify-content:center;
+
+    margin-top:50px;
+
+}
+
+.quote-submit button{
+
+    border:none;
+
+    cursor:pointer;
+
+    background:linear-gradient(
+
+        135deg,
+
+        #ff3030,
+
+        #ff5d2d
+
+    );
+
+    color:white;
+
+    padding:18px 50px;
+
+    border-radius:50px;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    transition:.35s;
+
+    box-shadow:
+
+    0 15px 35px rgba(255,0,0,.35);
+
+}
+
+.quote-submit button:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:
+
+    0 25px 60px rgba(255,0,0,.45);
+
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:900px){
+
+.quote-grid{
+
+grid-template-columns:1fr;
+
+}
+
+.quote-hero h1{
+
+font-size:2.2rem;
+
+}
+
+.quote-card{
+
+padding:25px;
+
+}
+
+}
+
+@media(max-width:600px){
+
+.quote-page{
+
+padding-top:90px;
+
+}
+
+.quote-hero h1{
+
+font-size:1.8rem;
+
+}
+
+.quote-description{
+
+font-size:.95rem;
+
+}
+
+.quote-submit button{
+
+width:100%;
+
+}
+
+}
