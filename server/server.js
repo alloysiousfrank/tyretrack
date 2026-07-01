@@ -15,6 +15,8 @@ const invoiceRoutes =
 require(
  "./routes/invoiceRoutes"
 )
+const quotationRoutes =
+require("./routes/quotationRoutes")
 const emailRoutes = require("./routes/emailRoutes")
 
 const app = express()
@@ -47,6 +49,10 @@ app.use(
 app.use(
  "/api/inventory",
  inventoryRoutes
+)
+app.use(
+  "/api/quotations",
+  quotationRoutes
 )
 app.use("/api/email", emailRoutes)
 
