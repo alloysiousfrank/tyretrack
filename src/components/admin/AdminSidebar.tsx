@@ -91,6 +91,15 @@ setOpen(false)
 </Link>
 
 <Link
+to="/admin-quotes"
+onClick={()=>
+setOpen(false)
+}
+>
+ Quotations
+</Link>
+
+<Link
 to="/admin-invoices"
 onClick={()=>
 setOpen(false)

@@ -195,15 +195,76 @@ exports.updateQuotation = async (req, res) => {
 
   try {
 
+    const {
+
+      tyrePrice,
+
+      tyreQuantity,
+
+      labourCharge,
+
+      accessoriesCharge,
+
+      discount,
+
+      includeGST,
+
+      adminRemarks
+
+    } = req.body
+
+    const subtotal =
+
+      (Number(tyrePrice) * Number(tyreQuantity))
+
+      +
+
+      Number(labourCharge)
+
+      +
+
+      Number(accessoriesCharge)
+
+      -
+
+      Number(discount)
+
+    const gst =
+
+      includeGST
+
+      ? Number((subtotal * 0.18).toFixed(2))
+
+      : 0
+
+    const totalAmount =
+
+      Number((subtotal + gst).toFixed(2))
+
     const quotation =
+
       await Quotation.findByIdAndUpdate(
 
         req.params.id,
 
-        req.body,
+        {
+
+          ...req.body,
+
+          subtotal,
+
+          gst,
+
+          totalAmount,
+
+          quoteStatus: "Draft"
+
+        },
 
         {
+
           returnDocument: "after"
+
         }
 
       )
@@ -219,6 +280,8 @@ exports.updateQuotation = async (req, res) => {
   }
 
   catch (error) {
+
+    console.log(error)
 
     res.status(500).json({
 

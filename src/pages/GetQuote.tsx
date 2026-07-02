@@ -1,4 +1,5 @@
 import { useState } from "react"
+import axios from "axios"
 import "./GetQuote.css"
 
 export default function GetQuote() {
@@ -23,13 +24,120 @@ const [notes, setNotes] = useState("")
   }
 
   const previousStep = () => {
-
     if (step > 1) {
       setStep(step - 1)
     }
 
   }
+  const submitQuotation = async () => {
 
+try{
+
+if(
+
+!customerName ||
+
+!phone ||
+
+!vehicleType ||
+
+!vehicleBrand ||
+
+!vehicleModel ||
+
+!vehicleNumber ||
+
+!preferredBrand ||
+
+!tyreSize
+
+){
+
+alert("Please fill all required fields")
+
+return
+
+}
+
+const response = await axios.post(
+
+"https://tyretrack-server.onrender.com/api/quotations",
+
+{
+
+customerName,
+
+phone,
+
+email,
+
+vehicleType,
+
+vehicleBrand,
+
+vehicleModel,
+
+vehicleNumber,
+
+preferredBrand,
+
+tyreSize,
+
+notes
+
+}
+
+)
+
+if(response.data.success){
+
+alert(
+
+`Quotation Submitted Successfully!
+
+Quote No : ${response.data.quotation.quoteId}`
+
+)
+
+setCustomerName("")
+
+setPhone("")
+
+setEmail("")
+
+setVehicleType("")
+
+setVehicleBrand("")
+
+setVehicleModel("")
+
+setVehicleNumber("")
+
+setPreferredBrand("")
+
+setTyreSize("")
+
+setNotes("")
+
+setStep(1)
+
+}
+
+}catch(error:any){
+
+console.log(error)
+
+alert(
+
+error.response?.data?.message ||
+
+"Unable to submit quotation."
+
+)
+
+}
+
+}
   return (
 
     <section className="quote-page">
@@ -791,6 +899,8 @@ Review Your Request
 <button
 
 className="submit-quote"
+
+onClick={submitQuotation}
 
 >
 

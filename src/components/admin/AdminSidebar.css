@@ -3,23 +3,28 @@
 position:fixed;
 
 top:0;
-left:-300px;
 
-width:300px;
+left:0;
+
 height:100vh;
 
 overflow-y:auto;
 
+overflow-x:hidden;
+
 scroll-behavior:smooth;
 
-background:
-linear-gradient(
-180deg,
-#0d0d0d,
-#151515
-);
+}
 
-transition:.35s ease;
+.admin-sidebar::-webkit-scrollbar{
+
+display:none;
+
+}
+
+.admin-sidebar{
+
+scrollbar-width:none;
 
 }
 
@@ -198,6 +203,11 @@ padding:40px;
 
 transition:.3s ease;
 
+overflow-y:auto;
+
+overflow-x:hidden;
+
+scroll-behavior:smooth;
 }
 
 .sidebar-overlay{

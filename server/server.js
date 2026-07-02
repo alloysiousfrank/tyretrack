@@ -56,6 +56,7 @@ app.use(
 )
 app.use("/api/email", emailRoutes)
 
+
 // TEST ROUTE
 app.get("/", (req, res) => {
   res.send("TyreTrack Server Running")

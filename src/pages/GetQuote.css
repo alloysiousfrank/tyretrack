@@ -1,7 +1,19 @@
 /* =========================================
    TYRETRACK PREMIUM QUOTATION PAGE
 ========================================= */
+html{
 
+scroll-behavior:smooth;
+
+}
+
+body{
+
+overflow-y:auto;
+
+overflow-x:hidden;
+
+}
 .quote-page{
 
     min-height:100vh;
@@ -15,8 +27,14 @@
 
     position:relative;
 
-    overflow:hidden;
+html{
+    scroll-behavior:smooth;
+}
 
+body{
+    overflow-y:auto;
+    overflow-x:hidden;
+}
 }
 
 .quote-overlay{
