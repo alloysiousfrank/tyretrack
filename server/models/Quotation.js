@@ -32,12 +32,12 @@ const quotationSchema = new mongoose.Schema({
     default: ""
   },
 
-  vehicleNumber: {
+  vehicleType: {
     type: String,
     default: ""
   },
 
-  vehicleType: {
+  vehicleNumber: {
     type: String,
     default: ""
   },
@@ -67,25 +67,48 @@ const quotationSchema = new mongoose.Schema({
     default: ""
   },
 
-  quotationItems: [
+  /* -------------------------
+     ADMIN SECTION
+  ------------------------- */
 
-    {
+  tyrePrice: {
+    type: Number,
+    default: 0
+  },
 
-      itemName: String,
+  tyreQuantity: {
+    type: Number,
+    default: 1
+  },
 
-      quantity: Number,
+  serviceCharge: {
+    type: Number,
+    default: 0
+  },
 
-      amount: Number,
+  accessoriesCharge: {
+    type: Number,
+    default: 0
+  },
 
-      total: Number
+  labourCharge: {
+    type: Number,
+    default: 0
+  },
 
-    }
-
-  ],
+  discount: {
+    type: Number,
+    default: 0
+  },
 
   subtotal: {
     type: Number,
     default: 0
+  },
+
+  includeGST: {
+    type: Boolean,
+    default: true
   },
 
   gst: {
@@ -98,29 +121,85 @@ const quotationSchema = new mongoose.Schema({
     default: 0
   },
 
-  includeGST: {
-    type: Boolean,
-    default: false
+  adminRemarks: {
+    type: String,
+    default: ""
   },
 
-  status: {
+  /* -------------------------
+     STATUS
+  ------------------------- */
+
+  quoteStatus: {
+
     type: String,
+
+    enum: [
+
+      "Pending",
+
+      "Draft",
+
+      "Published",
+
+      "Accepted",
+
+      "Rejected",
+
+      "Expired"
+
+    ],
+
     default: "Pending"
+
   },
 
   isPublished: {
-    type: Boolean,
-    default: false
-  },
 
-  publishedAt: {
-    type: Date,
-    default: null
+    type: Boolean,
+
+    default: false
+
   },
 
   pdfUrl: {
+
     type: String,
+
     default: ""
+
+  },
+
+  validTill: {
+
+    type: Date,
+
+    default: null
+
+  },
+
+  publishedAt: {
+
+    type: Date,
+
+    default: null
+
+  },
+
+  acceptedAt: {
+
+    type: Date,
+
+    default: null
+
+  },
+
+  rejectedAt: {
+
+    type: Date,
+
+    default: null
+
   }
 
 },

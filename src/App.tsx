@@ -24,6 +24,8 @@ import AdminReports from "./pages/AdminReports"
 import AdminInvoices from "./pages/AdminInvoices"
 import AdminInventory from "./pages/AdminInventory"
 import GetQuote from "./pages/GetQuote"
+import AdminQuotes from "./pages/AdminQuotes"
+
 function App() {
 
   return (
@@ -135,6 +137,14 @@ function App() {
           path="/admin-reports"
           element={<AdminReports />}
         />
+
+        <Route
+
+  path="/admin-quotes"
+
+  element={<AdminQuotes />}
+
+/>
 
         <Route
           path="/admin-invoices"

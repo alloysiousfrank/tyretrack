@@ -16,7 +16,7 @@ export default function Home() {
       <section className="home__story page-inner">
         <RevealSection className="section-gap">
           <SectionHeading
-            eyebrow="Chapter I"
+            eyebrow="About Us"
             title="Crafted for the Driven"
             subtitle="Every vehicle that enters TyreTrack receives white-glove treatment — from precision alignment to showroom-ready finishes."
           />
@@ -37,7 +37,7 @@ export default function Home() {
 
         <RevealSection className="section-gap" delay={0.1}>
           <SectionHeading
-            eyebrow="Chapter II"
+            eyebrow="Services"
             title="Our Services"
             subtitle="Premium care for every detail — book any service online in under a minute."
           />

@@ -35,16 +35,17 @@ exports.createQuotation = async (req, res) => {
 
     }
 
-    const lastQuote =
-      await Quotation.findOne({
+    const lastQuote = await Quotation.findOne({
 
-        createdAt: {
-          $gte: financialYearStart
-        }
+      createdAt: {
+        $gte: financialYearStart
+      }
 
-      }).sort({
-        quoteNumber: -1
-      })
+    }).sort({
+
+      quoteNumber: -1
+
+    })
 
     let nextNumber = 1
 
@@ -58,20 +59,30 @@ exports.createQuotation = async (req, res) => {
     const quoteId =
       `QT-${financialYear}-${String(nextNumber).padStart(6, "0")}`
 
-    const quotation =
-      await Quotation.create({
+    const quotation = await Quotation.create({
 
-        ...req.body,
+      ...req.body,
 
-        quoteId,
+      customerName: req.body.customerName,
 
-        financialYear,
+      phone: req.body.phone,
 
-        quoteNumber: nextNumber
+      email: req.body.email?.toLowerCase(),
 
-      })
+      vehicleNumber:
+        req.body.vehicleNumber?.toUpperCase(),
 
-    return res.json({
+      quoteId,
+
+      quoteNumber: nextNumber,
+
+      financialYear,
+
+      quoteStatus: "Pending"
+
+    })
+
+    res.json({
 
       success: true,
 
@@ -85,7 +96,7 @@ exports.createQuotation = async (req, res) => {
 
     console.log(error)
 
-    return res.status(500).json({
+    res.status(500).json({
 
       success: false,
 
@@ -101,18 +112,20 @@ exports.createQuotation = async (req, res) => {
 // GET ALL QUOTATIONS
 // ==============================
 
-exports.getQuotations =
-async (req, res) => {
+exports.getQuotations = async (req, res) => {
 
   try {
 
     const quotations =
       await Quotation.find()
+
       .sort({
+
         createdAt: -1
+
       })
 
-    return res.json({
+    res.json({
 
       success: true,
 
@@ -124,11 +137,11 @@ async (req, res) => {
 
   catch (error) {
 
-    console.log(error)
+    res.status(500).json({
 
-    return res.status(500).json({
+      success: false,
 
-      success: false
+      message: error.message
 
     })
 
@@ -178,8 +191,7 @@ async (req, res) => {
 // UPDATE QUOTATION
 // ==============================
 
-exports.updateQuotation =
-async (req, res) => {
+exports.updateQuotation = async (req, res) => {
 
   try {
 
@@ -196,7 +208,7 @@ async (req, res) => {
 
       )
 
-    return res.json({
+    res.json({
 
       success: true,
 
@@ -208,11 +220,11 @@ async (req, res) => {
 
   catch (error) {
 
-    console.log(error)
+    res.status(500).json({
 
-    return res.status(500).json({
+      success: false,
 
-      success: false
+      message: error.message
 
     })
 
@@ -224,8 +236,7 @@ async (req, res) => {
 // PUBLISH QUOTATION
 // ==============================
 
-exports.publishQuotation =
-async (req, res) => {
+exports.publishQuotation = async (req, res) => {
 
   try {
 
@@ -236,11 +247,11 @@ async (req, res) => {
 
         {
 
+          quoteStatus: "Published",
+
           isPublished: true,
 
-          publishedAt: new Date(),
-
-          status: "Published"
+          publishedAt: new Date()
 
         },
 
@@ -250,7 +261,7 @@ async (req, res) => {
 
       )
 
-    return res.json({
+    res.json({
 
       success: true,
 
@@ -262,11 +273,11 @@ async (req, res) => {
 
   catch (error) {
 
-    console.log(error)
+    res.status(500).json({
 
-    return res.status(500).json({
+      success: false,
 
-      success: false
+      message: error.message
 
     })
 
