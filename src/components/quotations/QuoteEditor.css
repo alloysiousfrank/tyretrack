@@ -1,34 +1,73 @@
 .editor-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.75);
-  backdrop-filter:blur(8px);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
+
+position:fixed;
+
+inset:0;
+
+background:rgba(0,0,0,.75);
+
+backdrop-filter:blur(8px);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+z-index:9999;
+
+overflow:hidden;
+
+overscroll-behavior:contain;
+
 }
 
 .editor-container{
-  width:95%;
-  max-width:1200px;
-  max-height:92vh;
-  overflow-y:auto;
-  overflow-x:hidden;
-  background:#111;
-  border-radius:24px;
-  padding:35px;
-  color:white;
-  -webkit-overflow-scrolling:touch;
-  /* Keep the mouse-wheel/touch scroll working but hide the visible
-     scrollbar track (Firefox + IE/Edge legacy). Webkit browsers are
-     handled by the ::-webkit-scrollbar rule just below. */
-  scrollbar-width:none;
-  -ms-overflow-style:none;
+
+width:95%;
+
+max-width:1200px;
+
+height:92vh;
+
+overflow-y:auto;
+
+overflow-x:hidden;
+
+background:#111;
+
+border-radius:24px;
+
+padding:35px;
+
+color:white;
+
+scroll-behavior:smooth;
+
+overscroll-behavior:contain;
+
+-webkit-overflow-scrolling:touch;
+
+scrollbar-width:none;
+
+-ms-overflow-style:none;
+
 }
 
 .editor-container::-webkit-scrollbar{
   display:none;
+}
+
+.editor-container{
+
+touch-action:pan-y;
+
+}
+
+.editor-container *{
+
+overscroll-behavior:contain;
+
 }
 
 .editor-header{
@@ -237,4 +276,58 @@
   color:#ff3131;
   border:none;
   margin-top:10px;
+}
+
+html{
+
+scroll-behavior:smooth;
+
+}
+
+.editor-overlay{
+
+animation:fadeEditor .25s ease;
+
+}
+
+.editor-container{
+
+animation:popupEditor .28s ease;
+
+}
+
+@keyframes fadeEditor{
+
+from{
+
+opacity:0;
+
+}
+
+to{
+
+opacity:1;
+
+}
+
+}
+
+@keyframes popupEditor{
+
+from{
+
+opacity:0;
+
+transform:translateY(30px) scale(.98);
+
+}
+
+to{
+
+opacity:1;
+
+transform:translateY(0) scale(1);
+
+}
+
 }

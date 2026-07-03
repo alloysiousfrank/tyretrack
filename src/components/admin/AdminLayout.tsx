@@ -36,17 +36,21 @@ setOpen(true)
 
       />
 
-<main
+<div
 className="admin-content"
-onClick={()=>{
+onWheel={(e)=>{
+
 if(open){
-setOpen(false)
+
+e.stopPropagation()
+
 }
+
 }}
 >
         <Outlet />
 
-      </main>
+      </div>
 
     </div>
 

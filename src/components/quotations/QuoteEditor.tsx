@@ -236,8 +236,23 @@ export default function QuoteEditor({ quoteId, onClose }: Props) {
   }
 
   return (
-    <div className="editor-overlay">
-      <div className="editor-container">
+<div
+className="editor-overlay"
+onWheel={(e)=>{
+
+e.stopPropagation()
+
+}}
+>
+
+<div
+className="editor-container"
+onWheel={(e)=>{
+
+e.stopPropagation()
+
+}}
+>
         <div className="editor-header">
           <h1>Quotation Editor</h1>
           <button onClick={onClose}>✕</button>

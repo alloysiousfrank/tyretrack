@@ -31,6 +31,11 @@ open
 ? "admin-sidebar open"
 : "admin-sidebar"
 }
+onWheel={(e)=>{
+
+e.stopPropagation()
+
+}}
 >
 
 <div className="admin-logo">
@@ -43,8 +48,14 @@ ADMIN PANEL
 
 </div>
 
-<nav className="admin-menu">
+<nav
+className="admin-menu"
+onWheel={(e)=>{
 
+e.stopPropagation()
+
+}}
+>
 <NavLink
 to="/admin-dashboard"
 className={({isActive})=>isActive ? "active" : ""}
