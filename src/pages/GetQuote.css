@@ -27,14 +27,8 @@ overflow-x:hidden;
 
     position:relative;
 
-html{
-    scroll-behavior:smooth;
-}
-
-body{
-    overflow-y:auto;
     overflow-x:hidden;
-}
+
 }
 
 .quote-overlay{
@@ -351,6 +345,21 @@ width:100%;
 
 }
 
+.wizard-buttons{
+
+flex-direction:column-reverse;
+
+gap:14px;
+
+}
+
+.next-btn,
+.back-btn{
+
+width:100%;
+
+}
+
 }
 
 /* ===========================
@@ -436,6 +445,77 @@ width:80px;
 height:2px;
 
 background:#333;
+
+}
+
+/* Keep all 4 steps on a single row on mobile instead of wrapping
+   onto two lines. Placed after the base .stepper rules (above) so
+   it correctly wins the cascade at this breakpoint. */
+@media(max-width:600px){
+
+.stepper{
+
+flex-wrap:nowrap;
+
+justify-content:flex-start;
+
+gap:6px;
+
+margin-bottom:35px;
+
+overflow-x:auto;
+
+padding:0 4px 6px;
+
+-webkit-overflow-scrolling:touch;
+
+scrollbar-width:none;
+
+-ms-overflow-style:none;
+
+}
+
+.stepper::-webkit-scrollbar{
+
+display:none;
+
+}
+
+.step{
+
+flex:0 0 auto;
+
+}
+
+.step-circle{
+
+width:36px;
+
+height:36px;
+
+font-size:13px;
+
+}
+
+.step-line{
+
+flex:1;
+
+height:2px;
+
+background:#333;
+
+min-width:60px;
+
+}
+
+.step span{
+
+font-size:10px;
+
+white-space:nowrap;
+
+}
 
 }
 
@@ -845,84 +925,299 @@ grid-template-columns:repeat(2,1fr);
 
 }
 
-@media(max-width:600px){
+@media (max-width:600px){
 
-.brand-grid{
-
-grid-template-columns:1fr;
-
-}
-
-}
-
-.review-card{
-
-padding:25px;
-
-background:#111;
-
-border-radius:22px;
-
-}
-
-.review-grid{
+.stepper{
 
 display:grid;
 
-grid-template-columns:repeat(2,1fr);
+grid-template-columns:repeat(4,1fr);
 
-gap:25px;
+align-items:start;
 
-margin-top:25px;
+gap:0;
 
-margin-bottom:35px;
+margin-bottom:30px;
 
-}
+padding:0;
 
-.review-grid p{
-
-background:#181818;
-
-padding:18px;
-
-border-radius:14px;
-
-color:white;
-
-line-height:1.8;
+overflow:visible;
 
 }
 
-.submit-quote{
+.step{
+
+display:flex;
+
+flex-direction:column;
+
+align-items:center;
+
+justify-content:center;
 
 width:100%;
 
-padding:20px;
-
-font-size:18px;
-
-font-weight:700;
-
-border:none;
-
-border-radius:18px;
-
-cursor:pointer;
-
-background:linear-gradient(
-135deg,
-#ff3131,
-#ff6b2d
-);
-
-color:white;
-
-transition:.35s;
+position:relative;
 
 }
 
-.submit-quote:hover{
+.step-circle{
 
-transform:translateY(-4px);
+width:38px;
+
+height:38px;
+
+font-size:13px;
+
+margin-bottom:8px;
+
+}
+
+.step span{
+
+font-size:10px;
+
+text-align:center;
+
+white-space:nowrap;
+
+}
+
+.step-line{
+
+position:absolute;
+
+top:18px;
+
+left:calc(50% + 20px);
+
+width:calc(100% - 40px);
+
+height:2px;
+
+background:#333;
+
+z-index:-1;
+
+}
+
+.step:last-child .step-line{
+
+display:none;
+
+}
+
+}
+
+/* =====================================================
+   PREMIUM MOBILE RESPONSIVE (Append at bottom)
+===================================================== */
+
+/* Tablets */
+@media (max-width:1024px){
+
+.quote-container{
+width:95%;
+}
+
+.quote-card{
+padding:28px;
+}
+
+.quote-hero h1{
+font-size:2.4rem;
+}
+
+}
+
+/* Large Phones */
+@media (max-width:768px){
+
+.quote-page{
+padding:90px 15px 50px;
+}
+
+.quote-container{
+width:100%;
+}
+
+.quote-card{
+padding:22px;
+border-radius:20px;
+}
+
+.quote-hero{
+margin-bottom:35px;
+}
+
+.quote-hero h1{
+font-size:2rem;
+line-height:1.3;
+}
+
+.quote-description{
+font-size:.95rem;
+line-height:1.7;
+}
+
+.quote-tag{
+font-size:.72rem;
+padding:7px 14px;
+}
+
+.section-title{
+flex-direction:column;
+align-items:flex-start;
+gap:12px;
+}
+
+.section-title h2{
+font-size:24px;
+}
+
+.section-number{
+font-size:34px;
+}
+
+.premium-grid,
+.quote-grid,
+.review-grid{
+grid-template-columns:1fr;
+gap:18px;
+}
+
+.full-width{
+grid-column:span 1;
+}
+
+.vehicle-type-grid{
+grid-template-columns:1fr;
+gap:18px;
+}
+
+.vehicle-card{
+padding:24px;
+}
+
+.vehicle-icon{
+font-size:42px;
+}
+
+.vehicle-card h3{
+font-size:20px;
+}
+
+.brand-grid{
+grid-template-columns:repeat(2,1fr);
+gap:14px;
+}
+
+.brand-card{
+padding:14px;
+font-size:14px;
+}
+
+.floating-input input,
+textarea{
+font-size:15px;
+padding:14px;
+}
+
+textarea{
+min-height:120px;
+}
+
+.review-card{
+padding:18px;
+}
+
+.review-grid p{
+padding:14px;
+font-size:14px;
+}
+
+.wizard-buttons{
+display:flex;
+flex-direction:column-reverse;
+gap:15px;
+}
+
+.next-btn,
+.back-btn,
+.submit-quote{
+width:100%;
+height:54px;
+font-size:16px;
+}
+
+}
+
+/* Small Phones */
+@media (max-width:480px){
+
+.quote-page{
+padding:75px 12px 40px;
+}
+
+.quote-card{
+padding:18px;
+}
+
+.quote-hero h1{
+font-size:1.65rem;
+}
+
+.quote-description{
+font-size:.88rem;
+}
+
+.stepper{
+gap:4px;
+padding-bottom:8px;
+}
+
+.step-circle{
+width:34px;
+height:34px;
+font-size:12px;
+}
+
+.step-line{
+width:18px;
+}
+
+.step span{
+font-size:9px;
+}
+
+.brand-grid{
+grid-template-columns:1fr;
+}
+
+.vehicle-card{
+padding:20px;
+}
+
+.vehicle-icon{
+font-size:36px;
+}
+
+.floating-input label{
+font-size:12px;
+}
+
+input,
+textarea{
+font-size:14px;
+}
+
+.review-grid p{
+font-size:13px;
+padding:12px;
+}
+
+.submit-quote{
+font-size:15px;
+}
 
 }

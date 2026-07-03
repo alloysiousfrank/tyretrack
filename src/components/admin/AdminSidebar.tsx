@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, NavLink } from "react-router-dom"
 import "./AdminSidebar.css"
 
 interface Props{
@@ -45,77 +45,69 @@ ADMIN PANEL
 
 <nav className="admin-menu">
 
-<Link
+<NavLink
 to="/admin-dashboard"
-onClick={()=>
-setOpen(false)
-}
+className={({isActive})=>isActive ? "active" : ""}
+onClick={()=>setOpen(false)}
 >
- Dashboard
-</Link>
+Dashboard
+</NavLink>
 
-<Link
+<NavLink
 to="/admin"
-onClick={()=>
-setOpen(false)
-}
+className={({isActive})=>isActive ? "active" : ""}
+onClick={()=>setOpen(false)}
 >
  Bookings
-</Link>
+</NavLink>
 
-<Link
+<NavLink
 to="/admin-customers"
-onClick={()=>
-setOpen(false)
-}
+className={({isActive})=>isActive ? "active" : ""}
+onClick={()=>setOpen(false)}
 >
  Customers
-</Link>
+</NavLink>
 
-<Link
+<NavLink
 to="/admin-analytics"
-onClick={()=>
-setOpen(false)
-}
+className={({isActive})=>isActive ? "active" : ""}
+onClick={()=>setOpen(false)}
 >
 Analytics
-</Link>
+</NavLink>
 
-<Link
+<NavLink
 to="/admin-reports"
-onClick={()=>
-setOpen(false)
-}
+className={({isActive})=>isActive ? "active" : ""}
+onClick={()=>setOpen(false)}
 >
  Reports
-</Link>
+</NavLink>
 
-<Link
+<NavLink
 to="/admin-quotes"
-onClick={()=>
-setOpen(false)
-}
+className={({isActive})=>isActive ? "active" : ""}
+onClick={()=>setOpen(false)}
 >
  Quotations
-</Link>
+</NavLink>
 
-<Link
+<NavLink
 to="/admin-invoices"
-onClick={()=>
-setOpen(false)
-}
+className={({isActive})=>isActive ? "active" : ""}
+onClick={()=>setOpen(false)}
 >
  Invoices
-</Link>
+</NavLink>
 
-<Link
+<NavLink
 to="/admin-inventory"
-onClick={()=>
-setOpen(false)
-}
+className={({isActive})=>isActive ? "active" : ""}
+onClick={()=>setOpen(false)}
 >
  Inventory
-</Link>
+</NavLink>
 
 </nav>
 

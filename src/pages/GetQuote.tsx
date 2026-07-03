@@ -647,6 +647,7 @@ Select Vehicle Brand
 {
 
 [
+  "Maruthi Suzuki",
 "Toyota",
 "Hyundai",
 "Honda",

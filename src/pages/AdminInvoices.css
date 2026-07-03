@@ -960,3 +960,79 @@ color:white;
 font-weight:700;
 
 }
+
+/* ===================================
+INVOICE MODE
+=================================== */
+
+.invoice-mode{
+
+display:flex;
+
+justify-content:flex-end;
+
+margin-bottom:25px;
+
+}
+
+.booking-mode{
+
+padding:12px 20px;
+
+border-radius:40px;
+
+background:
+
+linear-gradient(
+135deg,
+#00a651,
+#18d26b
+);
+
+color:white;
+
+font-size:14px;
+
+font-weight:700;
+
+box-shadow:
+
+0 8px 20px rgba(
+0,
+180,
+80,
+0.35
+);
+
+}
+
+.manual-mode{
+
+padding:12px 20px;
+
+border-radius:40px;
+
+background:
+
+linear-gradient(
+135deg,
+#444,
+#666
+);
+
+color:white;
+
+font-size:14px;
+
+font-weight:700;
+
+box-shadow:
+
+0 8px 20px rgba(
+255,
+255,
+255,
+0.08
+);
+
+}

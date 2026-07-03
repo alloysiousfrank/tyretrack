@@ -1,397 +1,240 @@
 .editor-overlay{
-
-position:fixed;
-
-inset:0;
-
-background:rgba(0,0,0,.75);
-
-backdrop-filter:blur(8px);
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-z-index:9999;
-
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
 }
 
 .editor-container{
+  width:95%;
+  max-width:1200px;
+  max-height:92vh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  background:#111;
+  border-radius:24px;
+  padding:35px;
+  color:white;
+  -webkit-overflow-scrolling:touch;
+  /* Keep the mouse-wheel/touch scroll working but hide the visible
+     scrollbar track (Firefox + IE/Edge legacy). Webkit browsers are
+     handled by the ::-webkit-scrollbar rule just below. */
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
 
-width:95%;
-
-max-width:1200px;
-
-max-height:92vh;
-
-overflow:auto;
-
-background:#111;
-
-border-radius:24px;
-
-padding:35px;
-
-color:white;
-
+.editor-container::-webkit-scrollbar{
+  display:none;
 }
 
 .editor-header{
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:center;
-
-margin-bottom:30px;
-
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:30px;
 }
 
 .editor-header button{
-
-background:#ff3131;
-
-color:white;
-
-border:none;
-
-width:45px;
-
-height:45px;
-
-border-radius:50%;
-
-cursor:pointer;
-
-font-size:18px;
-
+  background:#ff3131;
+  color:white;
+  border:none;
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:18px;
 }
 
 .editor-card{
-
-background:#181818;
-
-padding:25px;
-
-border-radius:18px;
-
-margin-bottom:25px;
-
+  background:#181818;
+  padding:25px;
+  border-radius:18px;
+  margin-bottom:25px;
 }
 
 .editor-card h2{
-
-margin-bottom:20px;
-
+  margin-bottom:20px;
 }
 
 .editor-grid{
-
-display:grid;
-
-grid-template-columns:repeat(2,1fr);
-
-gap:20px;
-
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:20px;
 }
 
 .editor-grid input,
-
 .editor-card textarea{
-
-width:100%;
-
-background:#222;
-
-border:1px solid #333;
-
-border-radius:14px;
-
-padding:15px;
-
-color:white;
-
+  width:100%;
+  background:#222;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:15px;
+  color:white;
 }
 
 .editor-card textarea{
+  margin-top:20px;
+  resize:none;
+}
 
-margin-top:20px;
+/* Read-only, informational textarea (e.g. customer notes) reads a
+   little differently from an editable one so admins can tell them apart. */
+.editor-card textarea[readonly]{
+  color:#bdbdbd;
+  cursor:default;
+}
 
-resize:none;
-
+/* Label + input pairing used for the read-only Customer / Vehicle fields */
+.field-group label{
+  display:block;
+  font-size:13px;
+  font-weight:600;
+  color:#8f8f8f;
+  margin-bottom:8px;
 }
 
 .editor-actions{
-
-display:flex;
-
-justify-content:flex-end;
-
-gap:15px;
-
-margin-top:25px;
-
+  display:flex;
+  justify-content:flex-end;
+  gap:15px;
+  margin-top:25px;
 }
 
 .editor-actions button{
+  padding:14px 28px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:700;
+}
 
-padding:14px 28px;
-
-border:none;
-
-border-radius:12px;
-
-cursor:pointer;
-
-font-weight:700;
-
+.editor-actions button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
 }
 
 .draft{
-
-background:#555;
-
-color:white;
-
+  background:#555;
+  color:white;
 }
 
 .pdf{
-
-background:#1976d2;
-
-color:white;
-
+  background:#1976d2;
+  color:white;
 }
 
 .publish{
-
-background:#ff3131;
-
-color:white;
-
+  background:#ff3131;
+  color:white;
 }
 
 .editor-loading{
-
-position:fixed;
-
-inset:0;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-background:black;
-
-color:white;
-
-font-size:30px;
-
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:black;
+  color:white;
+  font-size:30px;
 }
 
 @media(max-width:850px){
-
-.editor-grid{
-
-grid-template-columns:1fr;
-
-}
-
-}
-
-.gst-row{
-
-margin:25px 0;
-
-color:white;
-
-}
-
-.summary-card{
-
-margin-top:30px;
-
-padding:25px;
-
-border-radius:18px;
-
-background:#151515;
-
-border:1px solid #2a2a2a;
-
-}
-
-.summary-row{
-
-display:flex;
-
-justify-content:space-between;
-
-margin:15px 0;
-
-font-size:17px;
-
-}
-
-.summary-row.total{
-
-font-size:22px;
-
-font-weight:700;
-
-color:#ff3131;
-
-border-top:1px solid #333;
-
-padding-top:15px;
-
-}
-
-/* ===================================
-PRICING SECTION
-=================================== */
-
-.pricing-grid{
-
-display:grid;
-
-grid-template-columns:repeat(2,1fr);
-
-gap:25px;
-
-margin-top:30px;
-
-}
-
-.pricing-card{
-
-background:#171717;
-
-padding:24px;
-
-border-radius:18px;
-
-border:1px solid #2d2d2d;
-
-transition:.35s;
-
-}
-
-.pricing-card:hover{
-
-border-color:#ff3131;
-
-transform:translateY(-3px);
-
-}
-
-.pricing-card label{
-
-display:block;
-
-font-size:16px;
-
-font-weight:700;
-
-color:white;
-
-margin-bottom:8px;
-
-}
-
-.pricing-card small{
-
-display:block;
-
-margin-bottom:15px;
-
-color:#8f8f8f;
-
-font-size:13px;
-
-}
-
-.pricing-card input{
-
-width:100%;
-
-height:55px;
-
+  .editor-grid{
+    grid-template-columns:1fr;
+  }
 }
 
 .gst-box{
-
-margin-top:35px;
-
-font-size:18px;
-
-color:white;
-
+  margin:25px 0;
+  font-size:18px;
+  color:white;
 }
 
-.summary-card{
+/* ===================================
+   PRICING SECTION
+=================================== */
 
-margin-top:40px;
-
-padding:30px;
-
-border-radius:20px;
-
-background:#141414;
-
-border:1px solid #2f2f2f;
-
+.pricing-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:25px;
+  margin-top:30px;
 }
 
-.summary-card h2{
-
-margin-bottom:25px;
-
-color:white;
-
+.pricing-card{
+  background:#171717;
+  padding:24px;
+  border-radius:18px;
+  border:1px solid #2d2d2d;
+  transition:.35s;
 }
 
-.summary-row{
-
-display:flex;
-
-justify-content:space-between;
-
-padding:12px 0;
-
-border-bottom:1px solid #2d2d2d;
-
-color:white;
-
-font-size:17px;
-
+.pricing-card:hover{
+  border-color:#ff3131;
+  transform:translateY(-3px);
 }
 
-.summary-row.total{
+.pricing-card label{
+  display:block;
+  font-size:16px;
+  font-weight:700;
+  color:white;
+  margin-bottom:8px;
+}
 
-font-size:22px;
+.pricing-card small{
+  display:block;
+  margin-bottom:15px;
+  color:#8f8f8f;
+  font-size:13px;
+}
 
-font-weight:700;
-
-color:#ff3131;
-
-border:none;
-
-margin-top:10px;
-
+.pricing-card input{
+  width:100%;
+  height:55px;
 }
 
 @media(max-width:900px){
-
-.pricing-grid{
-
-grid-template-columns:1fr;
-
+  .pricing-grid{
+    grid-template-columns:1fr;
+  }
 }
 
+/* ===================================
+   SUMMARY CARD
+=================================== */
+
+.summary-card{
+  margin-top:40px;
+  padding:30px;
+  border-radius:20px;
+  background:#141414;
+  border:1px solid #2f2f2f;
+}
+
+.summary-card h2{
+  margin-bottom:25px;
+  color:white;
+}
+
+.summary-row{
+  display:flex;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid #2d2d2d;
+  color:white;
+  font-size:17px;
+}
+
+.summary-row.total{
+  font-size:22px;
+  font-weight:700;
+  color:#ff3131;
+  border:none;
+  margin-top:10px;
 }

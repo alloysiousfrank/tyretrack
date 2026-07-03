@@ -7,7 +7,10 @@ from
 import "./AdminInvoices.css"
 import { sendInvoiceEmail }
 from "../utils/sendInvoiceEmail"
-
+import {
+useNavigate,
+useLocation
+} from "react-router-dom"
 export default function AdminInvoices() {
 
 
@@ -28,6 +31,15 @@ useState<any[]>([
 
 ])
 
+const navigate = useNavigate()
+
+const location = useLocation()
+
+const bookingData =
+location.state?.booking || null
+
+const isBookingInvoice =
+bookingData !== null
 
 const [bookingId,setBookingId] =
 useState("")
@@ -86,11 +98,6 @@ vehicleHistory.reduce(
   invoice.totalAmount || 0
  ),
  0
-)
-
-const selectedBookingId =
-localStorage.getItem(
- "selectedBookingId"
 )
 
 const lastVisit =
@@ -256,47 +263,57 @@ setTyreBrands(
 
 }
 
-useEffect(()=>{
+useEffect(() => {
 
- if(!selectedBookingId)
- return
+if(!bookingData){
 
- fetch(
-  `https://tyretrack-server.onrender.com/api/bookings`
- )
- .then(res=>res.json())
- .then(data=>{
+return
 
-  const booking =
-  data.find(
-   (b:any)=>
-   b.bookingId ===
-   selectedBookingId
-  )
+}
 
-  if(booking){
+setCustomerName(
 
-   setCustomerName(
-    booking.name
-   )
+bookingData.name || ""
 
-   setEmail(
-    booking.email
-   )
+)
 
-   setPhone(
-    booking.phone
-   )
+setPhone(
 
-   setVehicleNumber(
-    booking.vehicleNumber
-   )
+bookingData.phone || ""
 
-  }
+)
 
- })
+setEmail(
 
-},[])
+bookingData.email || ""
+
+)
+
+setVehicleNumber(
+
+bookingData.vehicleNumber || ""
+
+)
+
+setVehicleType(
+
+bookingData.vehicleType || ""
+
+)
+
+setVehicleKm(
+
+bookingData.vehicleKm || ""
+
+)
+
+setBookingId(
+
+bookingData.bookingId || ""
+
+)
+
+}, [bookingData])
 
 const fetchVehicleHistory =
 async (
@@ -777,7 +794,35 @@ const publishInvoice = async (id: string) => {
     <div className="admin-page">
 
       <div className="admin-container">
+<div className="invoice-mode">
 
+{
+
+isBookingInvoice ?
+
+<span className="booking-mode">
+
+🚗 Booking Invoice
+
+</span>
+
+:
+
+<span className="manual-mode">
+
+📝 Manual Invoice
+
+</span>
+
+}
+
+</div>
+
+<h1>
+
+Generate Invoice
+
+</h1>
 <h1 className="invoice-page-title">
 Invoice Generator
 </h1>

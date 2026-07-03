@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import {
  generateInvoicePdf
 }
@@ -15,6 +16,7 @@ export default function Admin() {
   const [filter, setFilter] = useState("All")
 const role =
   localStorage.getItem("adminRole")
+  const navigate = useNavigate()
   const serviceStages = [
     "Booking Confirmed",
     "Vehicle Received",
@@ -540,18 +542,42 @@ window.location.href =
                       Update Service Status
                     </button>
 <button
- className="invoice-download-btn"
- onClick={() => {
+className="invoice-download-btn"
+onClick={() => {
 
-  localStorage.setItem(
-   "selectedBookingId",
-   booking.bookingId
-  )
+navigate("/admin-invoices", {
 
-  window.location.href =
-  "/admin-invoices"
+state:{
 
- }}
+booking:{
+
+bookingId: booking.bookingId,
+
+name: booking.name,
+
+phone: booking.phone,
+
+email: booking.email,
+
+vehicleNumber: booking.vehicleNumber,
+
+vehicleType: booking.vehicleType,
+
+vehicleKm: booking.vehicleKm,
+
+service: booking.service,
+
+date: booking.date,
+
+time: booking.time
+
+}
+
+}
+
+})
+
+}}
 >
 📄 Generate Invoice
 </button>
