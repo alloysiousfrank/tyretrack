@@ -111,45 +111,93 @@ export default function QuoteEditor({ quoteId, onClose }: Props) {
   const gst = includeGST ? subtotal * 0.18 : 0
   const total = subtotal + gst
 
-  const saveDraft = async () => {
-    setSaving(true)
-    try {
-      const response = await fetch(
-        `https://tyretrack-server.onrender.com/api/quotations/${quoteId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            tyrePrice,
-            tyreQuantity,
-            labourCharge,
-            accessoriesCharge,
-            discount,
-            includeGST,
-            adminRemarks,
-          }),
-        }
-      )
+const saveDraft = async () => {
 
-      const data = await response.json()
+const token=localStorage.getItem("adminToken")
 
-      if (data.success) {
-        alert("Quotation Draft Saved Successfully ✅")
-        // The PUT response already returns the saved quotation —
-        // no need to re-fetch it a second time.
-        applyQuoteData(data.quotation)
-      } else {
-        alert(data.message || "Unable to save draft.")
-      }
-    } catch (error) {
-      console.log(error)
-      alert("Unable to save draft. Please check your connection and try again.")
-    } finally {
-      setSaving(false)
-    }
-  }
+if(!token){
+
+alert("Please login again.")
+
+return
+
+}
+
+setSaving(true)
+
+try{
+
+const response=await fetch(
+
+`https://tyretrack-server.onrender.com/api/quotations/${quoteId}`,
+
+{
+
+method:"PUT",
+
+headers:{
+
+"Content-Type":"application/json",
+
+Authorization:`Bearer ${token}`
+
+},
+
+body:JSON.stringify({
+
+tyrePrice,
+
+tyreQuantity,
+
+labourCharge,
+
+accessoriesCharge,
+
+discount,
+
+includeGST,
+
+adminRemarks
+
+})
+
+}
+
+)
+
+const data=await response.json()
+
+if(data.success){
+
+alert("Draft Saved Successfully ✅")
+
+applyQuoteData(data.quotation)
+
+}
+
+else{
+
+alert(data.message)
+
+}
+
+}
+
+catch(err){
+
+console.log(err)
+
+alert("Unable to save.")
+
+}
+
+finally{
+
+setSaving(false)
+
+}
+
+}
 
   const handleGeneratePDF = async () => {
     if (!quote) {
@@ -200,40 +248,73 @@ export default function QuoteEditor({ quoteId, onClose }: Props) {
     })
   }
 
-  const publishQuote = async () => {
-    const token = localStorage.getItem("adminToken")
-    if (!token) {
-      alert("Your session has expired. Please log in again to publish.")
-      return
-    }
+const publishQuote = async()=>{
 
-    setPublishing(true)
-    try {
-      const response = await fetch(
-        `https://tyretrack-server.onrender.com/api/quotations/publish/${quoteId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+const token=localStorage.getItem("adminToken")
 
-      const data = await response.json()
+if(!token){
 
-      if (data.success) {
-        alert("Quotation Published Successfully ✅")
-        loadQuote()
-      } else {
-        alert(data.message || "Unable to publish quotation.")
-      }
-    } catch (error) {
-      console.log(error)
-      alert("Unable to publish quotation.")
-    } finally {
-      setPublishing(false)
-    }
-  }
+alert("Please login")
+
+return
+
+}
+
+setPublishing(true)
+
+try{
+
+const response=await fetch(
+
+`https://tyretrack-server.onrender.com/api/quotations/publish/${quoteId}`,
+
+{
+
+method:"PUT",
+
+headers:{
+
+Authorization:`Bearer ${token}`
+
+}
+
+}
+
+)
+
+const data=await response.json()
+
+if(data.success){
+
+alert("Quotation Published Successfully ✅")
+
+applyQuoteData(data.quotation)
+
+}
+
+else{
+
+alert(data.message)
+
+}
+
+}
+
+catch(error){
+
+console.log(error)
+
+alert("Unable to publish.")
+
+}
+
+finally{
+
+setPublishing(false)
+
+}
+
+}
 
   return (
 <div

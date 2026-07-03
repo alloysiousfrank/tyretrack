@@ -25,7 +25,7 @@ export interface QuotePDFData {
   phone: string
   email: string
   vehicleNumber?: string
-  vehicleType?: string
+  vehicleType?:  string
   vehicleBrand?: string
   vehicleModel?: string
   tyreSize?: string
@@ -126,7 +126,7 @@ export const generateQuotePDF = async (
   doc.setFont("helvetica", "normal")
   doc.setFontSize(7.8)
   const compLines = [
-    "Owner : Rtn Charles A",
+    "Rtn Charles A",
     "107/2 Pasumai Nagar, Mangalam Road, Tiruppur",
     "Phone : 9443738487",
     "GSTIN : 33AAWFT5612K1ZP",

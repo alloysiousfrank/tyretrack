@@ -16,6 +16,7 @@ export default function Home() {
       <section className="home__story page-inner">
         <RevealSection className="section-gap">
           <SectionHeading
+          
             eyebrow="About Us"
             title="Crafted for the Driven"
             subtitle="Every vehicle that enters TyreTrack receives white-glove treatment — from precision alignment to showroom-ready finishes."

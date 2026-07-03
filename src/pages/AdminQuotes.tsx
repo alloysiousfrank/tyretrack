@@ -316,13 +316,15 @@ selectedQuote && (
 
 quoteId={selectedQuote}
 
-onClose={()=>
+onClose={()=>{
 
 setSelectedQuote("")
 
-}
+fetchQuotes()
 
-/>
+}}
+
+ />
 
 )
 

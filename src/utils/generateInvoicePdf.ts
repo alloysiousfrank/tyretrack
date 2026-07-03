@@ -136,7 +136,7 @@ export const generateInvoicePdf = async (
   doc.setFont("helvetica", "normal")
   doc.setFontSize(7.8)
   const compLines = [
-    "Owner : Rtn Charles A",
+    "Rtn Charles A",
     "107/2 Pasumai Nagar, Mangalam Road, Tiruppur",
     "Phone : 9443738487",
     "GSTIN : 33AAWFT5612K1ZP",
@@ -190,7 +190,7 @@ export const generateInvoicePdf = async (
   ]
   const rightItems = [
     ["Vehicle No",   invoice.vehicleNumber || "—"],
-    ["Vehicle Type", invoice.vehicleType   || "—"],
+    ["Vehicle Type", invoice.vehicleType   || " —"],
     ["Vehicle KM",   invoice.vehicleKm     || "—"],
   ]
 

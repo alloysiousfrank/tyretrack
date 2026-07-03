@@ -291,3 +291,26 @@ img {
   }
 
 }
+
+/* PREMIUM TITLES */
+
+.gradient-title{
+
+background:linear-gradient(
+90deg,
+#ffffff 0%,
+#f8dede 30%,
+#ffb0b0 55%,
+#ff5f5f 80%,
+#ff1a1a 100%
+);
+
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+background-clip:text;
+
+font-weight:800;
+
+letter-spacing:-1px;
+
+}
