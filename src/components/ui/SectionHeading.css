@@ -10,7 +10,7 @@
 }
 
 .section-heading__eyebrow {
-  display: inline-block;
+  display: block;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -20,13 +20,10 @@
 }
 
 .section-heading__title {
+  display: block;
   font-size: clamp(2rem, 5vw, 3.25rem);
   line-height: 1.1;
   margin-bottom: 1rem;
-  background: linear-gradient(to right, #ffffff, #ffffff 30%, rgba(255, 255, 255, 0.5) 60%, var(--red-primary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .section-heading__subtitle {

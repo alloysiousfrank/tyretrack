@@ -138,12 +138,30 @@ h1, h2, h3 {
   letter-spacing: -0.02em;
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 15px rgba(225, 6, 0, 0.25));
+.gradient-text{
+
+background:linear-gradient(
+135deg,
+#ffffff 0%,
+#f6f6f6 15%,
+#ececec 35%,
+#d8d8d8 50%,
+#ff9c9c 70%,
+#ff5a5a 88%,
+#e10600 100%
+);
+
+-webkit-background-clip:text;
+background-clip:text;
+-webkit-text-fill-color:transparent;
+color:transparent;
+
+/* REMOVE display:inline-block */
+
+filter:drop-shadow(
+0 0 15px rgba(225,6,0,.25)
+);
+
 }
 
 .btn {
@@ -295,23 +313,30 @@ img {
 
 /* PREMIUM TITLES */
 
-.gradient-title{
+.gradient-text{
 
 background:linear-gradient(
-90deg,
+135deg,
 #ffffff 0%,
-#f8dede 30%,
-#ffb0b0 55%,
-#ff5f5f 80%,
-#ff1a1a 100%
+#f6f6f6 15%,
+#ececec 35%,
+#d8d8d8 50%,
+#ff9c9c 70%,
+#ff5a5a 88%,
+#e10600 100%
 );
 
 -webkit-background-clip:text;
--webkit-text-fill-color:transparent;
 background-clip:text;
 
-font-weight:800;
+-webkit-text-fill-color:transparent;
 
-letter-spacing:-1px;
+color:transparent;
+
+display:inline-block;
+
+filter:drop-shadow(
+0 0 15px rgba(225,6,0,.25)
+);
 
 }

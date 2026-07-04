@@ -775,125 +775,155 @@ setNotes(e.target.value)
 
           {
 
-            step === 4 && (
+step === 4 && (
 
-              <>
+<>
 
-                <h2>
+<div className="section-title">
 
-                  ✅ Review
-
-                </h2>
-
-                <div className="review-card">
+<div>
 
 <h2>
 
-Review Your Request
+Review Your Quotation
 
 </h2>
 
+<p>
+
+Please verify all your information before submitting your quotation request.
+
+</p>
+
+</div>
+
+<div className="section-number">
+
+04
+
+</div>
+
+</div>
+
+<div className="review-premium-card">
+
+<div className="review-header">
+
+<h3>
+
+Customer Details
+
+</h3>
+
+</div>
+
 <div className="review-grid">
 
-<p>
+<div className="review-item">
 
-<strong>Name</strong>
+<span>Name</span>
 
-<br/>
+<h4>{customerName}</h4>
 
-{customerName}
+</div>
 
-</p>
+<div className="review-item">
 
-<p>
+<span>Phone</span>
 
-<strong>Phone</strong>
+<h4>{phone}</h4>
 
-<br/>
+</div>
 
-{phone}
+<div className="review-item">
 
-</p>
+<span>Email</span>
 
-<p>
+<h4>{email || "Not Provided"}</h4>
 
-<strong>Email</strong>
+</div>
 
-<br/>
+<div className="review-item">
 
-{email || "-"}
+<span>Vehicle Type</span>
 
-</p>
+<h4>{vehicleType}</h4>
 
-<p>
+</div>
 
-<strong>Vehicle Type</strong>
+<div className="review-item">
 
-<br/>
+<span>Vehicle Number</span>
 
-{vehicleType}
+<h4>{vehicleNumber}</h4>
 
-</p>
+</div>
 
-<p>
+<div className="review-item">
 
-<strong>Vehicle Number</strong>
+<span>Vehicle Brand</span>
 
-<br/>
+<h4>{vehicleBrand}</h4>
 
-{vehicleNumber}
+</div>
 
-</p>
+<div className="review-item">
 
-<p>
+<span>Vehicle Model</span>
 
-<strong>Vehicle Brand</strong>
+<h4>{vehicleModel}</h4>
 
-<br/>
+</div>
 
-{vehicleBrand}
+<div className="review-item">
 
-</p>
+<span>Tyre Size</span>
 
-<p>
+<h4>{tyreSize}</h4>
 
-<strong>Vehicle Model</strong>
+</div>
 
-<br/>
+<div className="review-item">
 
-{vehicleModel}
+<span>Preferred Brand</span>
 
-</p>
+<h4>{preferredBrand}</h4>
 
-<p>
+</div>
 
-<strong>Tyre Size</strong>
+<div className="review-item full-review">
 
-<br/>
+<span>Additional Requirements</span>
 
-{tyreSize}
+<h4>
 
-</p>
+{notes || "No additional requirements."}
 
-<p>
+</h4>
 
-<strong>Preferred Brand</strong>
+</div>
 
-<br/>
+</div>
 
-{preferredBrand}
+<div className="review-info-box">
 
-</p>
+<div>
 
-<p>
+✅ Your quotation request will be reviewed by our TyreTrack experts.
 
-<strong>Additional Notes</strong>
+</div>
 
-<br/>
+<div>
 
-{notes || "-"}
+📞 Our team may contact you if additional information is required.
 
-</p>
+</div>
+
+<div>
+
+📄 A professional quotation will be generated and shared with you.
+
+</div>
 
 </div>
 
@@ -905,15 +935,15 @@ onClick={submitQuotation}
 
 >
 
-Submit Quotation Request
+Submit Premium Quotation Request
 
 </button>
 
 </div>
 
-              </>
+</>
 
-            )
+)
 
           }
 
