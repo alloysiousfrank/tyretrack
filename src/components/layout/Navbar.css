@@ -56,19 +56,13 @@
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.85) 50%, var(--red-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #f4f4f5;
   display: none;
 }
 
 .navbar__tagline {
   display: none;
-  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #f4f4f5;
 }
 
 .navbar__right {
@@ -95,11 +89,6 @@
   font: inherit;
   padding: 0;
   white-space: nowrap;
-  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 50%, var(--red-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 600;
 }
 
 .navbar__link::after {
@@ -115,11 +104,7 @@
 
 .navbar__link:hover,
 .navbar__link--active {
-  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.95) 50%, var(--red-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 8px rgba(225, 6, 0, 0.3));
+  color: #ffffff;
 }
 
 .navbar__link:hover::after,
