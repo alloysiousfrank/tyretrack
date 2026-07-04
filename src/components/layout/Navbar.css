@@ -56,7 +56,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.02em;
-  background: linear-gradient(to right, #a1a1aa, #f4f4f5, #71717a);
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.85) 50%, var(--red-primary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -65,6 +65,10 @@
 
 .navbar__tagline {
   display: none;
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .navbar__right {
@@ -83,15 +87,19 @@
 .navbar__link {
   position: relative;
   font-size: 0.875rem;
-  color: #a1a1aa;
+  color: #f4f4f5;
   text-decoration: none;
-  transition: color 0.3s ease;
-  background: none;
+  transition: all 0.3s ease;
   border: none;
   cursor: pointer;
   font: inherit;
   padding: 0;
   white-space: nowrap;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
 }
 
 .navbar__link::after {
@@ -107,7 +115,11 @@
 
 .navbar__link:hover,
 .navbar__link--active {
-  color: #ffffff;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.95) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(225, 6, 0, 0.3));
 }
 
 .navbar__link:hover::after,

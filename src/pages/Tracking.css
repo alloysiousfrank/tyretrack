@@ -22,6 +22,10 @@
   font-size: 3rem;
   margin-bottom: 50px;
   font-weight: 700;
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .tracking-details {
@@ -56,7 +60,10 @@
 
 .tracking-item h3 {
   font-size: 1.3rem;
-  color: white;
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* LIVE STATUS */

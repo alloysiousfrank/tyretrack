@@ -44,6 +44,10 @@
 .service-row__content h2 {
   font-size: 1.75rem;
   margin: 0.75rem 0;
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .service-row__content p {

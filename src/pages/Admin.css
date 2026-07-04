@@ -19,6 +19,10 @@
   font-size: 3rem;
   margin-bottom: 50px;
   font-weight: 700;
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .no-bookings {
@@ -60,10 +64,23 @@
   text-transform: uppercase;
 }
 
+.admin-page h1 {
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 2.5rem;
+}
+
 .admin-top h2 {
   margin-top: 6px;
-  color: #ff2b2b;
   font-size: 1.4rem;
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .status-badge {
@@ -234,7 +251,10 @@
 }
 
 .stat-card h3 {
-  color: #999;
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 50%, var(--red-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: 1rem;
   margin-bottom: 16px;
   font-weight: 500;
