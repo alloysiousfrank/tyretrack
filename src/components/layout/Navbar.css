@@ -261,6 +261,8 @@ flex-shrink:0;
 }
 
 .navbar__profile-btn {
+  display: flex;
+  align-items: center;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 0, 0, 0.15);
   color: #fff;
@@ -268,6 +270,7 @@ flex-shrink:0;
   border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
+  white-space: nowrap;
   transition: 0.3s ease;
 }
 
@@ -277,7 +280,14 @@ flex-shrink:0;
 }
 
 .navbar__arrow {
+  display: inline-flex;
   margin-left: 8px;
+  font-size: 0.7em;
+  transition: transform 0.25s ease;
+}
+
+.navbar__profile-btn[aria-expanded="true"] .navbar__arrow {
+  transform: rotate(180deg);
 }
 
 .navbar__dropdown{
@@ -315,8 +325,9 @@ animation:dropdownFade .25s ease;
 .navbar__dropdown-item {
   display: flex;
   align-items: center;
+  gap: 12px;
   width: 100%;
-  padding: 15px 20px;
+  padding: 14px 20px;
   color: #ffffff;
   text-decoration: none;
   font-size: 0.95rem;
@@ -324,7 +335,19 @@ animation:dropdownFade .25s ease;
   background: transparent;
   border: none;
   cursor: pointer;
+  text-align: left;
   transition: background 0.28s ease, color 0.28s ease;
+}
+
+.navbar__dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: #a1a1aa;
+  transition: color 0.28s ease;
 }
 
 .navbar__dropdown-item:not(:last-child) {
@@ -338,30 +361,24 @@ animation:dropdownFade .25s ease;
   color: #ff3b3b;
 }
 
-.logout-btn{
+.navbar__dropdown-item:hover .navbar__dropdown-icon {
+  color: #ff3b3b;
+}
 
-display:flex;
+/* NAVBAR LOGOUT (scoped separately so it never collides with the
+   admin sidebar's .logout-btn) */
+.navbar__logout-btn {
+  font-weight: 600;
+  color: #ff6b6b;
+}
 
-align-items:center;
+.navbar__logout-btn .navbar__dropdown-icon {
+  color: #ff6b6b;
+}
 
-width:100%;
-
-padding:17px 22px;
-
-background:transparent;
-
-border:none;
-
-color:#fff;
-
-font-size:15px;
-
-font-weight:600;
-
-cursor:pointer;
-
-transition:.3s;
-
+.navbar__logout-btn:hover {
+  background: rgba(255, 0, 0, 0.16);
+  color: #ff3b3b;
 }
 
 .cancel-btn {

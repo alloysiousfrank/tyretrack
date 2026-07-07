@@ -30,11 +30,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] =
     useState(false)
 
-  const { isLoggedIn, logout } =
+  const { isLoggedIn, userName, logout } =
     useAuth()
-
-  const userName =
-    localStorage.getItem("userName")
 
   const location = useLocation()
 
@@ -186,6 +183,8 @@ useEffect(() => {
 
                 <button
                   className="navbar__profile-btn"
+                  aria-expanded={profileOpen}
+                  aria-haspopup="true"
                   onClick={() =>
                     setProfileOpen(
                       (prev) => !prev
@@ -216,6 +215,13 @@ useEffect(() => {
                       }}
                     >
 
+                      <span className="navbar__dropdown-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="4" width="18" height="18" rx="2" />
+                          <path d="M16 2v4M8 2v4M3 10h18" />
+                        </svg>
+                      </span>
+
                       Current Booking
 
                     </NavLink>
@@ -230,6 +236,13 @@ useEffect(() => {
 
                       }}
                     >
+
+                      <span className="navbar__dropdown-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2C8 2 5 5 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-4-3-7-7-7z" />
+                          <circle cx="12" cy="9" r="2.5" />
+                        </svg>
+                      </span>
 
                       Live Tracking
 
@@ -246,13 +259,21 @@ useEffect(() => {
                       }}
                     >
 
+                      <span className="navbar__dropdown-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 12a9 9 0 1 0 3-6.7" />
+                          <path d="M3 4v5h5" />
+                          <path d="M12 7v5l4 2" />
+                        </svg>
+                      </span>
+
                       Service History
 
                     </NavLink>
 
                     <button
                       type="button"
-                      className="navbar__dropdown-item logout-btn"
+                      className="navbar__dropdown-item navbar__logout-btn"
                       onClick={() => {
 
                         // CLEAR SESSION
@@ -276,6 +297,14 @@ useEffect(() => {
 
                       }}
                     >
+
+                      <span className="navbar__dropdown-icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                          <path d="M16 17l5-5-5-5" />
+                          <path d="M21 12H9" />
+                        </svg>
+                      </span>
 
                       Logout
 

@@ -3,11 +3,13 @@ import { useSearchParams, useNavigate } from "react-router-dom"
 import "./Login.css"
 
 import { loginOrRegister } from "../api/authApi"
+import { useAuth } from "../context/AuthContext"
 
 export default function Login() {
 
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()                    // ✅ FIX: useNavigate instead of window.location.href
+  const { login } = useAuth()                        // ✅ FIX: sync AuthContext state on login
 
   const selectedService = searchParams.get("service")
 
@@ -50,6 +52,10 @@ export default function Login() {
       localStorage.setItem("userEmail", data.user!.email)
       localStorage.setItem("userPhone", data.user!.phone)
       localStorage.setItem("isLoggedIn", "true")
+
+      // ✅ FIX: update AuthContext state (not just localStorage) so the
+      // Navbar's isLoggedIn/profile dropdown reflects the login immediately
+      login(data.user!.name)
 
       if (data.existingUser) {
         alert("Welcome Back ✅")

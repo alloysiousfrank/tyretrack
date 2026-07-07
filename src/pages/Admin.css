@@ -266,22 +266,6 @@
   color: #ff2b2b;
 }
 
-.admin-logout-btn {
-  background: #ff2b2b;
-  color: white;
-  border: none;
-  padding: 12px 22px;
-  border-radius: 12px;
-  cursor: pointer;
-  margin-bottom: 30px;
-  font-weight: 600;
-  transition: 0.3s ease;
-}
-
-.admin-logout-btn:hover {
-  background: #ff4444;
-}
-
 /* ADMIN HEADER */
 
 .admin-header {

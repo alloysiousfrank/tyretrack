@@ -923,30 +923,18 @@ Vehicle KM
 <div className="form-group">
 
 <label>
-Vehicle Type
+Vehicle Brand &amp; Model
 </label>
-        <select
+        <input
+  type="text"
+  placeholder="e.g. Honda City, Maruti Swift"
   value={vehicleType}
   onChange={(e)=>
     setVehicleType(
       e.target.value
     )
   }
- >
- 
-          <option value="">
-            Vehicle Type
-          </option>
-
-          <option value="Bike">
-            Bike
-          </option>
-
-          <option value="Car">
-            Car
-          </option>
-
-        </select>
+ />
 
     </div>  
 
@@ -1600,7 +1588,7 @@ Date :
  {vehicleKm}
 </p>
     <p>
-      Type :
+      Vehicle Brand &amp; Model :
       {vehicleType}
     </p>
 

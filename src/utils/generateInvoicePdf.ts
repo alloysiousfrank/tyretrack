@@ -189,9 +189,9 @@ export const generateInvoicePdf = async (
     ["Email", invoice.email        || "—"],
   ]
   const rightItems = [
-    ["Vehicle No",   invoice.vehicleNumber || "—"],
-    ["Vehicle Type", invoice.vehicleType   || " —"],
-    ["Vehicle KM",   invoice.vehicleKm     || "—"],
+    ["Vehicle No",    invoice.vehicleNumber || "—"],
+    ["Vehicle Model", invoice.vehicleType   || " —"],
+    ["Vehicle KM",    invoice.vehicleKm     || "—"],
   ]
 
   for (let i = 0; i < leftItems.length; i++) {
@@ -208,7 +208,29 @@ export const generateInvoicePdf = async (
     doc.setFont("helvetica", "bold")
     doc.text(rightItems[i][0] + " :", rcX, ry)
     doc.setFont("helvetica", "normal")
-    doc.text(rightItems[i][1], rcX + doc.getTextWidth(rightItems[i][0] + " :") + 1, ry)
+
+    const rValueX = rcX + doc.getTextWidth(rightItems[i][0] + " :") + 1
+    const rValueMaxWidth = (ML + CW) - rValueX - 2 // stay inside the box
+    let rValueText = rightItems[i][1]
+
+    // Admin can type a free-text vehicle brand/model that may run long
+    // (e.g. "Maruti Suzuki Swift Dzire VXI") — shrink the font first,
+    // then fall back to an ellipsis, so it never spills past the box.
+    let rFontSize = 8
+    doc.setFontSize(rFontSize)
+    while (doc.getTextWidth(rValueText) > rValueMaxWidth && rFontSize > 6) {
+      rFontSize -= 0.5
+      doc.setFontSize(rFontSize)
+    }
+    if (doc.getTextWidth(rValueText) > rValueMaxWidth) {
+      while (rValueText.length > 3 && doc.getTextWidth(rValueText + "…") > rValueMaxWidth) {
+        rValueText = rValueText.slice(0, -1)
+      }
+      rValueText += "…"
+    }
+
+    doc.text(rValueText, rValueX, ry)
+    doc.setFontSize(8)
 
     ry += 6.5
   }

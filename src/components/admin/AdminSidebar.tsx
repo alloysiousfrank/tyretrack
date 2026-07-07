@@ -123,7 +123,7 @@ onClick={()=>setOpen(false)}
 </nav>
 
 <button
-className="logout-btn"
+className="admin-sidebar-logout-btn"
 onClick={()=>{
 
 localStorage.removeItem(

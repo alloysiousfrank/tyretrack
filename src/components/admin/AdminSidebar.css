@@ -211,10 +211,18 @@ box-shadow:
 
 /* ============================= */
 
-.logout-btn{
+.admin-sidebar-logout-btn{
 
 margin:20px;
 flex-shrink:0;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+gap:10px;
 
 padding:15px;
 
@@ -236,15 +244,24 @@ font-weight:700;
 
 cursor:pointer;
 
-transition:.25s;
+transition:transform .25s ease, box-shadow .25s ease;
 
-flex-shrink:0;
+/* symmetric, zero horizontal-offset glow so it can never appear
+   shifted to one side; blur kept inside the 20px margin so the
+   sidebar's overflow:hidden never clips it unevenly */
+box-shadow:
+0 6px 16px rgba(255,49,49,.30),
+0 0 14px rgba(255,49,49,.35);
 
 }
 
-.logout-btn:hover{
+.admin-sidebar-logout-btn:hover{
 
 transform:translateY(-2px);
+
+box-shadow:
+0 10px 22px rgba(255,49,49,.38),
+0 0 20px rgba(255,49,49,.5);
 
 }
 

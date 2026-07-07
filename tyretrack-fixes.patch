@@ -1,0 +1,428 @@
+diff --git a/src/components/admin/AdminSidebar.css b/src/components/admin/AdminSidebar.css
+index 2732879..4403860 100644
+--- a/src/components/admin/AdminSidebar.css
++++ b/src/components/admin/AdminSidebar.css
+@@ -211,11 +211,19 @@ box-shadow:
+ 
+ /* ============================= */
+ 
+-.logout-btn{
++.admin-sidebar-logout-btn{
+ 
+ margin:20px;
+ flex-shrink:0;
+ 
++display:flex;
++
++align-items:center;
++
++justify-content:center;
++
++gap:10px;
++
+ padding:15px;
+ 
+ border:none;
+@@ -236,16 +244,25 @@ font-weight:700;
+ 
+ cursor:pointer;
+ 
+-transition:.25s;
++transition:transform .25s ease, box-shadow .25s ease;
+ 
+-flex-shrink:0;
++/* symmetric, zero horizontal-offset glow so it can never appear
++   shifted to one side; blur kept inside the 20px margin so the
++   sidebar's overflow:hidden never clips it unevenly */
++box-shadow:
++0 6px 16px rgba(255,49,49,.30),
++0 0 14px rgba(255,49,49,.35);
+ 
+ }
+ 
+-.logout-btn:hover{
++.admin-sidebar-logout-btn:hover{
+ 
+ transform:translateY(-2px);
+ 
++box-shadow:
++0 10px 22px rgba(255,49,49,.38),
++0 0 20px rgba(255,49,49,.5);
++
+ }
+ 
+ /* ============================= */
+diff --git a/src/components/admin/AdminSidebar.tsx b/src/components/admin/AdminSidebar.tsx
+index bd37d6b..474e74c 100644
+--- a/src/components/admin/AdminSidebar.tsx
++++ b/src/components/admin/AdminSidebar.tsx
+@@ -123,7 +123,7 @@ onClick={()=>setOpen(false)}
+ </nav>
+ 
+ <button
+-className="logout-btn"
++className="admin-sidebar-logout-btn"
+ onClick={()=>{
+ 
+ localStorage.removeItem(
+diff --git a/src/components/layout/Navbar.css b/src/components/layout/Navbar.css
+index 4a80f79..9ebefbd 100644
+--- a/src/components/layout/Navbar.css
++++ b/src/components/layout/Navbar.css
+@@ -261,6 +261,8 @@ flex-shrink:0;
+ }
+ 
+ .navbar__profile-btn {
++  display: flex;
++  align-items: center;
+   background: rgba(255, 255, 255, 0.06);
+   border: 1px solid rgba(255, 0, 0, 0.15);
+   color: #fff;
+@@ -268,6 +270,7 @@ flex-shrink:0;
+   border-radius: 12px;
+   cursor: pointer;
+   font-weight: 600;
++  white-space: nowrap;
+   transition: 0.3s ease;
+ }
+ 
+@@ -277,7 +280,14 @@ flex-shrink:0;
+ }
+ 
+ .navbar__arrow {
++  display: inline-flex;
+   margin-left: 8px;
++  font-size: 0.7em;
++  transition: transform 0.25s ease;
++}
++
++.navbar__profile-btn[aria-expanded="true"] .navbar__arrow {
++  transform: rotate(180deg);
+ }
+ 
+ .navbar__dropdown{
+@@ -315,8 +325,9 @@ animation:dropdownFade .25s ease;
+ .navbar__dropdown-item {
+   display: flex;
+   align-items: center;
++  gap: 12px;
+   width: 100%;
+-  padding: 15px 20px;
++  padding: 14px 20px;
+   color: #ffffff;
+   text-decoration: none;
+   font-size: 0.95rem;
+@@ -324,9 +335,21 @@ animation:dropdownFade .25s ease;
+   background: transparent;
+   border: none;
+   cursor: pointer;
++  text-align: left;
+   transition: background 0.28s ease, color 0.28s ease;
+ }
+ 
++.navbar__dropdown-icon {
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  flex-shrink: 0;
++  width: 18px;
++  height: 18px;
++  color: #a1a1aa;
++  transition: color 0.28s ease;
++}
++
+ .navbar__dropdown-item:not(:last-child) {
+   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+ }
+@@ -338,30 +361,24 @@ animation:dropdownFade .25s ease;
+   color: #ff3b3b;
+ }
+ 
+-.logout-btn{
+-
+-display:flex;
+-
+-align-items:center;
+-
+-width:100%;
+-
+-padding:17px 22px;
+-
+-background:transparent;
+-
+-border:none;
+-
+-color:#fff;
+-
+-font-size:15px;
+-
+-font-weight:600;
++.navbar__dropdown-item:hover .navbar__dropdown-icon {
++  color: #ff3b3b;
++}
+ 
+-cursor:pointer;
++/* NAVBAR LOGOUT (scoped separately so it never collides with the
++   admin sidebar's .logout-btn) */
++.navbar__logout-btn {
++  font-weight: 600;
++  color: #ff6b6b;
++}
+ 
+-transition:.3s;
++.navbar__logout-btn .navbar__dropdown-icon {
++  color: #ff6b6b;
++}
+ 
++.navbar__logout-btn:hover {
++  background: rgba(255, 0, 0, 0.16);
++  color: #ff3b3b;
+ }
+ 
+ .cancel-btn {
+diff --git a/src/components/layout/Navbar.tsx b/src/components/layout/Navbar.tsx
+index c31f3a6..ea58f30 100644
+--- a/src/components/layout/Navbar.tsx
++++ b/src/components/layout/Navbar.tsx
+@@ -30,12 +30,9 @@ export default function Navbar() {
+   const [scrolled, setScrolled] =
+     useState(false)
+ 
+-  const { isLoggedIn, logout } =
++  const { isLoggedIn, userName, logout } =
+     useAuth()
+ 
+-  const userName =
+-    localStorage.getItem("userName")
+-
+   const location = useLocation()
+ 
+   const isHome =
+@@ -186,6 +183,8 @@ useEffect(() => {
+ 
+                 <button
+                   className="navbar__profile-btn"
++                  aria-expanded={profileOpen}
++                  aria-haspopup="true"
+                   onClick={() =>
+                     setProfileOpen(
+                       (prev) => !prev
+@@ -216,6 +215,13 @@ useEffect(() => {
+                       }}
+                     >
+ 
++                      <span className="navbar__dropdown-icon" aria-hidden="true">
++                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
++                          <rect x="3" y="4" width="18" height="18" rx="2" />
++                          <path d="M16 2v4M8 2v4M3 10h18" />
++                        </svg>
++                      </span>
++
+                       Current Booking
+ 
+                     </NavLink>
+@@ -231,6 +237,13 @@ useEffect(() => {
+                       }}
+                     >
+ 
++                      <span className="navbar__dropdown-icon" aria-hidden="true">
++                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
++                          <path d="M12 2C8 2 5 5 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-4-3-7-7-7z" />
++                          <circle cx="12" cy="9" r="2.5" />
++                        </svg>
++                      </span>
++
+                       Live Tracking
+ 
+                     </NavLink>
+@@ -246,13 +259,21 @@ useEffect(() => {
+                       }}
+                     >
+ 
++                      <span className="navbar__dropdown-icon" aria-hidden="true">
++                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
++                          <path d="M3 12a9 9 0 1 0 3-6.7" />
++                          <path d="M3 4v5h5" />
++                          <path d="M12 7v5l4 2" />
++                        </svg>
++                      </span>
++
+                       Service History
+ 
+                     </NavLink>
+ 
+                     <button
+                       type="button"
+-                      className="navbar__dropdown-item logout-btn"
++                      className="navbar__dropdown-item navbar__logout-btn"
+                       onClick={() => {
+ 
+                         // CLEAR SESSION
+@@ -277,6 +298,14 @@ useEffect(() => {
+                       }}
+                     >
+ 
++                      <span className="navbar__dropdown-icon" aria-hidden="true">
++                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
++                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
++                          <path d="M16 17l5-5-5-5" />
++                          <path d="M21 12H9" />
++                        </svg>
++                      </span>
++
+                       Logout
+ 
+                     </button>
+diff --git a/src/pages/Admin.css b/src/pages/Admin.css
+index ee7a620..dafb4cd 100644
+--- a/src/pages/Admin.css
++++ b/src/pages/Admin.css
+@@ -266,22 +266,6 @@
+   color: #ff2b2b;
+ }
+ 
+-.admin-logout-btn {
+-  background: #ff2b2b;
+-  color: white;
+-  border: none;
+-  padding: 12px 22px;
+-  border-radius: 12px;
+-  cursor: pointer;
+-  margin-bottom: 30px;
+-  font-weight: 600;
+-  transition: 0.3s ease;
+-}
+-
+-.admin-logout-btn:hover {
+-  background: #ff4444;
+-}
+-
+ /* ADMIN HEADER */
+ 
+ .admin-header {
+diff --git a/src/pages/AdminInvoices.tsx b/src/pages/AdminInvoices.tsx
+index ad82cdf..10be9be 100644
+--- a/src/pages/AdminInvoices.tsx
++++ b/src/pages/AdminInvoices.tsx
+@@ -923,30 +923,18 @@ Vehicle KM
+ <div className="form-group">
+ 
+ <label>
+-Vehicle Type
++Vehicle Brand &amp; Model
+ </label>
+-        <select
++        <input
++  type="text"
++  placeholder="e.g. Honda City, Maruti Swift"
+   value={vehicleType}
+   onChange={(e)=>
+     setVehicleType(
+       e.target.value
+     )
+   }
+- >
+- 
+-          <option value="">
+-            Vehicle Type
+-          </option>
+-
+-          <option value="Bike">
+-            Bike
+-          </option>
+-
+-          <option value="Car">
+-            Car
+-          </option>
+-
+-        </select>
++ />
+ 
+     </div>  
+ 
+@@ -1600,7 +1588,7 @@ Date :
+  {vehicleKm}
+ </p>
+     <p>
+-      Type :
++      Vehicle Brand &amp; Model :
+       {vehicleType}
+     </p>
+ 
+diff --git a/src/pages/Login.tsx b/src/pages/Login.tsx
+index d11626d..50eb56e 100644
+--- a/src/pages/Login.tsx
++++ b/src/pages/Login.tsx
+@@ -3,11 +3,13 @@ import { useSearchParams, useNavigate } from "react-router-dom"
+ import "./Login.css"
+ 
+ import { loginOrRegister } from "../api/authApi"
++import { useAuth } from "../context/AuthContext"
+ 
+ export default function Login() {
+ 
+   const [searchParams] = useSearchParams()
+   const navigate = useNavigate()                    // ✅ FIX: useNavigate instead of window.location.href
++  const { login } = useAuth()                        // ✅ FIX: sync AuthContext state on login
+ 
+   const selectedService = searchParams.get("service")
+ 
+@@ -51,6 +53,10 @@ export default function Login() {
+       localStorage.setItem("userPhone", data.user!.phone)
+       localStorage.setItem("isLoggedIn", "true")
+ 
++      // ✅ FIX: update AuthContext state (not just localStorage) so the
++      // Navbar's isLoggedIn/profile dropdown reflects the login immediately
++      login(data.user!.name)
++
+       if (data.existingUser) {
+         alert("Welcome Back ✅")
+       } else {
+diff --git a/src/utils/generateInvoicePdf.ts b/src/utils/generateInvoicePdf.ts
+index 0f19834..de7da38 100644
+--- a/src/utils/generateInvoicePdf.ts
++++ b/src/utils/generateInvoicePdf.ts
+@@ -189,9 +189,9 @@ export const generateInvoicePdf = async (
+     ["Email", invoice.email        || "—"],
+   ]
+   const rightItems = [
+-    ["Vehicle No",   invoice.vehicleNumber || "—"],
+-    ["Vehicle Type", invoice.vehicleType   || " —"],
+-    ["Vehicle KM",   invoice.vehicleKm     || "—"],
++    ["Vehicle No",    invoice.vehicleNumber || "—"],
++    ["Vehicle Model", invoice.vehicleType   || " —"],
++    ["Vehicle KM",    invoice.vehicleKm     || "—"],
+   ]
+ 
+   for (let i = 0; i < leftItems.length; i++) {
+@@ -208,7 +208,29 @@ export const generateInvoicePdf = async (
+     doc.setFont("helvetica", "bold")
+     doc.text(rightItems[i][0] + " :", rcX, ry)
+     doc.setFont("helvetica", "normal")
+-    doc.text(rightItems[i][1], rcX + doc.getTextWidth(rightItems[i][0] + " :") + 1, ry)
++
++    const rValueX = rcX + doc.getTextWidth(rightItems[i][0] + " :") + 1
++    const rValueMaxWidth = (ML + CW) - rValueX - 2 // stay inside the box
++    let rValueText = rightItems[i][1]
++
++    // Admin can type a free-text vehicle brand/model that may run long
++    // (e.g. "Maruti Suzuki Swift Dzire VXI") — shrink the font first,
++    // then fall back to an ellipsis, so it never spills past the box.
++    let rFontSize = 8
++    doc.setFontSize(rFontSize)
++    while (doc.getTextWidth(rValueText) > rValueMaxWidth && rFontSize > 6) {
++      rFontSize -= 0.5
++      doc.setFontSize(rFontSize)
++    }
++    if (doc.getTextWidth(rValueText) > rValueMaxWidth) {
++      while (rValueText.length > 3 && doc.getTextWidth(rValueText + "…") > rValueMaxWidth) {
++        rValueText = rValueText.slice(0, -1)
++      }
++      rValueText += "…"
++    }
++
++    doc.text(rValueText, rValueX, ry)
++    doc.setFontSize(8)
+ 
+     ry += 6.5
+   }
