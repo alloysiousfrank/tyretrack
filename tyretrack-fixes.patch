@@ -1,3 +1,43 @@
+diff --git a/src/components/admin/AdminLayout.tsx b/src/components/admin/AdminLayout.tsx
+index a651b97..2bb4515 100644
+--- a/src/components/admin/AdminLayout.tsx
++++ b/src/components/admin/AdminLayout.tsx
+@@ -1,5 +1,5 @@
+-import { Outlet } from "react-router-dom"
+-import { useState} from "react"
++import { Outlet, useLocation } from "react-router-dom"
++import { useState, useEffect, useRef } from "react"
+ import AdminSidebar from "./AdminSidebar"
+ import "./AdminLayout.css"
+ 
+@@ -7,6 +7,19 @@ export default function AdminLayout() {
+ 
+   const [open, setOpen] = useState(false)
+ 
++  const location = useLocation()
++
++  const contentRef = useRef<HTMLDivElement | null>(null)
++
++  useEffect(() => {
++
++    // .admin-content scrolls on its own (overflow-y:auto) instead of
++    // the window, so switching admin pages left it wherever the
++    // previous page had scrolled to. Reset it on every route change.
++    contentRef.current?.scrollTo(0, 0)
++
++  }, [location.pathname])
++
+   return (
+ 
+     <div className="admin-layout">
+@@ -38,6 +51,7 @@ setOpen(true)
+ 
+ <div
+ className="admin-content"
++ref={contentRef}
+ onWheel={(e)=>{
+ 
+ if(open){
 diff --git a/src/components/admin/AdminSidebar.css b/src/components/admin/AdminSidebar.css
 index 2732879..4403860 100644
 --- a/src/components/admin/AdminSidebar.css
@@ -65,6 +105,26 @@ index bd37d6b..474e74c 100644
  onClick={()=>{
  
  localStorage.removeItem(
+diff --git a/src/components/layout/Layout.tsx b/src/components/layout/Layout.tsx
+index ed79213..c0a09de 100644
+--- a/src/components/layout/Layout.tsx
++++ b/src/components/layout/Layout.tsx
+@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
+ 
+ import Navbar from './Navbar'
+ import Footer from './Footer'
++import ScrollToTop from './ScrollToTop'
+ 
+ import './Layout.css'
+ 
+@@ -12,6 +13,7 @@ export default function Layout() {
+ 
+   return (
+     <>
++      <ScrollToTop />
+       <Navbar />
+ 
+       <motion.main
 diff --git a/src/components/layout/Navbar.css b/src/components/layout/Navbar.css
 index 4a80f79..9ebefbd 100644
 --- a/src/components/layout/Navbar.css
@@ -273,6 +333,71 @@ index c31f3a6..ea58f30 100644
                        Logout
  
                      </button>
+diff --git a/src/components/layout/ScrollToTop.tsx b/src/components/layout/ScrollToTop.tsx
+new file mode 100644
+index 0000000..7030477
+--- /dev/null
++++ b/src/components/layout/ScrollToTop.tsx
+@@ -0,0 +1,24 @@
++import { useLayoutEffect } from 'react'
++import { useLocation } from 'react-router-dom'
++import { lenis } from '../../utils/lenis'
++
++/**
++ * React Router does not reset scroll position on navigation — the new
++ * page mounts wherever the old page had scrolled to. On top of that,
++ * Lenis keeps its own internal scroll offset, so resetting only the
++ * native window scroll leaves Lenis out of sync and the next
++ * scroll/click snaps back toward the old position.
++ *
++ * Rendering this once near the top of a layout (alongside <Outlet />)
++ * fixes both: every route change lands at the very top of the page.
++ */
++export default function ScrollToTop() {
++  const { pathname } = useLocation()
++
++  useLayoutEffect(() => {
++    lenis.scrollTo(0, { immediate: true })
++    window.scrollTo(0, 0)
++  }, [pathname])
++
++  return null
++}
+diff --git a/src/main.tsx b/src/main.tsx
+index e45c599..82f7c1a 100644
+--- a/src/main.tsx
++++ b/src/main.tsx
+@@ -1,7 +1,6 @@
+ import React from 'react'
+ import ReactDOM from 'react-dom/client'
+ import { BrowserRouter } from 'react-router-dom'
+-import Lenis from 'lenis'
+ 
+ import App from './App'
+ 
+@@ -9,18 +8,10 @@ import './styles/global.css'
+ 
+ import { AuthProvider } from './context/AuthContext'
+ 
+-// Initialize Lenis smooth scroll
+-const lenis = new Lenis({
+-  duration: 1.2,
+-  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+-})
+-
+-function raf(time: number) {
+-  lenis.raf(time)
+-  requestAnimationFrame(raf)
+-}
+-
+-requestAnimationFrame(raf)
++// Initialize the single shared Lenis smooth-scroll instance
++// (see src/utils/lenis.ts — also used by ScrollToTop to reset
++// scroll position correctly on route changes).
++import './utils/lenis'
+ 
+ ReactDOM.createRoot(document.getElementById('root')!).render(
+   <React.StrictMode>
 diff --git a/src/pages/Admin.css b/src/pages/Admin.css
 index ee7a620..dafb4cd 100644
 --- a/src/pages/Admin.css
@@ -426,3 +551,37 @@ index 0f19834..de7da38 100644
  
      ry += 6.5
    }
+diff --git a/src/utils/lenis.ts b/src/utils/lenis.ts
+new file mode 100644
+index 0000000..6210da3
+--- /dev/null
++++ b/src/utils/lenis.ts
+@@ -0,0 +1,28 @@
++import Lenis from 'lenis'
++
++// Single shared Lenis instance for the whole app.
++// Previously main.tsx created its own Lenis instance that nothing else
++// could reach, so components (like ScrollToTop) had no way to reset
++// Lenis's internal scroll offset on route change — only the native
++// window scroll got reset, which left Lenis out of sync and caused the
++// next scroll/click to jump back toward the old position.
++export const lenis = new Lenis({
++  duration: 1.2,
++  easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
++})
++
++function raf(time: number) {
++  lenis.raf(time)
++  requestAnimationFrame(raf)
++}
++
++requestAnimationFrame(raf)
++
++if (typeof document !== 'undefined') {
++  // Matches the CSS in global.css that turns off the native
++  // `scroll-behavior: smooth` on <html> while Lenis is driving scroll,
++  // so programmatic/instant scroll resets aren't fought by the browser.
++  document.documentElement.classList.add('lenis', 'lenis-smooth')
++}
++
++export default lenis
