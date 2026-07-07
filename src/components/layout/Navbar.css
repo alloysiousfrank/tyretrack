@@ -244,8 +244,20 @@
 
 /* PROFILE DROPDOWN */
 
-.navbar__profile {
-  position: relative;
+.navbar__profile{
+
+position:relative;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+margin-left:12px;
+
+flex-shrink:0;
+
 }
 
 .navbar__profile-btn {
@@ -268,49 +280,88 @@
   margin-left: 8px;
 }
 
-.navbar__dropdown {
-  position: absolute;
-  top: 58px;
-  right: 0;
-  width: 220px;
-  background: rgba(10, 10, 10, 0.96);
-  border: 1px solid rgba(255, 0, 0, 0.18);
-  border-radius: 18px;
-  overflow: hidden;
-  backdrop-filter: blur(14px);
-  z-index: 999;
+.navbar__dropdown{
+
+position:absolute;
+
+top:calc(100% + 10px);
+
+right:0;
+
+min-width:250px;
+
+background:rgba(10,10,10,.97);
+
+border:1px solid rgba(255,0,0,.18);
+
+border-radius:18px;
+
+overflow:hidden;
+
+backdrop-filter:blur(20px);
+
+-webkit-backdrop-filter:blur(20px);
+
+box-shadow:
+0 20px 50px rgba(0,0,0,.45),
+0 0 25px rgba(255,0,0,.12);
+
+z-index:99999;
+
+animation:dropdownFade .25s ease;
+
 }
 
 .navbar__dropdown-item {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
-  padding: 16px 20px;
-  color: white;
+  padding: 15px 20px;
+  color: #ffffff;
   text-decoration: none;
-  transition: 0.3s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
   background: transparent;
-  text-align: left;
+  border: none;
   cursor: pointer;
+  transition: background 0.28s ease, color 0.28s ease;
 }
 
 .navbar__dropdown-item:not(:last-child) {
-  border-bottom: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+
 
 .navbar__dropdown-item:hover {
   background: rgba(255, 0, 0, 0.12);
   color: #ff3b3b;
 }
 
-.dropdown-logout {
-  width: 100%;
-  background: transparent;
-  color: white;
-  text-align: left;
-  padding: 14px 20px;
-  cursor: pointer;
-  font-size: 15px;
-  transition: 0.3s;
+.logout-btn{
+
+display:flex;
+
+align-items:center;
+
+width:100%;
+
+padding:17px 22px;
+
+background:transparent;
+
+border:none;
+
+color:#fff;
+
+font-size:15px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:.3s;
+
 }
 
 .cancel-btn {
@@ -322,4 +373,24 @@
 .cancel-btn:hover {
   background: rgba(255, 0, 0, 0.12);
   color: #ff3b3b;
+}
+
+@keyframes dropdownFade{
+
+from{
+
+opacity:0;
+
+transform:translateY(-10px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
 }

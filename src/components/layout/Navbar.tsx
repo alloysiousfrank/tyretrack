@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { motion, useScroll } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
@@ -44,21 +44,40 @@ export default function Navbar() {
   const { scrollYProgress } =
     useScroll()
 
-  useEffect(() => {
+  const profileRef = useRef<HTMLDivElement | null>(null)
 
+  useEffect(() => {
     const unsubscribe =
       scrollYProgress.on(
         "change",
         (latest) => {
-
           setScrolled(latest > 0.04)
-
         }
       )
 
     return unsubscribe
-
   }, [scrollYProgress])
+
+useEffect(() => {
+  function handleClickOutside(event: Event) {
+    const target = event.target
+    if (
+      profileRef.current &&
+      target instanceof Node &&
+      !profileRef.current.contains(target)
+    ) {
+      setProfileOpen(false)
+    }
+  }
+
+  document.addEventListener('mousedown', handleClickOutside)
+  document.addEventListener('touchstart', handleClickOutside)
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside)
+    document.removeEventListener('touchstart', handleClickOutside)
+  }
+}, [profileOpen])
 
   const visible =
     !isHome || scrolled
@@ -163,7 +182,7 @@ export default function Navbar() {
 
             {isLoggedIn ? (
 
-              <div className="navbar__profile">
+              <div className="navbar__profile" ref={profileRef}>
 
                 <button
                   className="navbar__profile-btn"
