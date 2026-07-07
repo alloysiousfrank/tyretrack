@@ -332,7 +332,7 @@ window.location.href =
 )}
 
           <button
-            className="admin-logout-btn"
+            className="logout-btn"
             onClick={handleAdminLogout}
           >
             Logout
