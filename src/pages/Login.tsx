@@ -8,8 +8,8 @@ import { useAuth } from "../context/AuthContext"
 export default function Login() {
 
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()                    // ✅ FIX: useNavigate instead of window.location.href
-  const { login } = useAuth()                        // ✅ FIX: sync AuthContext state on login
+  const navigate = useNavigate()
+  const { login } = useAuth()
 
   const selectedService = searchParams.get("service")
 

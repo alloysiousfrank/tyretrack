@@ -281,36 +281,6 @@
   margin: 0;
 }
 
-/* LOGOUT BUTTON */
-
-/* LOGOUT BUTTON */
-
-.admin-logout-btn {
-  background: linear-gradient(
-    135deg,
-    #ff2b2b,
-    #8b0000
-  );
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 14px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: 0.3s ease;
-  box-shadow: 0 0 18px rgba(255,0,0,0.18);
-}
-
-.admin-logout-btn:hover {
-  background: linear-gradient(
-    135deg,
-    #ff4444,
-    #b30000
-  );
-  transform: translateY(-2px);
-  box-shadow: 0 0 24px rgba(255,0,0,0.35);
-}
-
 /* DELETE BUTTON */
 
 .delete-booking-btn {

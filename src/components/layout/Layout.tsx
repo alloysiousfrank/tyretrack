@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 
 import Navbar from './Navbar'
 import Footer from './Footer'
+import ScrollToTop from './ScrollToTop'
 
 import './Layout.css'
 
@@ -12,6 +13,7 @@ export default function Layout() {
 
   return (
     <>
+      <ScrollToTop />
       <Navbar />
 
       <motion.main

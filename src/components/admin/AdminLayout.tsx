@@ -1,11 +1,17 @@
-import { Outlet } from "react-router-dom"
-import { useState} from "react"
+import { Outlet, useLocation } from "react-router-dom"
+import { useState, useEffect, useRef } from "react"
 import AdminSidebar from "./AdminSidebar"
 import "./AdminLayout.css"
 
 export default function AdminLayout() {
 
   const [open, setOpen] = useState(false)
+  const location = useLocation()
+  const contentRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    contentRef.current?.scrollTo(0, 0)
+  }, [location.pathname])
 
   return (
 
@@ -38,6 +44,7 @@ setOpen(true)
 
 <div
 className="admin-content"
+ref={contentRef}
 onWheel={(e)=>{
 
 if(open){

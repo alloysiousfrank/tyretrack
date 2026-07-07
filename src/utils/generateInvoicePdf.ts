@@ -190,7 +190,7 @@ export const generateInvoicePdf = async (
   ]
   const rightItems = [
     ["Vehicle No",    invoice.vehicleNumber || "—"],
-    ["Vehicle Brand & Model", invoice.vehicleType   || " —"],
+    ["Vehicle Model", invoice.vehicleType   || " —"],
     ["Vehicle KM",    invoice.vehicleKm     || "—"],
   ]
 
