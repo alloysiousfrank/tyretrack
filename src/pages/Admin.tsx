@@ -305,12 +305,7 @@ window.location.href =
   return (
 <>
 
-<div
- className="admin-page"
- style={{
-  marginLeft: "270px"
- }}
->
+<div className="admin-page">
 
       <div className="admin-container">
 
