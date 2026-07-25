@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom"
 import { useState, useEffect, useRef } from "react"
 import AdminSidebar from "./AdminSidebar"
 import "./AdminLayout.css"
+import "../../styles/admin-responsive.css"
 
 export default function AdminLayout() {
 

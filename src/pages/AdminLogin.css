@@ -67,3 +67,34 @@
   background: #ff4444;
   transform: translateY(-2px);
 }
+
+@media (max-width: 600px) {
+  .admin-login-card {
+    padding: 36px 26px;
+    border-radius: 22px;
+  }
+
+  .admin-login-card h1 {
+    font-size: 2rem;
+    margin-bottom: 26px;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-login-page {
+    padding: 14px;
+  }
+
+  .admin-login-card {
+    padding: 28px 18px;
+  }
+
+  .admin-login-card h1 {
+    font-size: 1.7rem;
+  }
+
+  .admin-login-card input,
+  .admin-login-card button {
+    padding: 15px;
+  }
+}

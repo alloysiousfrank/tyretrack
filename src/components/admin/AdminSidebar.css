@@ -279,6 +279,47 @@ left:-270px;
 
 }
 
+/* ===========================
+DESKTOP / LAPTOP (>=1024px)
+sidebar stays open permanently,
+overlay is disabled entirely
+=========================== */
+
+@media(min-width:1024px){
+
+.admin-sidebar{
+
+left:0;
+
+box-shadow:none;
+
+}
+
+.sidebar-overlay{
+
+display:none;
+
+}
+
+}
+
+/* ===========================
+TABLET (768px - 1023px)
+drawer sidebar, slightly narrower
+=========================== */
+
+@media(min-width:769px) and (max-width:1023px){
+
+.admin-sidebar{
+
+width:280px;
+
+left:-280px;
+
+}
+
+}
+
 
 .admin-menu{
 

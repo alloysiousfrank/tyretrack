@@ -1,0 +1,365 @@
+diff --git a/src/components/admin/AdminLayout.css b/src/components/admin/AdminLayout.css
+index c281a38..515878b 100644
+--- a/src/components/admin/AdminLayout.css
++++ b/src/components/admin/AdminLayout.css
+@@ -44,10 +44,16 @@ CONTENT
+ 
+     flex:1;
+ 
++    width:100%;
++
++    min-width:0;
++
+     margin-left:0;
+ 
+     padding:32px;
+ 
++    box-sizing:border-box;
++
+     overflow-x:hidden;
+ 
+     overflow-y:auto;
+@@ -56,7 +62,41 @@ CONTENT
+ 
+     min-height:100vh;
+ 
+-    transition:.35s ease;
++    transition:margin-left .35s ease;
++
++}
++
++/* ===========================
++DESKTOP / LAPTOP (>=1024px)
++sidebar is persistent, no drawer,
++hamburger hidden, content shifts right
++=========================== */
++
++@media(min-width:1024px){
++
++.menu-btn{
++
++display:none;
++
++}
++
++.admin-content{
++
++margin-left:290px;
++
++padding:40px 44px;
++
++}
++
++}
++
++@media(min-width:1440px){
++
++.admin-content{
++
++padding:48px 60px;
++
++}
+ 
+ }
+ 
+diff --git a/src/components/admin/AdminLayout.tsx b/src/components/admin/AdminLayout.tsx
+index bd145e0..9492cf9 100644
+--- a/src/components/admin/AdminLayout.tsx
++++ b/src/components/admin/AdminLayout.tsx
+@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom"
+ import { useState, useEffect, useRef } from "react"
+ import AdminSidebar from "./AdminSidebar"
+ import "./AdminLayout.css"
++import "../../styles/admin-responsive.css"
+ 
+ export default function AdminLayout() {
+ 
+diff --git a/src/components/admin/AdminSidebar.css b/src/components/admin/AdminSidebar.css
+index 4403860..a147043 100644
+--- a/src/components/admin/AdminSidebar.css
++++ b/src/components/admin/AdminSidebar.css
+@@ -279,6 +279,47 @@ left:-270px;
+ 
+ }
+ 
++/* ===========================
++DESKTOP / LAPTOP (>=1024px)
++sidebar stays open permanently,
++overlay is disabled entirely
++=========================== */
++
++@media(min-width:1024px){
++
++.admin-sidebar{
++
++left:0;
++
++box-shadow:none;
++
++}
++
++.sidebar-overlay{
++
++display:none;
++
++}
++
++}
++
++/* ===========================
++TABLET (768px - 1023px)
++drawer sidebar, slightly narrower
++=========================== */
++
++@media(min-width:769px) and (max-width:1023px){
++
++.admin-sidebar{
++
++width:280px;
++
++left:-280px;
++
++}
++
++}
++
+ 
+ .admin-menu{
+ 
+diff --git a/src/pages/AdminLogin.css b/src/pages/AdminLogin.css
+index 770b6b7..8d96ae1 100644
+--- a/src/pages/AdminLogin.css
++++ b/src/pages/AdminLogin.css
+@@ -66,4 +66,35 @@
+ .admin-login-card button:hover {
+   background: #ff4444;
+   transform: translateY(-2px);
++}
++
++@media (max-width: 600px) {
++  .admin-login-card {
++    padding: 36px 26px;
++    border-radius: 22px;
++  }
++
++  .admin-login-card h1 {
++    font-size: 2rem;
++    margin-bottom: 26px;
++  }
++}
++
++@media (max-width: 380px) {
++  .admin-login-page {
++    padding: 14px;
++  }
++
++  .admin-login-card {
++    padding: 28px 18px;
++  }
++
++  .admin-login-card h1 {
++    font-size: 1.7rem;
++  }
++
++  .admin-login-card input,
++  .admin-login-card button {
++    padding: 15px;
++  }
+ }
+\ No newline at end of file
+diff --git a/src/styles/admin-responsive.css b/src/styles/admin-responsive.css
+new file mode 100644
+index 0000000..6892935
+--- /dev/null
++++ b/src/styles/admin-responsive.css
+@@ -0,0 +1,190 @@
++/* ==========================================================
++   TYRETRACK ADMIN — GLOBAL RESPONSIVE LAYER
++   Loaded once (via AdminLayout) for every admin page.
++   Breakpoints:
++     >=1024px  Desktop / Laptop  — persistent sidebar
++     769-1023  Tablet            — drawer sidebar, 2-col grids
++     481-768   Large mobile      — drawer sidebar, 1-col
++     <=480     Small mobile      — compact spacing/type
++   This file only tightens/guards existing component CSS —
++   it never overrides colors, gradients, or component logic.
++   ========================================================== */
++
++/* Prevent any admin element from ever forcing horizontal
++   scroll on the page itself; individual wide elements (tables)
++   get their own scroll container instead. */
++.admin-content,
++.admin-content * {
++  box-sizing: border-box;
++}
++
++.admin-content img,
++.admin-content svg {
++  max-width: 100%;
++  height: auto;
++}
++
++/* ==========================================================
++   TABLES — always horizontally scrollable on their own,
++   never squeeze columns or blow out the page width.
++   ========================================================== */
++
++.quotes-table {
++  overflow-x: auto;
++  overflow-y: hidden;
++  -webkit-overflow-scrolling: touch;
++}
++
++.quotes-table table {
++  min-width: 720px;
++}
++
++.invoice-preview {
++  overflow-x: auto;
++  -webkit-overflow-scrolling: touch;
++}
++
++.invoice-table {
++  min-width: 360px;
++}
++
++/* ==========================================================
++   DEFENSIVE FLEX WRAPPING
++   Rows built with justify-content:space-between should wrap
++   instead of crushing their contents on narrow viewports.
++   ========================================================== */
++
++.admin-header,
++.quotes-header,
++.invoice-header,
++.history-header,
++.history-banner,
++.history-highlight-card,
++.invoice-mode {
++  flex-wrap: wrap;
++  row-gap: 14px;
++}
++
++/* ==========================================================
++   TABLET (<=1023px)
++   ========================================================== */
++
++@media (max-width: 1023px) {
++  .quote-stats {
++    grid-template-columns: repeat(2, 1fr);
++  }
++
++  .profile-stats {
++    grid-template-columns: repeat(3, 1fr);
++    gap: 12px;
++  }
++}
++
++/* ==========================================================
++   LARGE MOBILE (<=768px)
++   ========================================================== */
++
++@media (max-width: 768px) {
++  .admin-page {
++    padding: 100px 16px 60px;
++  }
++
++  .admin-quotes {
++    padding: 20px 16px;
++  }
++
++  .admin-header,
++  .quotes-header {
++    text-align: center;
++    justify-content: center;
++  }
++
++  .admin-controls {
++    flex-direction: column;
++    align-items: stretch;
++  }
++
++  .admin-search,
++  .admin-filter,
++  .filter-select {
++    width: 100%;
++    min-width: 0;
++  }
++
++  .admin-nav {
++    justify-content: center;
++  }
++
++  .admin-nav button {
++    flex: 1 1 140px;
++  }
++
++  .history-banner,
++  .history-highlight-card,
++  .profile-top {
++    text-align: left;
++  }
++
++  .invoice-preview {
++    padding: 22px;
++  }
++
++  .invoice-header {
++    justify-content: center;
++    text-align: center;
++  }
++}
++
++/* ==========================================================
++   SMALL MOBILE (<=480px)
++   ========================================================== */
++
++@media (max-width: 480px) {
++  .admin-container h1,
++  .admin-page h1 {
++    font-size: 1.7rem;
++  }
++
++  .quotes-header h1 {
++    font-size: 1.5rem;
++  }
++
++  .admin-card,
++  .stat-card,
++  .quote-stat-card {
++    padding: 18px;
++  }
++
++  .admin-login-card {
++    padding: 30px 24px;
++  }
++
++  .admin-logo {
++    padding: 60px 18px 24px;
++  }
++
++  .profile-stats {
++    grid-template-columns: repeat(3, 1fr);
++    font-size: 16px;
++    gap: 8px;
++  }
++
++  .invoice-preview {
++    padding: 16px;
++  }
++}
++
++/* ==========================================================
++   VERY SMALL MOBILE (<=360px)
++   ========================================================== */
++
++@media (max-width: 360px) {
++  .admin-container h1,
++  .admin-page h1 {
++    font-size: 1.45rem;
++  }
++
++  .admin-nav button {
++    flex: 1 1 100%;
++  }
++}

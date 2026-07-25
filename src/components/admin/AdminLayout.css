@@ -44,9 +44,15 @@ CONTENT
 
     flex:1;
 
+    width:100%;
+
+    min-width:0;
+
     margin-left:0;
 
     padding:32px;
+
+    box-sizing:border-box;
 
     overflow-x:hidden;
 
@@ -56,7 +62,41 @@ CONTENT
 
     min-height:100vh;
 
-    transition:.35s ease;
+    transition:margin-left .35s ease;
+
+}
+
+/* ===========================
+DESKTOP / LAPTOP (>=1024px)
+sidebar is persistent, no drawer,
+hamburger hidden, content shifts right
+=========================== */
+
+@media(min-width:1024px){
+
+.menu-btn{
+
+display:none;
+
+}
+
+.admin-content{
+
+margin-left:290px;
+
+padding:40px 44px;
+
+}
+
+}
+
+@media(min-width:1440px){
+
+.admin-content{
+
+padding:48px 60px;
+
+}
 
 }
 
