@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { generateQuotePDF } from "../../utils/generateQuotePDF"
 import { sendQuoteWhatsApp } from "../../utils/sendQuoteWhatsApp"
 import "./QuoteEditor.css"
 
@@ -333,7 +332,22 @@ if (data.success) {
   }
 
 }
+}
+catch (err) {
 
+  console.log(err)
+
+  alert("Unable to publish quotation.")
+
+}
+
+finally {
+
+  setPublishing(false)
+
+}
+
+}
   return (
 <div
 className="editor-overlay"

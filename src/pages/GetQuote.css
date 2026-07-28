@@ -61,6 +61,40 @@ overflow-x:hidden;
 
 }
 
+.embedded-close-btn{
+
+    position:absolute;
+
+    top:20px;
+
+    right:20px;
+
+    z-index:10;
+
+    width:44px;
+
+    height:44px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.12);
+
+    color:white;
+
+    font-size:24px;
+
+    cursor:pointer;
+
+}
+
+.embedded-close-btn:hover{
+
+    background:rgba(255,255,255,.22);
+
+}
+
 /* ================= HERO ================= */
 
 .quote-hero{

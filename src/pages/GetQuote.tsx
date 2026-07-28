@@ -2,7 +2,13 @@ import { useState } from "react"
 import axios from "axios"
 import "./GetQuote.css"
 
-export default function GetQuote() {
+interface GetQuoteProps {
+  embedded?: boolean
+  onClose?: () => void
+  onCreated?: (id: string) => void
+}
+
+export default function GetQuote({ embedded = false, onClose, onCreated }: GetQuoteProps) {
 const [customerName, setCustomerName] = useState("")
 const [phone, setPhone] = useState("")
 const [email, setEmail] = useState("")
@@ -121,6 +127,18 @@ setNotes("")
 
 setStep(1)
 
+const quoteId = response.data.quotation?._id || response.data.quotation?.quoteId || ""
+
+if (onCreated) {
+
+onCreated(quoteId)
+
+} else {
+
+onClose?.()
+
+}
+
 }
 
 }catch(error:any){
@@ -141,6 +159,24 @@ error.response?.data?.message ||
   return (
 
     <section className="quote-page">
+
+      {embedded && (
+
+        <button
+
+          type="button"
+
+          className="embedded-close-btn"
+
+          onClick={onClose}
+
+        >
+
+          ×
+
+        </button>
+
+      )}
 
       <div className="quote-overlay"></div>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import QuoteEditor from "../components/quotations/QuoteEditor"
+import GetQuote from "./GetQuote"
 import "./AdminQuotes.css"
 interface Quotation {
 
@@ -25,6 +26,7 @@ interface Quotation {
 
 export default function AdminQuotes() {
 const [selectedQuote,setSelectedQuote]=useState("")
+const [creatingQuote,setCreatingQuote]=useState(false)
   const [quotes, setQuotes] = useState<Quotation[]>([])
 
   useEffect(() => {
@@ -84,6 +86,20 @@ const [selectedQuote,setSelectedQuote]=useState("")
             </p>
 
         </div>
+
+        <button
+
+            type="button"
+
+            className="create-quote-btn"
+
+            onClick={()=>setCreatingQuote(true)}
+
+        >
+
+            + Create Quotation
+
+        </button>
 
     </div>
 
@@ -308,6 +324,35 @@ Open
 </table>
 
 </div>
+{
+
+creatingQuote && (
+
+<div className="admin-quote-create-overlay">
+
+<GetQuote
+
+embedded
+
+onClose={()=>setCreatingQuote(false)}
+
+onCreated={(id)=>{
+
+setCreatingQuote(false)
+
+setSelectedQuote(id)
+
+fetchQuotes()
+
+}}
+
+/>
+
+</div>
+
+)
+
+}
 {
 
 selectedQuote && (
