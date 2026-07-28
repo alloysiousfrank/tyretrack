@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react"
+import { sendInvoiceWhatsApp } from "../utils/sendInvoiceWhatsApp"
+
 import {
  generateInvoicePdf
 }
@@ -764,6 +766,14 @@ const publishInvoice = async (id: string) => {
           )
 
         console.log(emailResult)
+
+        const whatsappResult =
+  await sendInvoiceWhatsApp(
+    publishedInvoice,
+    pdfBlob
+  )
+
+console.log(whatsappResult)
 
       }
 

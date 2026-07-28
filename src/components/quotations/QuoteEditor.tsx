@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react"
+import { generateQuotePDF } from "../../utils/generateQuotePDF"
+import { sendQuoteWhatsApp } from "../../utils/sendQuoteWhatsApp"
 import "./QuoteEditor.css"
 
 // Dynamic import for generateQuotePDF so a missing file doesn't break the build.
@@ -284,35 +286,51 @@ Authorization:`Bearer ${token}`
 
 const data=await response.json()
 
-if(data.success){
+if (data.success) {
 
-alert("Quotation Published Successfully ✅")
+  alert("Quotation Published Successfully ✅")
 
-applyQuoteData(data.quotation)
+  applyQuoteData(data.quotation)
 
-}
+  // NEW: generate the PDF and send it over WhatsApp automatically
+  try {
 
-else{
+    const items = [
+      {
+        description: `${quote.preferredBrand || "Tyre"} Tyre`,
+        quantity: tyreQuantity,
+        rate: tyrePrice,
+        total: tyrePrice * tyreQuantity,
+      },
+      { description: "Labour", quantity: 1, rate: labourCharge, total: labourCharge },
+      { description: "Accessories", quantity: 1, rate: accessoriesCharge, total: accessoriesCharge },
+    ].filter((item) => item.total > 0)
 
-alert(data.message)
+    const pdfBlob = await generateQuotePDF({
+      quoteNumber: data.quotation.quoteId,
+      customerName: data.quotation.customerName,
+      phone: data.quotation.phone,
+      email: data.quotation.email,
+      vehicleNumber: data.quotation.vehicleNumber,
+      vehicleType: data.quotation.vehicleType,
+      vehicleBrand: data.quotation.vehicleBrand,
+      vehicleModel: data.quotation.vehicleModel,
+      tyreSize: data.quotation.tyreSize,
+      preferredBrand: data.quotation.preferredBrand,
+      notes: data.quotation.notes,
+      validTill: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN"),
+      subtotal,
+      gst,
+      total,
+      items,
+    })
 
-}
+    const whatsappResult = await sendQuoteWhatsApp(data.quotation, pdfBlob)
+    console.log(whatsappResult)
 
-}
-
-catch(error){
-
-console.log(error)
-
-alert("Unable to publish.")
-
-}
-
-finally{
-
-setPublishing(false)
-
-}
+  } catch (waErr) {
+    console.log("Quote WhatsApp send failed:", waErr)
+  }
 
 }
 

@@ -1,6 +1,10 @@
 const Invoice = require("../models/Invoice")
 const Booking = require("../models/Booking")
 const Inventory = require("../models/Inventory")
+const {
+  sendServiceCompletedWhatsApp,
+} = require("../utils/whatsappMessages")
+const { isConfigured } = require("../utils/whatsappService")
 
 // ==============================
 // CREATE INVOICE
@@ -324,6 +328,30 @@ exports.publishInvoice = async (req, res) => {
         },
         { returnDocument: "after" }   // ✅ FIX: replaces deprecated { new: true }
       )
+    }
+
+    // Fire the "service completed" WhatsApp text now - it needs no PDF,
+    // so it can go out immediately on publish. The invoice PDF itself
+    // is sent separately via POST /api/whatsapp/send-invoice once the
+    // frontend has generated the PDF blob (see AdminInvoices.tsx).
+    if (isConfigured() && invoice.phone) {
+
+      try {
+
+        await sendServiceCompletedWhatsApp({
+          phone: invoice.phone,
+          customerName: invoice.customerName,
+          vehicleNumber: invoice.vehicleNumber,
+        })
+
+        console.log("Service completed WhatsApp sent successfully.")
+
+      } catch (waError) {
+
+        console.log("Service Completed WhatsApp Error:", waError.message)
+
+      }
+
     }
 
     res.json({ success: true, message: "Invoice Published" })

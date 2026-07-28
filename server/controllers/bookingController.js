@@ -2,6 +2,11 @@ const Booking = require("../models/Booking")
 const {
   sendBookingConfirmationEmail,
 } = require("../utils/emailService")
+const {
+  sendWelcomeWhatsApp,
+  sendBookingConfirmationWhatsApp,
+} = require("../utils/whatsappMessages")
+const { isConfigured } = require("../utils/whatsappService")
 
 // CREATE BOOKING
 exports.createBooking = async (req, res) => {
@@ -44,6 +49,42 @@ exports.createBooking = async (req, res) => {
       console.log(
         "Booking Email Error:",
         mailError.message
+      )
+
+    }
+
+    // Send WhatsApp welcome + booking confirmation (non-blocking)
+    if (isConfigured()) {
+
+      try {
+
+        await sendWelcomeWhatsApp({
+          phone: booking.phone,
+          customerName: booking.name,
+        })
+
+        await sendBookingConfirmationWhatsApp({
+          phone: booking.phone,
+          customerName: booking.name,
+          bookingId: booking.bookingId,
+          service: booking.service,
+          date: new Date(booking.date).toLocaleDateString(),
+          time: booking.time,
+        })
+
+        console.log("Booking confirmation WhatsApp sent successfully.")
+
+      } catch (waError) {
+
+        console.log("Booking WhatsApp Error:", waError.message)
+
+      }
+
+    } else {
+
+      console.log(
+        "WhatsApp not configured - skipping WhatsApp booking confirmation. " +
+        "Set WHATSAPP_TOKEN and WHATSAPP_PHONE_ID in .env to enable."
       )
 
     }
@@ -209,4 +250,3 @@ exports.clearAllBookings = async (req, res) => {
   }
 
 }
-
