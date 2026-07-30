@@ -71,7 +71,7 @@ const callGraphAPI = async (path, body, isFormData = false) => {
 // components: array of template variable substitutions, e.g.
 //   [{ type: "body", parameters: [{ type: "text", text: "Ravi" }] }]
 
-const sendTemplateMessage = async ({ to, templateName, languageCode = "en_US", components = [] }) => {
+const sendTemplateMessage = async ({ to, templateName, languageCode = "en", components = [] }) => {
   const phone = normalizePhone(to)
   if (!phone) throw new Error("Invalid recipient phone number")
 

@@ -62,7 +62,8 @@ function fmt(n: number | string): string {
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 export const generateQuotePDF = async (
-  data: QuotePDFData
+  data: QuotePDFData,
+  download = true
 ): Promise<Blob> => {
   // Page constants
   const doc = new jsPDF({ unit: "mm", format: "a4" })
@@ -419,7 +420,9 @@ export const generateQuotePDF = async (
   // ═══════════════════════════════════════════════════════════════════════
   const pdfBlob = doc.output("blob")
 
+if (download) {
   doc.save(`${data.quoteNumber || "TyreTrack-Quotation"}.pdf`)
+}
 
-  return pdfBlob
+return pdfBlob
 }

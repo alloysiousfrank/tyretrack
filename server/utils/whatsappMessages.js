@@ -41,7 +41,7 @@ const sendBookingConfirmationWhatsApp = async ({
 }) => {
   return sendTemplateMessage({
     to: phone,
-    templateName: "tyretrack_booking_confirmed",
+    templateName: "tyretrackbookingconfirmed",
     components: [
       {
         type: "body",
@@ -67,7 +67,7 @@ const sendServiceCompletedWhatsApp = async ({
 }) => {
   return sendTemplateMessage({
     to: phone,
-    templateName: "tyretrack_service_completed",
+    templateName: "tyretrack_servicecompleted",
     components: [
       {
         type: "body",
@@ -94,7 +94,7 @@ const sendInvoiceWhatsApp = async ({
 }) => {
   await sendTemplateMessage({
     to: phone,
-    templateName: "tyretrack_invoice_ready",
+    templateName: "tyretrack_invoiceready",
     components: [
       {
         type: "body",
@@ -127,7 +127,7 @@ const sendQuotationWhatsApp = async ({
 }) => {
   await sendTemplateMessage({
     to: phone,
-    templateName: "tyretrack_quote_ready",
+    templateName:	"tyretrack_quoteready",
     components: [
       {
         type: "body",
