@@ -2,10 +2,8 @@
 // TYRETRACK WHATSAPP MESSAGE FLOWS
 // ==============================
 // Thin wrappers around whatsappService.js encoding the specific
-// templates TyreTrack needs. Swap TEMPLATE NAMES below for whatever
-// you name them when you create them in Meta Business Manager >
-// WhatsApp Manager > Message Templates. See templates.md in this
-// bundle for suggested template bodies to submit for approval.
+// templates TyreTrack needs. Template names below must match exactly
+// what's registered in Meta WhatsApp Manager for this account.
 
 const {
   sendTemplateMessage,
@@ -17,7 +15,12 @@ const sendWelcomeWhatsApp = async ({ phone, customerName }) => {
     to: phone,
     templateName: "tyretrack_welcome",
     components: [
-      { type: "body", parameters: [{ type: "text", text: customerName }] },
+      {
+        type: "body",
+        parameters: [
+          { type: "text", parameter_name: "customer_name", text: customerName },
+        ],
+      },
     ],
   })
 }
