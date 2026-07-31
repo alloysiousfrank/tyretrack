@@ -9,35 +9,21 @@
 
 const {
   sendTemplateMessage,
-  sendPdfDocument,
+  uploadMediaBuffer,
 } = require("./whatsappService")
 
-// ==============================
-// 1. WELCOME MESSAGE (on booking / on account creation)
-// ==============================
 const sendWelcomeWhatsApp = async ({ phone, customerName }) => {
   return sendTemplateMessage({
     to: phone,
     templateName: "tyretrack_welcome",
     components: [
-      {
-        type: "body",
-        parameters: [{ type: "text", text: customerName }],
-      },
+      { type: "body", parameters: [{ type: "text", text: customerName }] },
     ],
   })
 }
 
-// ==============================
-// 2. BOOKING CONFIRMATION (on booking creation)
-// ==============================
 const sendBookingConfirmationWhatsApp = async ({
-  phone,
-  customerName,
-  bookingId,
-  service,
-  date,
-  time,
+  phone, customerName, bookingId, service, date, time,
 }) => {
   return sendTemplateMessage({
     to: phone,
@@ -57,14 +43,7 @@ const sendBookingConfirmationWhatsApp = async ({
   })
 }
 
-// ==============================
-// 3. SERVICE COMPLETED (when invoice is published / booking marked completed)
-// ==============================
-const sendServiceCompletedWhatsApp = async ({
-  phone,
-  customerName,
-  vehicleNumber,
-}) => {
+const sendServiceCompletedWhatsApp = async ({ phone, customerName, vehicleNumber }) => {
   return sendTemplateMessage({
     to: phone,
     templateName: "tyretrack_servicecompleted",
@@ -80,22 +59,16 @@ const sendServiceCompletedWhatsApp = async ({
   })
 }
 
-// ==============================
-// 4. INVOICE READY + PDF (on invoice publish)
-// ==============================
-// Sends a template first (works even outside a session window),
-// then follows up with the actual PDF document.
-const sendInvoiceWhatsApp = async ({
-  phone,
-  customerName,
-  invoiceId,
-  totalAmount,
-  pdfBuffer,
-}) => {
-  await sendTemplateMessage({
+const sendInvoiceWhatsApp = async ({ phone, customerName, invoiceId, totalAmount, pdfBuffer }) => {
+  const mediaId = await uploadMediaBuffer(pdfBuffer, `${invoiceId}.pdf`)
+  return sendTemplateMessage({
     to: phone,
-    templateName: "tyretrack_invoiceready",
+    templateName: "tyretrack_invoicepdf",
     components: [
+      {
+        type: "header",
+        parameters: [{ type: "document", document: { id: mediaId, filename: `${invoiceId}.pdf` } }],
+      },
       {
         type: "body",
         parameters: [
@@ -106,29 +79,18 @@ const sendInvoiceWhatsApp = async ({
       },
     ],
   })
-
-  return sendPdfDocument({
-    to: phone,
-    buffer: pdfBuffer,
-    filename: `${invoiceId}.pdf`,
-    caption: `Invoice ${invoiceId} - TyreTrack Premium Auto Care`,
-  })
 }
 
-// ==============================
-// 5. QUOTATION READY + PDF (on quote publish)
-// ==============================
-const sendQuotationWhatsApp = async ({
-  phone,
-  customerName,
-  quoteId,
-  totalAmount,
-  pdfBuffer,
-}) => {
-  await sendTemplateMessage({
+const sendQuotationWhatsApp = async ({ phone, customerName, quoteId, totalAmount, pdfBuffer }) => {
+  const mediaId = await uploadMediaBuffer(pdfBuffer, `${quoteId}.pdf`)
+  return sendTemplateMessage({
     to: phone,
-    templateName:	"tyretrack_quoteready",
+    templateName: "tyretrack_quotepdf",
     components: [
+      {
+        type: "header",
+        parameters: [{ type: "document", document: { id: mediaId, filename: `${quoteId}.pdf` } }],
+      },
       {
         type: "body",
         parameters: [
@@ -138,13 +100,6 @@ const sendQuotationWhatsApp = async ({
         ],
       },
     ],
-  })
-
-  return sendPdfDocument({
-    to: phone,
-    buffer: pdfBuffer,
-    filename: `${quoteId}.pdf`,
-    caption: `Quotation ${quoteId} - TyreTrack Premium Auto Care`,
   })
 }
 
