@@ -54,6 +54,8 @@ exports.createBooking = async (req, res) => {
     }
 
     // Send WhatsApp welcome + booking confirmation (non-blocking)
+// Send WhatsApp welcome + booking confirmation (non-blocking,
+    // each in its own try/catch so one failing doesn't block the other)
     if (isConfigured()) {
 
       try {
@@ -62,6 +64,16 @@ exports.createBooking = async (req, res) => {
           phone: booking.phone,
           customerName: booking.name,
         })
+
+        console.log("Welcome WhatsApp sent successfully.")
+
+      } catch (waError) {
+
+        console.log("Welcome WhatsApp Error:", waError.message)
+
+      }
+
+      try {
 
         await sendBookingConfirmationWhatsApp({
           phone: booking.phone,
@@ -76,7 +88,7 @@ exports.createBooking = async (req, res) => {
 
       } catch (waError) {
 
-        console.log("Booking WhatsApp Error:", waError.message)
+        console.log("Booking Confirmation WhatsApp Error:", waError.message)
 
       }
 
