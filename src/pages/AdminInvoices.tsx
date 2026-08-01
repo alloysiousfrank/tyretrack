@@ -64,6 +64,9 @@ useState("")
 const [phone, setPhone] =
 useState("")
 
+const [customerGST, setCustomerGST] =
+useState("")
+
 const [invoices,
  setInvoices] =
  useState<any[]>([])
@@ -317,9 +320,15 @@ bookingData.bookingId || ""
 
 }, [bookingData])
 
-const fetchVehicleHistory =
+// NOTE: this now looks a customer up by NAME instead of by vehicle
+// number, so it surfaces every vehicle that customer has ever brought
+// in — not just invoices tied to one specific plate. This needs a
+// matching backend route: GET /api/invoices/customer-name/:name
+// (case-insensitive match on customerName). If your backend doesn't
+// have that route yet, tell me its invoices-route file and I'll add it.
+const fetchCustomerHistory =
 async (
- vehicleNo:string
+ name:string
 )=>{
 
  try{
@@ -327,7 +336,7 @@ async (
   const response =
    await fetch(
 
-`https://tyretrack-server.onrender.com/api/invoices/vehicle/${vehicleNo}`
+`https://tyretrack-server.onrender.com/api/invoices/customer-name/${encodeURIComponent(name)}`
 
    )
 
@@ -389,26 +398,31 @@ if(data.invoices.length > 0){
 
 
 
-const servicePrices:any = {
-
- "Wheel Alignment":800,
- "Wheel Balancing":400,
- "Foam Wash":500,
- "Automatic Car Spa":1500,
- "Multi Branded Tyres":5000,
- "Interior Cleaning":1000,
- "Teflon Coating":3000,
- "Ceramic Coating":8000,
- "General Service":2500,
- "Accessories":1000,
-
-}
-
-
+// Just the list of service names now — no hardcoded prices. The admin
+// types the real amount (and quantity) for whichever services they pick,
+// in the box that opens up next to each one.
+const STANDARD_SERVICES = [
+ "Wheel Alignment",
+ "Wheel Balancing",
+ "Foam Wash",
+ "Automatic Car Spa",
+ "Multi Branded Tyres",
+ "Interior Cleaning",
+ "Teflon Coating",
+ "Ceramic Coating",
+ "General Service",
+ "Accessories",
+]
 
 const [selectedServices,
  setSelectedServices] =
  useState<string[]>([])
+
+// Per-service admin-entered quantity & amount (keyed by service name).
+// "Multi Branded Tyres" is excluded — that one keeps its own
+// brand/stock/quantity box further down.
+const [serviceDetails, setServiceDetails] =
+useState<Record<string, { quantity: number; amount: number }>>({})
 
 const [subtotal,
  setSubtotal] =
@@ -438,7 +452,7 @@ useEffect(() => {
     tyre =>
     tyre.brand ===
     selectedTyreBrand
-   )?.sellingPrice || 5000
+   )?.sellingPrice || 0
 
    amount +=
    tyrePrice *
@@ -446,8 +460,12 @@ useEffect(() => {
 
   }else{
 
+   const detail =
+   serviceDetails[service]
+
    amount +=
-   servicePrices[service]
+   Number(detail?.amount || 0) *
+   Number(detail?.quantity || 1)
 
   }
 
@@ -476,6 +494,7 @@ includeGST
 
 },[
  selectedServices,
+ serviceDetails,
  customServices,
  tyreQuantity,
  selectedTyreBrand,
@@ -488,58 +507,50 @@ includeGST
  const toggleService =
 (service:string)=>{
 
- let updated = [...selectedServices]
+ setSelectedServices(prev=>{
 
- if(
-  updated.includes(service)
- ){
+  const isSelected =
+   prev.includes(service)
 
-  updated =
-   updated.filter(
+  if(isSelected){
+
+   // Deselecting — drop its qty/amount box along with it.
+   setServiceDetails(prevDetails=>{
+
+    const updatedDetails =
+     {...prevDetails}
+
+    delete updatedDetails[service]
+
+    return updatedDetails
+
+   })
+
+   return prev.filter(
     s => s !== service
    )
 
- }else{
+  }
 
-  updated.push(service)
+  // Selecting — open its qty/amount box with sane starting
+  // values (Multi Branded Tyres keeps its own separate box).
+  if(service !== "Multi Branded Tyres"){
 
- }
+   setServiceDetails(prevDetails=>({
 
- setSelectedServices(updated)
+    ...prevDetails,
 
- let amount = 0
+    [service]:
+     prevDetails[service] ||
+     { quantity:1, amount:0 }
 
- updated.forEach(service=>{
+   }))
 
-  amount +=
-   servicePrices[service]
+  }
+
+  return [...prev, service]
 
  })
-
- customServices.forEach(
- service=>{
-
- amount +=
- Number(
-  service.quantity
- ) *
- Number(
-  service.amount
- )
-
- }
-)
-
- const gstAmount =
-  amount * 0.18
-
- setSubtotal(amount)
-
- setGst(gstAmount)
-
- setTotal(
-  amount + gstAmount
- )
 
 }
  useEffect(() => {
@@ -638,6 +649,32 @@ if(
 }
 
 
+// Every standard service the admin ticked (other than the tyre one,
+// which already has its own brand/qty box) carries its own admin-typed
+// quantity & amount now — fold those into customServices so the PDF
+// and backend only ever need to read one line-items array.
+const standardServiceLineItems =
+selectedServices
+ .filter(
+  service =>
+  service !== "Multi Branded Tyres"
+ )
+ .map(service => ({
+  serviceName: service,
+  quantity:
+   serviceDetails[service]?.quantity || 1,
+  amount:
+   serviceDetails[service]?.amount || 0,
+ }))
+
+const combinedCustomServices = [
+ ...standardServiceLineItems,
+ ...customServices.filter(
+  service =>
+  service.serviceName.trim() !== ""
+ ),
+]
+
 const response =
 await fetch(
  "https://tyretrack-server.onrender.com/api/invoices",
@@ -654,12 +691,10 @@ email: email || "",
    vehicleNumber,
    vehicleType,
    vehicleKm,
+   customerGST,
    services:selectedServices,
    customServices:
-   customServices.filter(
-    service =>
-    service.serviceName.trim() !== ""
-   ),
+   combinedCustomServices,
    tyreBrand:selectedTyreBrand,
    tyreQuantity,
    tyrePrice:selectedTyrePrice,
@@ -848,11 +883,22 @@ Customer Name
           type="text"
           placeholder="Customer Name"
           value={customerName}
-          onChange={(e)=>
-            setCustomerName(
+          onChange={(e)=>{
+
+            const value =
               e.target.value
-            )
-          }
+
+            setCustomerName(value)
+
+            if(value.trim().length >= 3){
+
+              fetchCustomerHistory(
+                value.trim()
+              )
+
+            }
+
+          }}
         />
 </div>
 <div className="form-group">
@@ -870,14 +916,6 @@ Vehicle Number
       e.target.value.toUpperCase()
 
     setVehicleNumber(value)
-
-    if(value.length >= 4){
-
-      fetchVehicleHistory(
-        value
-      )
-
-    }
 
   }}
 />
@@ -947,6 +985,24 @@ Vehicle Brand &amp; Model
  />
 
     </div>  
+
+<div className="form-group">
+
+<label>
+Customer GST Number
+</label>
+        <input
+  type="text"
+  placeholder="Customer GST Number (Optional)"
+  value={customerGST}
+  onChange={(e)=>
+    setCustomerGST(
+      e.target.value.toUpperCase()
+    )
+  }
+ />
+
+    </div>
 
 </div>
 {
@@ -1043,7 +1099,7 @@ new Date(
 <div>
 
 <h2>
-Vehicle Service History
+Customer Service History
 </h2>
 
 <p>
@@ -1203,7 +1259,7 @@ GST :
 </p>
 
 <h3>
-Total :
+Grand Total :
 ₹ {invoice.totalAmount}
 </h3>
 
@@ -1268,9 +1324,7 @@ service.serviceName
 
 {
 
-Object.keys(
- servicePrices
-).map(service=>(
+STANDARD_SERVICES.map(service=>(
 
 <div
  key={service}
@@ -1304,8 +1358,58 @@ Object.keys(
 
 </label>
 
+{
+/* Ticking any service (other than the tyre one, which has its
+   own box below) opens a Qty + Amount box right here — same
+   admin-card layout as Custom Services — so the admin types in
+   the real price instead of a hardcoded one. */
+}
+{
+selectedServices.includes(service) &&
+service !== "Multi Branded Tyres" && (
 
+<div className="admin-card">
 
+<input
+ type="number"
+ min="1"
+ placeholder="Qty"
+ value={
+  serviceDetails[service]?.quantity ?? 1
+ }
+ onChange={(e)=>
+  setServiceDetails(prev=>({
+   ...prev,
+   [service]:{
+    quantity: Number(e.target.value),
+    amount: prev[service]?.amount ?? 0,
+   }
+  }))
+ }
+/>
+
+<input
+ type="number"
+ min="0"
+ placeholder="Amount (₹)"
+ value={
+  serviceDetails[service]?.amount ?? 0
+ }
+ onChange={(e)=>
+  setServiceDetails(prev=>({
+   ...prev,
+   [service]:{
+    quantity: prev[service]?.quantity ?? 1,
+    amount: Number(e.target.value),
+   }
+  }))
+ }
+/>
+
+</div>
+
+)
+}
 
 </div>
 
@@ -1492,7 +1596,7 @@ Apply GST (18%)
   </h3>
 
   <h2>
-    Total : ₹ {total}
+    Grand Total : ₹ {total}
   </h2>
 
   <button
@@ -1601,6 +1705,10 @@ Date :
       Vehicle Brand &amp; Model :
       {vehicleType}
     </p>
+    <p>
+ GST Number :
+ {customerGST || "—"}
+</p>
 
 
 
@@ -1652,7 +1760,14 @@ Tyre Qty :
 
      <tr key={service}>
 
-      <td>{service}</td>
+      <td>
+       {service}
+       {
+        service !== "Multi Branded Tyres" && (
+         <> &times; {serviceDetails[service]?.quantity ?? 1}</>
+        )
+       }
+      </td>
 
      <td>
  ₹{
@@ -1663,12 +1778,15 @@ Tyre Qty :
    tyreBrands.find(
     tyre =>
     tyre.brand === selectedTyreBrand
-   )?.sellingPrice || 5000
+   )?.sellingPrice || 0
   ) *
   Number(tyreQuantity)
  )
  :
- servicePrices[service]
+ (
+  Number(serviceDetails[service]?.amount || 0) *
+  Number(serviceDetails[service]?.quantity || 1)
+ )
  }
 </td>
 
@@ -1724,7 +1842,7 @@ customServices
  </p>
 
  <h2>
-  Total :
+  Grand Total :
   ₹ {total}
  </h2>
 
@@ -1805,4 +1923,3 @@ customServices
 
 )
   }
-

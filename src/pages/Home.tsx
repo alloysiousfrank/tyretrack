@@ -56,7 +56,6 @@ red={true}
                 <h3>{service.title}</h3>
                 <p>{service.description}</p>
                 <section className="service-card__meta">
-                  <span>{service.price}</span>
                   <span>{service.duration}</span>
                 </section>
                 <Link to={`/booking?service=${service.id}`} className="service-card__link">

@@ -47,7 +47,6 @@ export default function Services() {
                 <p>{service.description}</p>
 
                 <section className="service-row__meta">
-                  <span>{service.price}</span>
                   <span>{service.duration}</span>
                 </section>
 
