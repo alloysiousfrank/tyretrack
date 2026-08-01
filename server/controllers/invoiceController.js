@@ -294,6 +294,36 @@ exports.getInvoicesByCustomer = async (req, res) => {
 }
 
 // ==============================
+// GET BY CUSTOMER NAME (exact match, case-insensitive)
+// ==============================
+
+exports.getInvoicesByCustomerName = async (req, res) => {
+
+  try {
+
+    const rawName = decodeURIComponent(req.params.name).trim()
+
+    // Escape regex special characters so a name like "O'Brien" or
+    // "A.J." can't break the pattern or be used for regex injection.
+    const escapedName = rawName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+    const invoices = await Invoice.find({
+      customerName: { $regex: `^${escapedName}$`, $options: "i" },
+    }).sort({ createdAt: -1 })
+
+    res.json({ success: true, invoices })
+
+  } catch (error) {
+
+    console.error("GET INVOICES BY CUSTOMER NAME ERROR:", error.message)
+
+    res.status(500).json({ success: false, message: error.message })
+
+  }
+
+}
+
+// ==============================
 // PUBLISH INVOICE
 // ==============================
 

@@ -384,7 +384,12 @@ if(data.invoices.length > 0){
 
  })
 
+} else {
+  setCustomerProfile(null)
 }
+  } else {
+    setVehicleHistory([])
+    setCustomerProfile(null)
   }
 
  }catch(error){
@@ -895,6 +900,11 @@ Customer Name
               fetchCustomerHistory(
                 value.trim()
               )
+
+            } else {
+
+              setVehicleHistory([])
+              setCustomerProfile(null)
 
             }
 

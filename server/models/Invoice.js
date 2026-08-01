@@ -29,6 +29,11 @@ financialYear:{
 
  vehicleType:String,
 
+ customerGST:{
+ type:String,
+ default:""
+ },
+
  vehicleKm:{
  type:String,
  default:""
