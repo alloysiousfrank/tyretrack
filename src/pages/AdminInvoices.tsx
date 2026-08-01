@@ -79,6 +79,9 @@ useState("")
 const [includeGST,setIncludeGST] =
 useState(true)
 
+const [historyLoading, setHistoryLoading] =
+useState(false)
+
   const [
  vehicleHistory,
  setVehicleHistory
@@ -189,7 +192,7 @@ const fetchInvoices = async () => {
 
   const inventoryResponse =
 await fetch(
- "https://tyretrack-server.onrender.com/api/inventory"
+ "/api/inventory"
 )
 
 const inventoryData =
@@ -1022,7 +1025,9 @@ Total Visits :
 </p>
 
 {
-vehicleHistory.length === 0 ? (
+historyLoading ? (
+  <p>Loading service history…</p>
+) : vehicleHistory.length === 0 ? (
   <p>No service visits found for this customer.</p>
 ) : vehicleHistory.map(
 (invoice)=>(
