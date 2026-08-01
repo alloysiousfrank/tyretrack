@@ -31,7 +31,9 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://tyretrack-neon.vercel.app",
-      "https://tyretrackfrontend.vercel.app"
+      "https://tyretrackfrontend.vercel.app",
+      "https://tyretrack.in",
+      "https://www.tyretrack.in"
     ],
     credentials: true,
   })
