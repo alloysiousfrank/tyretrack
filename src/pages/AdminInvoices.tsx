@@ -87,9 +87,6 @@ useState(true)
 const totalVisits =
 vehicleHistory.length
 
-const [showHistory,setShowHistory] =
-useState(false)
-
 const addServiceLine = ()=>{
 
  setServiceLines([
@@ -133,7 +130,7 @@ async()=>{
   const response =
   await fetch(
 
-`https://tyretrack-server.onrender.com/api/bookings/user/${email}`
+`/api/bookings/user/${encodeURIComponent(email)}`
 
   )
 
@@ -180,7 +177,7 @@ const fetchInvoices = async () => {
  try {
   const response =
    await fetch(
-    "https://tyretrack-server.onrender.com/api/invoices"
+    "/api/invoices"
    )
 
   const data =
@@ -276,7 +273,6 @@ async (
   if(!query){
     setVehicleHistory([])
     setCustomerProfile(null)
-    setShowHistory(false)
     return
   }
 
@@ -296,7 +292,6 @@ async (
   if (!response.ok) {
     setVehicleHistory([])
     setCustomerProfile(null)
-    setShowHistory(false)
     setHistoryLoading(false)
     return
   }
@@ -306,7 +301,6 @@ async (
    setVehicleHistory(
     data.invoices
    )
-   setShowHistory(true)
    if(data.invoices.length > 0){
 
  const latest =
@@ -351,7 +345,6 @@ async (
   console.log(error)
   setVehicleHistory([])
   setCustomerProfile(null)
-  setShowHistory(false)
  } finally {
   setHistoryLoading(false)
  }
@@ -365,7 +358,6 @@ useEffect(() => {
   } else {
     setVehicleHistory([])
     setCustomerProfile(null)
-    setShowHistory(false)
   }
 }, [customerName])
 
@@ -591,7 +583,7 @@ if(
 
 const response =
 await fetch(
- "https://tyretrack-server.onrender.com/api/invoices",
+ "/api/invoices",
  {
   method:"POST",
   headers:{
@@ -671,7 +663,7 @@ const publishInvoice = async (id: string) => {
 
     const response = await fetch(
 
-      `https://tyretrack-server.onrender.com/api/invoices/publish/${id}`,
+      `/api/invoices/publish/${id}`,
 
       {
 
@@ -986,9 +978,6 @@ new Date(
 
 <div
  className="history-highlight-card"
- onClick={()=>
-  setShowHistory(!showHistory)
- }
 >
 
 <div className="history-title">
@@ -1011,15 +1000,6 @@ Vehicle Service History
 
 </div>
 
-<div className="history-expand">
-
-{
-showHistory
-? "▲ Close"
-: "▼ View History"
-}
-
-</div>
 
 </div>
 </div>
@@ -1028,7 +1008,7 @@ showHistory
  className="history-invoices"
 >
 {
- showHistory && (
+ customerName.trim().length >= 2 && (
 
 <div
  className="admin-card"
