@@ -10,30 +10,28 @@ import "./AdminInvoices.css"
 import { sendInvoiceEmail }
 from "../utils/sendInvoiceEmail"
 import {
-useNavigate,
 useLocation
 } from "react-router-dom"
 export default function AdminInvoices() {
 
-
-const [selectedTyreBrand,setSelectedTyreBrand] =
+const [selectedTyreBrand, setSelectedTyreBrand] =
 useState("")
 
-const [tyreQuantity,setTyreQuantity] =
+const [tyreQuantity, setTyreQuantity] =
 useState(1)
 
-const [customServices,setCustomServices] =
+const [serviceLines, setServiceLines] =
 useState<any[]>([
-
- {
-  serviceName:"",
-  quantity:1,
-  amount:0
- }
-
+  {
+    serviceName: "",
+    quantity: 1,
+    amount: 0,
+    isCustom: true,
+  },
 ])
 
-const navigate = useNavigate()
+const [customerGST, setCustomerGST] =
+useState("")
 
 const location = useLocation()
 
@@ -74,9 +72,6 @@ useState<any[]>([])
 const [customerProfile,setCustomerProfile] =
 useState<any>(null)
 
-const [applyGST,setApplyGST] =
-useState(true)
-
 const [expandedInvoice,
 setExpandedInvoice] =
 useState("")
@@ -92,65 +87,20 @@ useState(true)
 const totalVisits =
 vehicleHistory.length
 
-const totalSpent =
-vehicleHistory.reduce(
- (sum,invoice)=>
- sum +
- Number(
-  invoice.totalAmount || 0
- ),
- 0
-)
-
-const lastVisit =
-vehicleHistory.length > 0
-? new Date(
- vehicleHistory[0].createdAt
-).toLocaleDateString()
-: "-"
-
-const favouriteService =
-vehicleHistory.length > 0
-? vehicleHistory
-   .flatMap(
-    invoice =>
-    invoice.services || []
-   )
-   .sort(
-    (a,b)=>
-     vehicleHistory
-      .flatMap(
-       invoice =>
-       invoice.services || []
-      )
-      .filter(
-       x=>x===b
-      ).length
-     -
-     vehicleHistory
-      .flatMap(
-       invoice =>
-       invoice.services || []
-      )
-      .filter(
-       x=>x===a
-      ).length
-   )[0]
-: "-"
-
 const [showHistory,setShowHistory] =
 useState(false)
 
-const addCustomService = ()=>{
+const addServiceLine = ()=>{
 
- setCustomServices([
+ setServiceLines([
 
-  ...customServices,
+  ...serviceLines,
 
   {
    serviceName:"",
    quantity:1,
-   amount:0
+   amount:0,
+   isCustom:true,
   }
 
  ])
@@ -317,29 +267,47 @@ bookingData.bookingId || ""
 
 }, [bookingData])
 
-const fetchVehicleHistory =
+const fetchCustomerHistory =
 async (
- vehicleNo:string
+ customerName:string
 )=>{
 
+  const query = customerName.trim()
+  if(!query){
+    setVehicleHistory([])
+    setCustomerProfile(null)
+    setShowHistory(false)
+    return
+  }
+
  try{
+  setHistoryLoading(true)
 
   const response =
    await fetch(
 
-`https://tyretrack-server.onrender.com/api/invoices/vehicle/${vehicleNo}`
+`/api/invoices/customer-name/${encodeURIComponent(query)}`
 
    )
 
   const data =
    await response.json()
 
+  if (!response.ok) {
+    setVehicleHistory([])
+    setCustomerProfile(null)
+    setShowHistory(false)
+    setHistoryLoading(false)
+    return
+  }
+
   if(data.success){
 
    setVehicleHistory(
     data.invoices
    )
-if(data.invoices.length > 0){
+   setShowHistory(true)
+   if(data.invoices.length > 0){
 
  const latest =
  data.invoices[0]
@@ -378,16 +346,28 @@ if(data.invoices.length > 0){
 }
   }
 
- }catch(error){
+ } catch(error){
 
   console.log(error)
-
+  setVehicleHistory([])
+  setCustomerProfile(null)
+  setShowHistory(false)
+ } finally {
+  setHistoryLoading(false)
  }
 
 }
 
-
-
+useEffect(() => {
+  const query = customerName.trim()
+  if (query.length >= 2) {
+    fetchCustomerHistory(query)
+  } else {
+    setVehicleHistory([])
+    setCustomerProfile(null)
+    setShowHistory(false)
+  }
+}, [customerName])
 
 const servicePrices:any = {
 
@@ -426,39 +406,10 @@ useEffect(() => {
 
  let amount = 0
 
- selectedServices.forEach(service => {
-
-  if(
-   service ===
-   "Multi Branded Tyres"
-  ){
-
-   const tyrePrice =
-   tyreBrands.find(
-    tyre =>
-    tyre.brand ===
-    selectedTyreBrand
-   )?.sellingPrice || 5000
-
-   amount +=
-   tyrePrice *
-   tyreQuantity
-
-  }else{
-
-   amount +=
-   servicePrices[service]
-
-  }
-
- })
-
- customServices.forEach(service => {
-
-  amount +=
-  Number(service.quantity) *
-  Number(service.amount)
-
+ serviceLines.forEach(line => {
+  const quantity = Number(line.quantity || 0)
+  const unitAmount = Number(line.amount || 0)
+  amount += quantity * unitAmount
  })
 
 const gstAmount =
@@ -475,13 +426,8 @@ includeGST
  )
 
 },[
- selectedServices,
- customServices,
- tyreQuantity,
- selectedTyreBrand,
- tyreBrands,
-  applyGST,
-   includeGST
+ serviceLines,
+ includeGST
 ])
 
 
@@ -489,6 +435,7 @@ includeGST
 (service:string)=>{
 
  let updated = [...selectedServices]
+ let updatedLines = [...serviceLines]
 
  if(
   updated.includes(service)
@@ -499,47 +446,38 @@ includeGST
     s => s !== service
    )
 
+  updatedLines =
+   updatedLines.filter(
+    line =>
+     !(line.serviceName === service && !line.isCustom)
+   )
+
  }else{
 
   updated.push(service)
 
+  const lineAmount =
+    service === "Multi Branded Tyres"
+      ? Number(
+          tyreBrands.find(
+            tyre => tyre.brand === selectedTyreBrand
+          )?.sellingPrice || 0
+        )
+      : Number(servicePrices[service] || 0)
+
+  updatedLines.push({
+   serviceName: service,
+   quantity: service === "Multi Branded Tyres" ? tyreQuantity : 1,
+   amount: lineAmount,
+   total:
+     (service === "Multi Branded Tyres" ? tyreQuantity : 1) * lineAmount,
+   isCustom: false,
+  })
+
  }
 
  setSelectedServices(updated)
-
- let amount = 0
-
- updated.forEach(service=>{
-
-  amount +=
-   servicePrices[service]
-
- })
-
- customServices.forEach(
- service=>{
-
- amount +=
- Number(
-  service.quantity
- ) *
- Number(
-  service.amount
- )
-
- }
-)
-
- const gstAmount =
-  amount * 0.18
-
- setSubtotal(amount)
-
- setGst(gstAmount)
-
- setTotal(
-  amount + gstAmount
- )
+ setServiceLines(updatedLines)
 
 }
  useEffect(() => {
@@ -548,7 +486,7 @@ includeGST
 
 }, [])
 
-const updateCustomService = (
+const updateServiceLine = (
 
  index:number,
 
@@ -559,17 +497,30 @@ const updateCustomService = (
 )=>{
 
  const updated =
- [...customServices]
+ [...serviceLines]
 
  updated[index] = {
 
   ...updated[index],
-
-  [field]:value
-
+  [field]: value,
+  total:
+    field === "quantity" || field === "amount"
+      ? Number(updated[index].quantity || 0) * Number(updated[index].amount || 0)
+      : Number(updated[index].total || 0),
  }
 
- setCustomServices(
+ if (field === "quantity" || field === "amount") {
+  updated[index] = {
+    ...updated[index],
+    quantity: Number(field === "quantity" ? value : updated[index].quantity || 0),
+    amount: Number(field === "amount" ? value : updated[index].amount || 0),
+    total:
+      Number(field === "quantity" ? value : updated[index].quantity || 0) *
+      Number(field === "amount" ? value : updated[index].amount || 0),
+  }
+ }
+
+ setServiceLines(
   updated
  )
 
@@ -654,17 +605,18 @@ email: email || "",
    vehicleNumber,
    vehicleType,
    vehicleKm,
+   customerGST,
    services:selectedServices,
-   customServices:
-   customServices.filter(
-    service =>
-    service.serviceName.trim() !== ""
+   serviceLines:
+   serviceLines.filter(
+    (line) =>
+      line.serviceName.trim() !== ""
    ),
    tyreBrand:selectedTyreBrand,
    tyreQuantity,
    tyrePrice:selectedTyrePrice,
    subtotal,
-    includeGST,
+   includeGST,
    gst,
    totalAmount:total
   })
@@ -848,11 +800,9 @@ Customer Name
           type="text"
           placeholder="Customer Name"
           value={customerName}
-          onChange={(e)=>
-            setCustomerName(
-              e.target.value
-            )
-          }
+          onChange={(e)=>{
+            setCustomerName(e.target.value)
+          }}
         />
 </div>
 <div className="form-group">
@@ -870,14 +820,6 @@ Vehicle Number
       e.target.value.toUpperCase()
 
     setVehicleNumber(value)
-
-    if(value.length >= 4){
-
-      fetchVehicleHistory(
-        value
-      )
-
-    }
 
   }}
 />
@@ -910,6 +852,21 @@ Customer Phone Number
  value={phone}
  onChange={(e)=>
   setPhone(e.target.value)
+ }
+/>
+</div>
+
+<div className="form-group">
+
+<label>
+Customer GST Number
+</label>
+<input
+ type="text"
+ placeholder="Customer GST Number"
+ value={customerGST}
+ onChange={(e)=>
+  setCustomerGST(e.target.value)
  }
 />
 </div>
@@ -1071,8 +1028,7 @@ showHistory
  className="history-invoices"
 >
 {
- showHistory &&
- vehicleHistory.length > 0 && (
+ showHistory && (
 
 <div
  className="admin-card"
@@ -1086,7 +1042,9 @@ Total Visits :
 </p>
 
 {
-vehicleHistory.map(
+vehicleHistory.length === 0 ? (
+  <p>No service visits found for this customer.</p>
+) : vehicleHistory.map(
 (invoice)=>(
 
 
@@ -1180,12 +1138,12 @@ invoice.services?.map(
 }
 
 {
-invoice.customServices?.map(
-(service:any,index:number)=>(
+invoice.serviceLines?.map(
+(line:any,index:number)=>(
 <p key={index}>
-➕ {service.serviceName}
+➕ {line.serviceName}
  ×
- {service.quantity}
+ {line.quantity}
 </p>
 ))
 }
@@ -1228,17 +1186,20 @@ Total :
 </p>
 
 {
-invoice.customServices?.length > 0 && (
+invoice.serviceLines?.filter(
+ (line:any) => line.isCustom
+).length > 0 && (
 
 <p>
 
 ➕ Extra Services :
 
 {
-invoice.customServices
+invoice.serviceLines
+.filter((line:any) => line.isCustom)
 .map(
-(service:any)=>
-service.serviceName
+(line:any)=>
+line.serviceName
 )
 .join(", ")
 }
@@ -1391,12 +1352,12 @@ Available Stock :
 )
 }
 <h3>
-Custom Services
+Service Lines
 </h3>
 
 {
-customServices.map(
- (service,index)=>(
+serviceLines.map(
+ (line,index)=>(
 
   <div
    key={index}
@@ -1405,9 +1366,9 @@ customServices.map(
 
    <input
     placeholder="Service Name"
-    value={service.serviceName}
+    value={line.serviceName}
     onChange={(e)=>
-     updateCustomService(
+     updateServiceLine(
       index,
       "serviceName",
       e.target.value
@@ -1418,9 +1379,10 @@ customServices.map(
    <input
     type="number"
     placeholder="Qty"
-    value={service.quantity}
+    min={1}
+    value={line.quantity}
     onChange={(e)=>
-     updateCustomService(
+     updateServiceLine(
       index,
       "quantity",
       Number(e.target.value)
@@ -1431,14 +1393,22 @@ customServices.map(
    <input
     type="number"
     placeholder="Amount"
-    value={service.amount}
+    min={0}
+    value={line.amount}
     onChange={(e)=>
-     updateCustomService(
+     updateServiceLine(
       index,
       "amount",
       Number(e.target.value)
      )
     }
+   />
+
+   <input
+    type="number"
+    placeholder="Total"
+    value={line.total}
+    disabled
    />
 
   </div>
@@ -1453,7 +1423,7 @@ customServices.map(
 <button
  className="update-btn"
  onClick={
-  addCustomService
+  addServiceLine
  }
 >
 
@@ -1602,7 +1572,10 @@ Date :
       {vehicleType}
     </p>
 
-
+    <p>
+      GST Number :
+      {customerGST || "-"}
+    </p>
 
 {
 selectedTyreBrand && (
@@ -1638,7 +1611,7 @@ Tyre Qty :
 
    <th>Service</th>
 
-   <th>Price</th>
+   <th>Amount</th>
 
   </tr>
 
@@ -1647,65 +1620,24 @@ Tyre Qty :
  <tbody>
 
   {
-   selectedServices.map(
-    service => (
+   serviceLines
+     .filter((line) => line.serviceName.trim() !== "")
+     .map((line,index) => (
 
-     <tr key={service}>
+     <tr key={index}>
 
-      <td>{service}</td>
+      <td>
+       {line.serviceName}
+      </td>
 
-     <td>
- ₹{
- service === "Multi Branded Tyres"
- ?
- (
-  Number(
-   tyreBrands.find(
-    tyre =>
-    tyre.brand === selectedTyreBrand
-   )?.sellingPrice || 5000
-  ) *
-  Number(tyreQuantity)
- )
- :
- servicePrices[service]
- }
-</td>
+      <td>
+       ₹{Number(line.total || 0)}
+      </td>
 
      </tr>
 
-    )
-   )
+   ))
   }
-
-{
-customServices
- .filter(
-  service =>
-   service.serviceName.trim() !== ""
- )
- .map(
-  (service,index)=>(
-
-   <tr key={index}>
-
-    <td>
-     {service.serviceName}
-     ×
-     {service.quantity}
-    </td>
-
-    <td>
-     ₹{
-      Number(service.amount) *
-      Number(service.quantity)
-     }
-    </td>
-
-   </tr>
-
-  ))
-}
 
  </tbody>
 

@@ -69,6 +69,16 @@ exports.createInvoice = async (req, res) => {
     // CUSTOM SERVICES
     // =====================
 
+    const serviceLines = Array.isArray(req.body.serviceLines)
+      ? req.body.serviceLines.map((line) => ({
+          ...line,
+          quantity: Number(line.quantity || 0),
+          amount: Number(line.amount || 0),
+          total: Number(line.quantity || 0) * Number(line.amount || 0),
+          isCustom: Boolean(line.isCustom),
+        }))
+      : []
+
     const customServices = Array.isArray(req.body.customServices)
       ? req.body.customServices.map((service) => ({
           ...service,
@@ -83,44 +93,51 @@ exports.createInvoice = async (req, res) => {
 
     let subtotal = 0
 
-    const servicePrices = {
-      "Wheel Alignment": 800,
-      "Wheel Balancing": 400,
-      "Foam Wash": 500,
-      "Automatic Car Spa": 1500,
-      "Interior Cleaning": 1000,
-      "Teflon Coating": 3000,
-      "Ceramic Coating": 8000,
-      "General Service": 2500,
-      Accessories: 1000,
-    }
-
-    const services = Array.isArray(req.body.services) ? req.body.services : []
-
-    services.forEach((service) => {
-      if (service !== "Multi Branded Tyres") {
-        subtotal += servicePrices[service] || 0
-      }
-    })
-
-    // Tyres
-    let tyrePrice = 0
-
-    if (req.body.tyreBrand && Number(req.body.tyreQuantity) > 0) {
-
-      const tyreProduct = await Inventory.findOne({ brand: req.body.tyreBrand })
-
-      if (tyreProduct) {
-        tyrePrice = Number(tyreProduct.sellingPrice)
-        subtotal += tyrePrice * Number(req.body.tyreQuantity)
+    if (serviceLines.length > 0) {
+      subtotal = serviceLines.reduce(
+        (sum, line) => sum + Number(line.total || 0),
+        0
+      )
+    } else {
+      const servicePrices = {
+        "Wheel Alignment": 800,
+        "Wheel Balancing": 400,
+        "Foam Wash": 500,
+        "Automatic Car Spa": 1500,
+        "Interior Cleaning": 1000,
+        "Teflon Coating": 3000,
+        "Ceramic Coating": 8000,
+        "General Service": 2500,
+        Accessories: 1000,
       }
 
-    }
+      const services = Array.isArray(req.body.services) ? req.body.services : []
 
-    // Custom services
-    customServices.forEach((service) => {
-      subtotal += Number(service.total || 0)
-    })
+      services.forEach((service) => {
+        if (service !== "Multi Branded Tyres") {
+          subtotal += servicePrices[service] || 0
+        }
+      })
+
+      // Tyres
+      let tyrePrice = 0
+
+      if (req.body.tyreBrand && Number(req.body.tyreQuantity) > 0) {
+
+        const tyreProduct = await Inventory.findOne({ brand: req.body.tyreBrand })
+
+        if (tyreProduct) {
+          tyrePrice = Number(tyreProduct.sellingPrice)
+          subtotal += tyrePrice * Number(req.body.tyreQuantity)
+        }
+
+      }
+
+      // Custom services
+      customServices.forEach((service) => {
+        subtotal += Number(service.total || 0)
+      })
+    }
 
     const gst = req.body.includeGST
       ? Number((subtotal * 0.18).toFixed(2))
@@ -144,6 +161,8 @@ exports.createInvoice = async (req, res) => {
         : "",
       status: "Completed",
       customServices,
+      serviceLines,
+      customerGST: req.body.customerGST || "",
       invoiceId,
       financialYear,
       invoiceNumber: nextNumber,
@@ -232,6 +251,35 @@ exports.getInvoicesByVehicle = async (req, res) => {
   } catch (error) {
 
     console.error("GET INVOICES BY VEHICLE ERROR:", error.message)
+
+    res.status(500).json({ success: false, message: error.message })
+
+  }
+
+}
+
+function escapeRegex(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+exports.getInvoicesByCustomerName = async (req, res) => {
+
+  try {
+
+    const name = decodeURIComponent(req.params.customerName || "").trim()
+    const regex = name
+      ? new RegExp(`.*${escapeRegex(name)}.*`, "i")
+      : /.*/
+
+    const invoices = await Invoice.find({
+      customerName: { $regex: regex },
+    }).sort({ createdAt: -1 })
+
+    res.json({ success: true, invoices })
+
+  } catch (error) {
+
+    console.error("GET INVOICES BY CUSTOMER NAME ERROR:", error.message)
 
     res.status(500).json({ success: false, message: error.message })
 

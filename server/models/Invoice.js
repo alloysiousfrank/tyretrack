@@ -25,6 +25,8 @@ financialYear:{
 
  phone:String,
 
+ customerGST:String,
+
  vehicleNumber:String,
 
  vehicleType:String,
@@ -35,6 +37,24 @@ financialYear:{
 },
 
  services:[String],
+
+ serviceLines:[
+
+ {
+
+  serviceName:String,
+
+  quantity:Number,
+
+  amount:Number,
+
+  total:Number,
+
+  isCustom:Boolean
+
+ }
+
+],
 
  customServices:[
 

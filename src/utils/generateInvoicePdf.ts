@@ -313,26 +313,44 @@ export const generateInvoicePdf = async (
   const rows: any[] = []
   let sn = 1
 
-  // Standard services
-  ;(invoice.services || []).forEach((svc: string) => {
-    if (svc === "Multi Branded Tyres") return
-    const price = SERVICE_PRICES[svc] || 0
-    rows.push([sn++, svc, "Rs " + fmt(price)])
-  })
+  const serviceLines = Array.isArray(invoice.serviceLines)
+    ? invoice.serviceLines
+    : []
 
-  // Tyre brand
-  if (invoice.tyreBrand) {
-    const tp = Number(invoice.tyrePrice || SERVICE_PRICES["Multi Branded Tyres"] || 0)
-    const tq = Number(invoice.tyreQuantity || 1)
-    rows.push([sn++, invoice.tyreBrand + " Tyres x " + tq, "Rs " + fmt(tp * tq)])
+  if (serviceLines.length > 0) {
+    serviceLines.forEach((line: any) => {
+      if (!line.serviceName?.trim()) return
+      const quantity = Number(line.quantity || 0)
+      const amount = Number(line.amount || 0)
+      const total = Number(line.total || quantity * amount)
+      const description =
+        quantity > 1
+          ? `${line.serviceName} x ${quantity}`
+          : line.serviceName
+      rows.push([sn++, description, "Rs " + fmt(total)])
+    })
+  } else {
+    // Standard services
+    ;(invoice.services || []).forEach((svc: string) => {
+      if (svc === "Multi Branded Tyres") return
+      const price = SERVICE_PRICES[svc] || 0
+      rows.push([sn++, svc, "Rs " + fmt(price)])
+    })
+
+    // Tyre brand
+    if (invoice.tyreBrand) {
+      const tp = Number(invoice.tyrePrice || SERVICE_PRICES["Multi Branded Tyres"] || 0)
+      const tq = Number(invoice.tyreQuantity || 1)
+      rows.push([sn++, invoice.tyreBrand + " Tyres x " + tq, "Rs " + fmt(tp * tq)])
+    }
+
+    // Custom services
+    ;(invoice.customServices || []).forEach((cs: any) => {
+      if (!cs.serviceName?.trim()) return
+      const amt = Number(cs.amount || 0) * Number(cs.quantity || 1)
+      rows.push([sn++, cs.serviceName + " x " + (cs.quantity || 1), "Rs " + fmt(amt)])
+    })
   }
-
-  // Custom services
-  ;(invoice.customServices || []).forEach((cs: any) => {
-    if (!cs.serviceName?.trim()) return
-    const amt = Number(cs.amount || 0) * Number(cs.quantity || 1)
-    rows.push([sn++, cs.serviceName + " x " + (cs.quantity || 1), "Rs " + fmt(amt)])
-  })
 
   autoTable(doc, {
     startY:  tableStartY,
