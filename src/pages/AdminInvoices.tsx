@@ -340,7 +340,12 @@ async (
 
  })
 
-}
+   } else {
+     setCustomerProfile(null)
+   }
+  } else {
+    setVehicleHistory([])
+    setCustomerProfile(null)
   }
 
  } catch(error){
