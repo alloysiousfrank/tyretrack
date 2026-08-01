@@ -256,8 +256,8 @@ export const generateInvoicePdf = async (
     // Left
     if (leftItems[i]) {
       doc.setFont("helvetica", "bold")
-      const llabel = leftItems[i][0] + " :"
-      doc.text(llabel, lcColonX - doc.getTextWidth(llabel), ry)
+      doc.text(leftItems[i][0], lcX, ry)
+      doc.text(":", lcColonX, ry)
       doc.setFont("helvetica", "normal")
       doc.text(leftItems[i][1], lcColonX + 2, ry)
     }
@@ -265,8 +265,8 @@ export const generateInvoicePdf = async (
     // Right
     if (rightItems[i]) {
       doc.setFont("helvetica", "bold")
-      const rlabel = rightItems[i][0] + " :"
-      doc.text(rlabel, rcColonX - doc.getTextWidth(rlabel), ry)
+      doc.text(rightItems[i][0], rcX, ry)
+      doc.text(":", rcColonX, ry)
       doc.setFont("helvetica", "normal")
 
       const rValueX = rcColonX + 2
