@@ -1,0 +1,263 @@
+diff --git a/src/utils/generateInvoicePdf.ts b/src/utils/generateInvoicePdf.ts
+index 7272202..10df78f 100644
+--- a/src/utils/generateInvoicePdf.ts
++++ b/src/utils/generateInvoicePdf.ts
+@@ -52,6 +52,51 @@ function fmt(n: number | string): string {
+   return Number(n || 0).toLocaleString("en-IN")
+ }
+ 
++// ─── Amount-in-words (Indian numbering: lakh / crore) ─────────────────────────
++function numberToWordsIndian(num: number): string {
++  const ones = [
++    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
++    "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
++    "Eighteen", "Nineteen",
++  ]
++  const tens = [
++    "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety",
++  ]
++
++  const under1000 = (n: number): string => {
++    if (n === 0) return ""
++    if (n < 20) return ones[n]
++    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "")
++    return ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + under1000(n % 100) : "")
++  }
++
++  if (num === 0) return "Zero"
++
++  let n = Math.floor(num)
++  const crore = Math.floor(n / 10000000); n %= 10000000
++  const lakh = Math.floor(n / 100000);    n %= 100000
++  const thousand = Math.floor(n / 1000);  n %= 1000
++  const rest = n
++
++  let out = ""
++  if (crore) out += under1000(crore) + " Crore "
++  if (lakh) out += under1000(lakh) + " Lakh "
++  if (thousand) out += under1000(thousand) + " Thousand "
++  if (rest) out += under1000(rest)
++
++  return out.trim()
++}
++
++function amountInWords(amount: number): string {
++  const rupees = Math.floor(Number(amount || 0))
++  const paise = Math.round((Number(amount || 0) - rupees) * 100)
++  let words = "Rupees " + numberToWordsIndian(rupees)
++  if (paise > 0) {
++    words += " and " + numberToWordsIndian(paise) + " Paise"
++  }
++  return words + " Only"
++}
++
+ // ─── Main export ──────────────────────────────────────────────────────────────
+ export const generateInvoicePdf = async (
+   invoice:any
+@@ -107,8 +152,11 @@ export const generateInvoicePdf = async (
+   textRight(doc, "TAX INVOICE", ML + CW, 18)
+ 
+   // Meta rows
+-  const metaLabelX = 138
+-  const metaValX   = 162
++  // Every label below ends with " :" — right-align the label to metaColonX
++  // so all three colons sit in one straight vertical line, regardless of
++  // how long "Invoice No" / "Date" / "Booking ID" are.
++  const metaColonX = 158
++  const metaValX    = 162
+   const metaRows = [
+     ["Invoice No :", invoice.invoiceId  || "—"],
+     ["Date :",       invoiceDate],
+@@ -119,7 +167,7 @@ export const generateInvoicePdf = async (
+     doc.setFont("helvetica", "bold")
+     doc.setFontSize(8)
+     doc.setTextColor(DARK[0], DARK[1], DARK[2])
+-    doc.text(label, metaLabelX, mY)
++    doc.text(label, metaColonX - doc.getTextWidth(label), mY)
+     doc.setFont("helvetica", "normal")
+     doc.text(val, metaValX, mY)
+     mY += 6
+@@ -136,9 +184,9 @@ export const generateInvoicePdf = async (
+   doc.setFont("helvetica", "normal")
+   doc.setFontSize(7.8)
+   const compLines = [
+-    "Rtn Charles A",
+     "107/2 Pasumai Nagar, Mangalam Road, Tiruppur",
+-    "Phone : 9443738487",
++    "Phone : 9443738487 / 7448787979",
++    "Email : tyretrack2024@gmail.com",
+     "GSTIN : 33AAWFT5612K1ZP",
+     "PAN : AKDPP7420L   |   HSN/SAC : 40111010",
+   ]
+@@ -160,7 +208,7 @@ export const generateInvoicePdf = async (
+   // 6. CUSTOMER DETAILS BOX
+   // ═══════════════════════════════════════════════════════════════════════
+   const boxY = divY + 3
+-  const boxH = 32
++  const boxH = 38  // grew to fit the extra "GST Number" row on the right
+ 
+   // Outer box
+   doc.setFillColor(GREY_BG[0], GREY_BG[1], GREY_BG[2])
+@@ -179,8 +227,13 @@ export const generateInvoicePdf = async (
+   doc.text("CUSTOMER DETAILS", ML + 4, boxY + 4.5)
+ 
+   // Left / right columns
++  // Every "label :" on each side is right-aligned to a fixed x (lcColonX /
++  // rcColonX) so the colons all line up in one straight vertical column,
++  // no matter how long the label text is ("Name" vs "Vehicle Model" etc).
+   const lcX = ML + 3
+   const rcX = ML + (CW / 2) + 3
++  const lcColonX = lcX + 22
++  const rcColonX = rcX + 36
+   let   ry  = boxY + 12
+ 
+   const leftItems  = [
+@@ -192,45 +245,53 @@ export const generateInvoicePdf = async (
+     ["Vehicle No",    invoice.vehicleNumber || "—"],
+     ["Vehicle Model", invoice.vehicleType   || " —"],
+     ["Vehicle KM",    invoice.vehicleKm     || "—"],
++    ["GST Number",    invoice.customerGST   || "—"],
+   ]
+ 
+-  for (let i = 0; i < leftItems.length; i++) {
++  const rowCount = Math.max(leftItems.length, rightItems.length)
++  for (let i = 0; i < rowCount; i++) {
+     doc.setFontSize(8)
+     doc.setTextColor(DARK[0], DARK[1], DARK[2])
+ 
+     // Left
+-    doc.setFont("helvetica", "bold")
+-    doc.text(leftItems[i][0] + " :", lcX, ry)
+-    doc.setFont("helvetica", "normal")
+-    doc.text(leftItems[i][1], lcX + doc.getTextWidth(leftItems[i][0] + " :") + 1, ry)
++    if (leftItems[i]) {
++      doc.setFont("helvetica", "bold")
++      const llabel = leftItems[i][0] + " :"
++      doc.text(llabel, lcColonX - doc.getTextWidth(llabel), ry)
++      doc.setFont("helvetica", "normal")
++      doc.text(leftItems[i][1], lcColonX + 2, ry)
++    }
+ 
+     // Right
+-    doc.setFont("helvetica", "bold")
+-    doc.text(rightItems[i][0] + " :", rcX, ry)
+-    doc.setFont("helvetica", "normal")
+-
+-    const rValueX = rcX + doc.getTextWidth(rightItems[i][0] + " :") + 1
+-    const rValueMaxWidth = (ML + CW) - rValueX - 2 // stay inside the box
+-    let rValueText = rightItems[i][1]
+-
+-    // Admin can type a free-text vehicle brand/model that may run long
+-    // (e.g. "Maruti Suzuki Swift Dzire VXI") — shrink the font first,
+-    // then fall back to an ellipsis, so it never spills past the box.
+-    let rFontSize = 8
+-    doc.setFontSize(rFontSize)
+-    while (doc.getTextWidth(rValueText) > rValueMaxWidth && rFontSize > 6) {
+-      rFontSize -= 0.5
++    if (rightItems[i]) {
++      doc.setFont("helvetica", "bold")
++      const rlabel = rightItems[i][0] + " :"
++      doc.text(rlabel, rcColonX - doc.getTextWidth(rlabel), ry)
++      doc.setFont("helvetica", "normal")
++
++      const rValueX = rcColonX + 2
++      const rValueMaxWidth = (ML + CW) - rValueX - 2 // stay inside the box
++      let rValueText = rightItems[i][1]
++
++      // Admin can type a free-text vehicle brand/model that may run long
++      // (e.g. "Maruti Suzuki Swift Dzire VXI") — shrink the font first,
++      // then fall back to an ellipsis, so it never spills past the box.
++      let rFontSize = 8
+       doc.setFontSize(rFontSize)
+-    }
+-    if (doc.getTextWidth(rValueText) > rValueMaxWidth) {
+-      while (rValueText.length > 3 && doc.getTextWidth(rValueText + "…") > rValueMaxWidth) {
+-        rValueText = rValueText.slice(0, -1)
++      while (doc.getTextWidth(rValueText) > rValueMaxWidth && rFontSize > 6) {
++        rFontSize -= 0.5
++        doc.setFontSize(rFontSize)
++      }
++      if (doc.getTextWidth(rValueText) > rValueMaxWidth) {
++        while (rValueText.length > 3 && doc.getTextWidth(rValueText + "…") > rValueMaxWidth) {
++          rValueText = rValueText.slice(0, -1)
++        }
++        rValueText += "…"
+       }
+-      rValueText += "…"
+-    }
+ 
+-    doc.text(rValueText, rValueX, ry)
+-    doc.setFontSize(8)
++      doc.text(rValueText, rValueX, ry)
++      doc.setFontSize(8)
++    }
+ 
+     ry += 6.5
+   }
+@@ -308,12 +369,18 @@ export const generateInvoicePdf = async (
+   const tbW  = 86
+   const tbX  = ML + CW - tbW
+   let   tbY  = afterTableY
++  // Every "label :" in this box is right-aligned to tbColonX so Subtotal /
++  // CGST / SGST / Grand Total colons all sit in one straight center column.
++  const tbColonX = tbX + 34
++  const priceLabel = (text: string, y: number) => {
++    doc.text(text, tbColonX - doc.getTextWidth(text), y)
++  }
+ 
+   // Subtotal row
+   doc.setFont("helvetica", "normal")
+   doc.setFontSize(8.5)
+   doc.setTextColor(DARK[0], DARK[1], DARK[2])
+-  doc.text("Subtotal :", tbX + 4, tbY + 6)
++  priceLabel("Subtotal :", tbY + 6)
+   textRight(doc, "Rs " + fmt(invoice.subtotal), tbX + tbW - 3, tbY + 6)
+ 
+   hLine(doc, tbX, tbY + 8, tbW)
+@@ -321,18 +388,18 @@ export const generateInvoicePdf = async (
+   // CGST
+   tbY += 14
+   const cgst = Number((invoice.gst || 0) / 2).toFixed(2)
+-  doc.text("CGST (9%) :", tbX + 4, tbY)
++  priceLabel("CGST (9%) :", tbY)
+   textRight(doc, "Rs " + cgst, tbX + tbW - 3, tbY)
+ 
+   // SGST
+   tbY += 6
+   const sgst = Number((invoice.gst || 0) / 2).toFixed(2)
+-  doc.text("SGST (9%) :", tbX + 4, tbY)
++  priceLabel("SGST (9%) :", tbY)
+   textRight(doc, "Rs " + sgst, tbX + tbW - 3, tbY)
+ 
+   hLine(doc, tbX, tbY + 2.5, tbW, RED)
+ 
+-  // TOTAL — red filled row
++  // GRAND TOTAL — red filled row
+   tbY += 3
+   doc.setFillColor(RED[0], RED[1], RED[2])
+   doc.rect(tbX, tbY, tbW, 11, "F")
+@@ -340,7 +407,8 @@ export const generateInvoicePdf = async (
+   doc.setFontSize(11)
+   doc.setTextColor(255, 255, 255)
+   tbY += 8
+-  doc.text("TOTAL :", tbX + 4, tbY)
++  const grandTotalLabel = "GRAND TOTAL :"
++  doc.text(grandTotalLabel, tbColonX - doc.getTextWidth(grandTotalLabel), tbY)
+   textRight(doc, "Rs " + fmt(invoice.totalAmount), tbX + tbW - 3, tbY)
+ 
+   // Outer border for total block
+@@ -358,6 +426,14 @@ export const generateInvoicePdf = async (
+   doc.text("* GST split as CGST 9% + SGST 9%.",                ML, afterTableY + 13)
+   doc.text("* This is a computer-generated invoice.",           ML, afterTableY + 18)
+ 
++  // Amount in words — always derived fresh from invoice.totalAmount, so it
++  // updates automatically whenever the invoice total changes.
++  doc.setFont("helvetica", "bold")
++  doc.setFontSize(7.6)
++  doc.setTextColor(DARK[0], DARK[1], DARK[2])
++  const wordsText = "Amount in Words : " + amountInWords(invoice.totalAmount)
++  doc.text(wordsText, ML, afterTableY + 25, { maxWidth: tbX - ML - 6 })
++
+ 
+   // ═══════════════════════════════════════════════════════════════════════
+   // 11. QR  (left)  +  SIGNATURE  (right)
