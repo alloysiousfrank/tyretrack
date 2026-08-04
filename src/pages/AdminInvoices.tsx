@@ -22,6 +22,9 @@ useState("")
 const [tyreQuantity,setTyreQuantity] =
 useState(1)
 
+const [tyreAmount,setTyreAmount] =
+useState(0)
+
 const [customServices,setCustomServices] =
 useState<any[]>([
 
@@ -452,15 +455,8 @@ useEffect(() => {
    "Multi Branded Tyres"
   ){
 
-   const tyrePrice =
-   tyreBrands.find(
-    tyre =>
-    tyre.brand ===
-    selectedTyreBrand
-   )?.sellingPrice || 0
-
    amount +=
-   tyrePrice *
+   tyreAmount *
    tyreQuantity
 
   }else{
@@ -502,6 +498,7 @@ includeGST
  serviceDetails,
  customServices,
  tyreQuantity,
+ tyreAmount,
  selectedTyreBrand,
  tyreBrands,
   applyGST,
@@ -610,8 +607,6 @@ if(!vehicleNumber){
  return
 }
  try{
- let selectedTyrePrice = 0
-
 if(
  selectedServices.includes(
   "Multi Branded Tyres"
@@ -648,11 +643,7 @@ if(
 
  }
 
- selectedTyrePrice =
- selectedTyre.sellingPrice
-
 }
-
 
 // Every standard service the admin ticked (other than the tyre one,
 // which already has its own brand/qty box) carries its own admin-typed
@@ -672,8 +663,20 @@ selectedServices
    serviceDetails[service]?.amount || 0,
  }))
 
+const tyreLineItems =
+ selectedServices.includes(
+  "Multi Branded Tyres"
+ ) && selectedTyreBrand
+   ? [{
+       serviceName: `${selectedTyreBrand} Tyres`,
+       quantity: tyreQuantity,
+       amount: tyreAmount,
+     }]
+   : []
+
 const combinedCustomServices = [
  ...standardServiceLineItems,
+ ...tyreLineItems,
  ...customServices.filter(
   service =>
   service.serviceName.trim() !== ""
@@ -702,7 +705,7 @@ email: email || "",
    combinedCustomServices,
    tyreBrand:selectedTyreBrand,
    tyreQuantity,
-   tyrePrice:selectedTyrePrice,
+   tyrePrice:tyreAmount,
    subtotal,
     includeGST,
    gst,
@@ -1477,6 +1480,18 @@ Select Tyre Brand
 
 <input
  type="number"
+ min="0"
+ placeholder="Amount (₹)"
+ value={tyreAmount}
+ onChange={(e)=>
+  setTyreAmount(
+   Number(e.target.value)
+  )
+ }
+/>
+
+<input
+ type="number"
  min="1"
  value={tyreQuantity}
  onChange={(e)=>
@@ -1784,13 +1799,8 @@ Tyre Qty :
  service === "Multi Branded Tyres"
  ?
  (
-  Number(
-   tyreBrands.find(
-    tyre =>
-    tyre.brand === selectedTyreBrand
-   )?.sellingPrice || 0
-  ) *
-  Number(tyreQuantity)
+  Number(tyreAmount || 0) *
+  Number(tyreQuantity || 1)
  )
  :
  (

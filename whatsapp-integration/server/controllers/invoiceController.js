@@ -83,41 +83,7 @@ exports.createInvoice = async (req, res) => {
 
     let subtotal = 0
 
-    const servicePrices = {
-      "Wheel Alignment": 800,
-      "Wheel Balancing": 400,
-      "Foam Wash": 500,
-      "Automatic Car Spa": 1500,
-      "Interior Cleaning": 1000,
-      "Teflon Coating": 3000,
-      "Ceramic Coating": 8000,
-      "General Service": 2500,
-      Accessories: 1000,
-    }
-
-    const services = Array.isArray(req.body.services) ? req.body.services : []
-
-    services.forEach((service) => {
-      if (service !== "Multi Branded Tyres") {
-        subtotal += servicePrices[service] || 0
-      }
-    })
-
-    // Tyres
-    let tyrePrice = 0
-
-    if (req.body.tyreBrand && Number(req.body.tyreQuantity) > 0) {
-
-      const tyreProduct = await Inventory.findOne({ brand: req.body.tyreBrand })
-
-      if (tyreProduct) {
-        tyrePrice = Number(tyreProduct.sellingPrice)
-        subtotal += tyrePrice * Number(req.body.tyreQuantity)
-      }
-
-    }
-
-    // Custom services
+    // All service totals come from the admin-entered line items.
     customServices.forEach((service) => {
       subtotal += Number(service.total || 0)
     })
@@ -137,7 +103,7 @@ exports.createInvoice = async (req, res) => {
       subtotal,
       gst,
       totalAmount,
-      tyrePrice,
+      tyrePrice: Number(req.body.tyrePrice || 0),
       email: req.body.email ? req.body.email.toLowerCase() : "",
       vehicleNumber: req.body.vehicleNumber
         ? req.body.vehicleNumber.toUpperCase()

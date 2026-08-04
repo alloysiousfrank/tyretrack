@@ -16,20 +16,6 @@ const DARK: [number, number, number]    = [30, 30, 30]
 const GREY_BG: [number, number, number] = [248, 248, 248]
 const BORDER: [number, number, number]  = [210, 210, 210]
 
-// ─── Service price map ────────────────────────────────────────────────────────
-const SERVICE_PRICES: Record<string, number> = {
-  "Wheel Alignment":     800,
-  "Wheel Balancing":     400,
-  "Foam Wash":           500,
-  "Automatic Car Spa":  1500,
-  "Multi Branded Tyres": 5000,
-  "Interior Cleaning":  1000,
-  "Teflon Coating":     3000,
-  "Ceramic Coating":    8000,
-  "General Service":    2500,
-  "Accessories":        1000,
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function hLine(
   doc: jsPDF,
@@ -184,7 +170,7 @@ export const generateInvoicePdf = async (
   doc.setFont("helvetica", "normal")
   doc.setFontSize(7.8)
   const compLines = [
-    "107/2 Pasumai Nagar Opp. Gokulam Apartment, Andipalayam, Mangalam Road, Tiruppur",
+    "107/2, Pasumai Nagar, Opp. Gokulam Apartment, Andipalayam, Mangalam Road, Tiruppur",
     "Phone : 9443738487 / 7448787979",
     "Email : tyretrack2024@gmail.com",
     "GSTIN : 33AAWFT5612K1ZP",
@@ -313,23 +299,22 @@ export const generateInvoicePdf = async (
   const rows: any[] = []
   let sn = 1
 
-  // Standard services
-  ;(invoice.services || []).forEach((svc: string) => {
-    if (svc === "Multi Branded Tyres") return
-    const price = SERVICE_PRICES[svc] || 0
-    rows.push([sn++, svc, "Rs " + fmt(price)])
-  })
+  // All service amounts come from the admin-entered line items.
+  const lineItems = (invoice.customServices || []).filter((cs: any) => cs.serviceName?.trim())
 
-  // Tyre brand
-  if (invoice.tyreBrand) {
-    const tp = Number(invoice.tyrePrice || SERVICE_PRICES["Multi Branded Tyres"] || 0)
+  if (lineItems.length === 0 && invoice.tyreBrand) {
+    const tp = Number(invoice.tyrePrice || 0)
     const tq = Number(invoice.tyreQuantity || 1)
-    rows.push([sn++, invoice.tyreBrand + " Tyres x " + tq, "Rs " + fmt(tp * tq)])
+    if (tp > 0 || tq > 0) {
+      lineItems.push({
+        serviceName: invoice.tyreBrand + " Tyres",
+        quantity: tq,
+        amount: tp,
+      })
+    }
   }
 
-  // Custom services
-  ;(invoice.customServices || []).forEach((cs: any) => {
-    if (!cs.serviceName?.trim()) return
+  lineItems.forEach((cs: any) => {
     const amt = Number(cs.amount || 0) * Number(cs.quantity || 1)
     rows.push([sn++, cs.serviceName + " x " + (cs.quantity || 1), "Rs " + fmt(amt)])
   })
