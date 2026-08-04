@@ -9,6 +9,7 @@ const {
   getInvoicesByVehicle,
   getInvoicesByCustomer,
   getInvoicesByCustomerName,
+  getInvoiceByBookingId,
   publishInvoice,
   updateInvoice,
 } = require("../controllers/invoiceController")
@@ -42,6 +43,11 @@ router.get(
 router.get(
   "/customer-name/:name",
   getInvoicesByCustomerName
+)
+
+router.get(
+  "/booking/:bookingId",
+  getInvoiceByBookingId
 )
 
 router.put(

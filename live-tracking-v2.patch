@@ -1,0 +1,608 @@
+diff --git a/server/controllers/bookingController.js b/server/controllers/bookingController.js
+index a6ff45b..ab2d269 100644
+--- a/server/controllers/bookingController.js
++++ b/server/controllers/bookingController.js
+@@ -180,6 +180,41 @@ exports.getUserBookings = async (req, res) => {
+ }
+ 
+ 
++// GET SINGLE BOOKING BY BOOKING ID (public - Live Tracking search bar)
++exports.getBookingById = async (req, res) => {
++
++  try {
++
++    const { bookingId } = req.params
++
++    const booking = await Booking.findOne({ bookingId })
++
++    if (!booking) {
++      return res.status(404).json({
++        success: false,
++        message: "No booking found with that ID",
++      })
++    }
++
++    res.json({
++      success: true,
++      booking,
++    })
++
++  } catch (error) {
++
++    console.log(error)
++
++    res.status(500).json({
++      success: false,
++      message: "Failed to fetch booking",
++    })
++
++  }
++
++}
++
++
+ // UPDATE BOOKING STATUS
+ exports.updateBookingStatus = async (req, res) => {
+ 
+diff --git a/server/controllers/invoiceController.js b/server/controllers/invoiceController.js
+index c32f41f..90828b6 100644
+--- a/server/controllers/invoiceController.js
++++ b/server/controllers/invoiceController.js
+@@ -323,6 +323,33 @@ exports.getInvoicesByCustomerName = async (req, res) => {
+ 
+ }
+ 
++// ==============================
++// GET PUBLISHED INVOICE BY BOOKING ID (public - Live Tracking search bar)
++// ==============================
++
++exports.getInvoiceByBookingId = async (req, res) => {
++
++  try {
++
++    const { bookingId } = req.params
++
++    const invoice = await Invoice.findOne({
++      bookingId,
++      isPublished: true,
++    }).sort({ createdAt: -1 })
++
++    res.json({ success: true, invoice: invoice || null })
++
++  } catch (error) {
++
++    console.error("GET INVOICE BY BOOKING ID ERROR:", error.message)
++
++    res.status(500).json({ success: false, message: error.message })
++
++  }
++
++}
++
+ // ==============================
+ // PUBLISH INVOICE
+ // ==============================
+diff --git a/server/routes/bookingRoutes.js b/server/routes/bookingRoutes.js
+index b408494..64a584d 100644
+--- a/server/routes/bookingRoutes.js
++++ b/server/routes/bookingRoutes.js
+@@ -7,6 +7,7 @@ const {
+   createBooking,
+   getBookings,
+   getUserBookings,
++  getBookingById,
+   updateBookingStatus,
+   deleteBooking,
+   clearAllBookings,
+@@ -24,6 +25,12 @@ router.get(
+   getUserBookings
+ )
+ 
++// GET SINGLE BOOKING BY BOOKING ID (public - used by Live Tracking search)
++router.get(
++  "/:bookingId",
++  getBookingById
++)
++
+ // UPDATE STATUS
+ router.put(
+  "/:bookingId",
+diff --git a/server/routes/invoiceRoutes.js b/server/routes/invoiceRoutes.js
+index c80bdad..5eac194 100644
+--- a/server/routes/invoiceRoutes.js
++++ b/server/routes/invoiceRoutes.js
+@@ -9,6 +9,7 @@ const {
+   getInvoicesByVehicle,
+   getInvoicesByCustomer,
+   getInvoicesByCustomerName,
++  getInvoiceByBookingId,
+   publishInvoice,
+   updateInvoice,
+ } = require("../controllers/invoiceController")
+@@ -44,6 +45,11 @@ router.get(
+   getInvoicesByCustomerName
+ )
+ 
++router.get(
++  "/booking/:bookingId",
++  getInvoiceByBookingId
++)
++
+ router.put(
+   "/publish/:id",
+   publishInvoice
+diff --git a/src/components/layout/Navbar.tsx b/src/components/layout/Navbar.tsx
+index ea58f30..b6946cc 100644
+--- a/src/components/layout/Navbar.tsx
++++ b/src/components/layout/Navbar.tsx
+@@ -9,6 +9,7 @@ const primaryLinks = [
+   { to: '/', label: 'Home', end: true },
+   { to: '/services', label: 'Services' },
+   { to: '/booking', label: 'Booking' },
++  { to: '/track', label: 'Live Tracking' },
+   { to: '/contact', label: 'Contact' },
+   { to: '/about', label: 'About' },
+ ]
+diff --git a/src/context/AuthContext.tsx b/src/context/AuthContext.tsx
+index b52c540..8a8e75a 100644
+--- a/src/context/AuthContext.tsx
++++ b/src/context/AuthContext.tsx
+@@ -14,6 +14,8 @@ interface AuthContextType {
+ 
+ const AuthContext = createContext<AuthContextType | null>(null)
+ 
++const SESSION_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
++
+ export function AuthProvider({
+   children,
+ }: {
+@@ -23,13 +25,51 @@ export function AuthProvider({
+ 
+   const [userName, setUserName] = useState('')
+ 
++  const clearSession = () => {
++    localStorage.removeItem('token')
++    localStorage.removeItem('userName')
++    localStorage.removeItem('userEmail')
++    localStorage.removeItem('userPhone')
++    localStorage.removeItem('latestBookingId')
++    localStorage.removeItem('isLoggedIn')
++    localStorage.removeItem('loginTimestamp')
++
++    setUserName('')
++    setIsLoggedIn(false)
++  }
++
++  const isSessionExpired = () => {
++    const loginTimestamp = localStorage.getItem('loginTimestamp')
++
++    if (!loginTimestamp) return false
++
++    return (
++      Date.now() - Number(loginTimestamp) > SESSION_DURATION_MS
++    )
++  }
++
+   useEffect(() => {
+     const savedUser = localStorage.getItem('userName')
+ 
+     if (savedUser) {
+-      setUserName(savedUser)
+-      setIsLoggedIn(true)
++
++      if (isSessionExpired()) {
++        clearSession()
++      } else {
++        setUserName(savedUser)
++        setIsLoggedIn(true)
++      }
++
+     }
++
++    const interval = setInterval(() => {
++      if (isSessionExpired()) {
++        clearSession()
++      }
++    }, 5 * 60 * 1000) // check every 5 minutes
++
++    return () => clearInterval(interval)
++
+   }, [])
+ 
+   const login = (name: string) => {
+@@ -41,11 +81,7 @@ export function AuthProvider({
+   }
+ 
+   const logout = () => {
+-    localStorage.removeItem('userName')
+-
+-    setUserName('')
+-
+-    setIsLoggedIn(false)
++    clearSession()
+   }
+ 
+   return (
+diff --git a/src/pages/Login.tsx b/src/pages/Login.tsx
+index 13f962f..edbaf07 100644
+--- a/src/pages/Login.tsx
++++ b/src/pages/Login.tsx
+@@ -52,6 +52,7 @@ export default function Login() {
+       localStorage.setItem("userEmail", data.user!.email)
+       localStorage.setItem("userPhone", data.user!.phone)
+       localStorage.setItem("isLoggedIn", "true")
++      localStorage.setItem("loginTimestamp", String(Date.now()))
+ 
+       // ✅ FIX: update AuthContext state (not just localStorage) so the
+       // Navbar's isLoggedIn/profile dropdown reflects the login immediately
+diff --git a/src/pages/Tracking.css b/src/pages/Tracking.css
+index 79c0297..67f8167 100644
+--- a/src/pages/Tracking.css
++++ b/src/pages/Tracking.css
+@@ -28,6 +28,53 @@
+   background-clip: text;
+ }
+ 
++.tracking-search-bar {
++  display: flex;
++  gap: 12px;
++  margin-bottom: 30px;
++  flex-wrap: wrap;
++}
++
++.tracking-search-bar input {
++  flex: 1;
++  min-width: 220px;
++  padding: 16px 20px;
++  border-radius: 14px;
++  background: #0f0f0f;
++  border: 1px solid rgba(255, 255, 255, 0.12);
++  color: white;
++  font-size: 15px;
++  transition: 0.3s;
++}
++
++.tracking-search-bar input:focus {
++  outline: none;
++  border-color: #e10600;
++  box-shadow: 0 0 15px rgba(225, 6, 0, 0.25);
++}
++
++.tracking-search-bar button {
++  padding: 16px 28px;
++  border-radius: 14px;
++  border: none;
++  background: linear-gradient(135deg, #e10600, #ff2b2b);
++  color: white;
++  font-weight: 700;
++  cursor: pointer;
++  transition: 0.3s;
++}
++
++.tracking-search-bar button:hover {
++  box-shadow: 0 0 20px rgba(255, 0, 0, 0.35);
++  transform: translateY(-2px);
++}
++
++.tracking-search-error {
++  color: #ff4d4d;
++  margin: -15px 0 25px;
++  font-size: 0.9rem;
++}
++
+ .tracking-details {
+   display: flex;
+   flex-direction: column;
+diff --git a/src/pages/Tracking.tsx b/src/pages/Tracking.tsx
+index 62c15f7..2cb5d83 100644
+--- a/src/pages/Tracking.tsx
++++ b/src/pages/Tracking.tsx
+@@ -13,9 +13,16 @@ export default function Tracking() {
+     "loading" | "online" | "waking" | "error"
+   >("loading")
+ 
++  // Search-by-Booking-ID (works without being logged in)
++  const [searchInput, setSearchInput] = useState("")
++  const [searchError, setSearchError] = useState("")
++  const [activeBookingId, setActiveBookingId] = useState<string | null>(null)
++
+   const errorCountRef = useRef(0)           // track consecutive failures
+   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+ 
++  const isLoggedIn = !!localStorage.getItem("userEmail")
++
+   const stages = [
+     "Booking Confirmed",
+     "Vehicle Received",
+@@ -24,14 +31,38 @@ export default function Tracking() {
+     "Completed",
+   ]
+ 
+-  const fetchLatestBooking = async () => {
++  // Fetches invoice for whatever booking is currently active,
++  // regardless of whether it came from login or a manual search.
++  const fetchInvoiceForBooking = async (currentBooking: any) => {
++
++    if (!currentBooking.invoiceGenerated) return
++
++    try {
++
++      const invoiceResponse = await fetch(
++        `${SERVER}/api/invoices/booking/${currentBooking.bookingId}`
++      )
++
++      const invoiceData = await invoiceResponse.json()
++
++      if (invoiceData.success && invoiceData.invoice) {
++        setInvoice(invoiceData.invoice)
++      }
++
++    } catch (invoiceError) {
++      console.log("Invoice fetch failed (non-fatal):", invoiceError)
++    }
++
++  }
++
++  // LOGGED-IN PATH: auto-fetch the customer's latest booking by email
++  const fetchLatestBookingForUser = async () => {
+ 
+     try {
+ 
+       const currentUserEmail = localStorage.getItem("userEmail")
+       if (!currentUserEmail) return
+ 
+-      // ✅ FIX: encode email so @ and . don't break the URL
+       const encodedEmail = encodeURIComponent(currentUserEmail)
+ 
+       const response = await fetch(
+@@ -44,45 +75,14 @@ export default function Tracking() {
+ 
+       const data = await response.json()
+ 
+-      // ✅ Server is responding — reset error count
+       errorCountRef.current = 0
+       setServerStatus("online")
+ 
+       if (data.success && data.bookings.length > 0) {
+ 
+-        setBooking(data.bookings[0])
+         const currentBooking = data.bookings[0]
+-
+-        // Fetch invoice only if flagged
+-        if (currentBooking.invoiceGenerated) {
+-
+-          try {
+-
+-            const invoiceResponse = await fetch(
+-              `${SERVER}/api/invoices/customer/${encodedEmail}`
+-            )
+-
+-            const invoiceData = await invoiceResponse.json()
+-
+-            if (invoiceData.success && invoiceData.invoices.length > 0) {
+-
+-              const customerInvoice = invoiceData.invoices.find(
+-                (inv: any) =>
+-                  inv.bookingId === currentBooking.bookingId &&
+-                  inv.isPublished === true
+-              )
+-
+-              if (customerInvoice) {
+-                setInvoice(customerInvoice)
+-              }
+-
+-            }
+-
+-          } catch (invoiceError) {
+-            console.log("Invoice fetch failed (non-fatal):", invoiceError)
+-          }
+-
+-        }
++        setBooking(currentBooking)
++        fetchInvoiceForBooking(currentBooking)
+ 
+       }
+ 
+@@ -92,12 +92,10 @@ export default function Tracking() {
+       console.log(`Fetch attempt ${errorCountRef.current} failed:`, error)
+ 
+       if (errorCountRef.current === 1) {
+-        // First failure — show waking message (Render cold start)
+         setServerStatus("waking")
+       }
+ 
+       if (errorCountRef.current >= 5) {
+-        // ✅ FIX: after 5 consecutive failures, stop hammering the server
+         setServerStatus("error")
+         if (intervalRef.current) {
+           clearInterval(intervalRef.current)
+@@ -109,14 +107,93 @@ export default function Tracking() {
+ 
+   }
+ 
++  // SEARCH PATH: fetch a specific booking by its Booking ID
++  const fetchBookingById = async (bookingId: string) => {
++
++    try {
++
++      setSearchError("")
++
++      const response = await fetch(
++        `${SERVER}/api/bookings/${encodeURIComponent(bookingId)}`
++      )
++
++      const data = await response.json()
++
++      errorCountRef.current = 0
++      setServerStatus("online")
++
++      if (data.success && data.booking) {
++
++        setBooking(data.booking)
++        setInvoice(null)
++        fetchInvoiceForBooking(data.booking)
++
++      } else {
++
++        setBooking(null)
++        setInvoice(null)
++        setSearchError("No booking found with that ID. Check and try again.")
++
++      }
++
++    } catch (error) {
++
++      console.log("Booking search failed:", error)
++      setSearchError("Couldn't reach the server — try again in a moment.")
++
++    }
++
++  }
++
++  const handleSearchSubmit = (e: React.FormEvent) => {
++
++    e.preventDefault()
++
++    const trimmed = searchInput.trim().toUpperCase()
++
++    if (!trimmed) {
++      setSearchError("Enter a Booking ID first.")
++      return
++    }
++
++    // Stop polling by email (if it was running) — we're now tracking
++    // a manually searched booking instead.
++    if (intervalRef.current) {
++      clearInterval(intervalRef.current)
++      intervalRef.current = null
++    }
++
++    setActiveBookingId(trimmed)
++    fetchBookingById(trimmed)
++
++    // Poll this specific booking every 5s for live status updates,
++    // same as the logged-in experience.
++    intervalRef.current = setInterval(
++      () => fetchBookingById(trimmed),
++      5000
++    )
++
++  }
++
+   useEffect(() => {
+ 
+-    fetchLatestBooking()
++    if (isLoggedIn) {
++
++      fetchLatestBookingForUser()
++
++      intervalRef.current = setInterval(
++        fetchLatestBookingForUser,
++        5000
++      )
++
++    } else {
++
++      // Not logged in — nothing to auto-fetch, just wait for a search.
++      setServerStatus("online")
+ 
+-    // ✅ FIX: poll every 5s (not 3s) — less aggressive on Render free tier
+-    intervalRef.current = setInterval(fetchLatestBooking, 5000)
++    }
+ 
+-    // ✅ FIX: always clear interval on unmount
+     return () => {
+       if (intervalRef.current) {
+         clearInterval(intervalRef.current)
+@@ -125,14 +202,36 @@ export default function Tracking() {
+ 
+   }, [])
+ 
+-  // Retry button — resets error state and restarts polling
++  // Retry button — resets error state and restarts whichever mode was active
+   const handleRetry = () => {
++
+     errorCountRef.current = 0
+     setServerStatus("loading")
+-    fetchLatestBooking()
+-    if (!intervalRef.current) {
+-      intervalRef.current = setInterval(fetchLatestBooking, 5000)
++
++    if (activeBookingId) {
++
++      fetchBookingById(activeBookingId)
++
++      if (!intervalRef.current) {
++        intervalRef.current = setInterval(
++          () => fetchBookingById(activeBookingId),
++          5000
++        )
++      }
++
++    } else if (isLoggedIn) {
++
++      fetchLatestBookingForUser()
++
++      if (!intervalRef.current) {
++        intervalRef.current = setInterval(
++          fetchLatestBookingForUser,
++          5000
++        )
++      }
++
+     }
++
+   }
+ 
+   return (
+@@ -143,6 +242,32 @@ export default function Tracking() {
+ 
+         <h1>Live Service Tracking</h1>
+ 
++        {/* SEARCH BAR — works whether logged in or not */}
++
++        <form
++          className="tracking-search-bar"
++          onSubmit={handleSearchSubmit}
++        >
++
++          <input
++            type="text"
++            placeholder="Enter your Booking ID (e.g. TYR73757)"
++            value={searchInput}
++            onChange={(e) => setSearchInput(e.target.value)}
++          />
++
++          <button type="submit">
++            Track
++          </button>
++
++        </form>
++
++        {searchError && (
++          <p className="tracking-search-error">
++            {searchError}
++          </p>
++        )}
++
+         {/* SERVER STATUS BANNERS */}
+ 
+         {serverStatus === "waking" && (
+@@ -167,7 +292,9 @@ export default function Tracking() {
+           <p className="no-booking">
+             {serverStatus === "loading" || serverStatus === "waking"
+               ? "Connecting to server..."
+-              : "No active booking found"}
++              : isLoggedIn
++                ? "No active booking found"
++                : "Search using your Booking ID above to see live status"}
+           </p>
+ 
+         ) : (
+@@ -363,4 +490,4 @@ export default function Tracking() {
+ 
+   )
+ 
+-}
+\ No newline at end of file
++}

@@ -52,6 +52,7 @@ export default function Login() {
       localStorage.setItem("userEmail", data.user!.email)
       localStorage.setItem("userPhone", data.user!.phone)
       localStorage.setItem("isLoggedIn", "true")
+      localStorage.setItem("loginTimestamp", String(Date.now()))
 
       // ✅ FIX: update AuthContext state (not just localStorage) so the
       // Navbar's isLoggedIn/profile dropdown reflects the login immediately

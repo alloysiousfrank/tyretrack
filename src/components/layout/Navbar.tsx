@@ -9,6 +9,7 @@ const primaryLinks = [
   { to: '/', label: 'Home', end: true },
   { to: '/services', label: 'Services' },
   { to: '/booking', label: 'Booking' },
+  { to: '/track', label: 'Live Tracking' },
   { to: '/contact', label: 'Contact' },
   { to: '/about', label: 'About' },
 ]

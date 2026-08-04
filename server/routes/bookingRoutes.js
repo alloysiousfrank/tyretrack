@@ -7,6 +7,7 @@ const {
   createBooking,
   getBookings,
   getUserBookings,
+  getBookingById,
   updateBookingStatus,
   deleteBooking,
   clearAllBookings,
@@ -22,6 +23,12 @@ router.get("/", getBookings)
 router.get(
   "/user/:email",
   getUserBookings
+)
+
+// GET SINGLE BOOKING BY BOOKING ID (public - used by Live Tracking search)
+router.get(
+  "/:bookingId",
+  getBookingById
 )
 
 // UPDATE STATUS

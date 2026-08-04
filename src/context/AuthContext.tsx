@@ -14,6 +14,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
+const SESSION_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
+
 export function AuthProvider({
   children,
 }: {
@@ -23,13 +25,51 @@ export function AuthProvider({
 
   const [userName, setUserName] = useState('')
 
+  const clearSession = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userName')
+    localStorage.removeItem('userEmail')
+    localStorage.removeItem('userPhone')
+    localStorage.removeItem('latestBookingId')
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('loginTimestamp')
+
+    setUserName('')
+    setIsLoggedIn(false)
+  }
+
+  const isSessionExpired = () => {
+    const loginTimestamp = localStorage.getItem('loginTimestamp')
+
+    if (!loginTimestamp) return false
+
+    return (
+      Date.now() - Number(loginTimestamp) > SESSION_DURATION_MS
+    )
+  }
+
   useEffect(() => {
     const savedUser = localStorage.getItem('userName')
 
     if (savedUser) {
-      setUserName(savedUser)
-      setIsLoggedIn(true)
+
+      if (isSessionExpired()) {
+        clearSession()
+      } else {
+        setUserName(savedUser)
+        setIsLoggedIn(true)
+      }
+
     }
+
+    const interval = setInterval(() => {
+      if (isSessionExpired()) {
+        clearSession()
+      }
+    }, 5 * 60 * 1000) // check every 5 minutes
+
+    return () => clearInterval(interval)
+
   }, [])
 
   const login = (name: string) => {
@@ -41,11 +81,7 @@ export function AuthProvider({
   }
 
   const logout = () => {
-    localStorage.removeItem('userName')
-
-    setUserName('')
-
-    setIsLoggedIn(false)
+    clearSession()
   }
 
   return (

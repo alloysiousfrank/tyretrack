@@ -324,6 +324,33 @@ exports.getInvoicesByCustomerName = async (req, res) => {
 }
 
 // ==============================
+// GET PUBLISHED INVOICE BY BOOKING ID (public - Live Tracking search bar)
+// ==============================
+
+exports.getInvoiceByBookingId = async (req, res) => {
+
+  try {
+
+    const { bookingId } = req.params
+
+    const invoice = await Invoice.findOne({
+      bookingId,
+      isPublished: true,
+    }).sort({ createdAt: -1 })
+
+    res.json({ success: true, invoice: invoice || null })
+
+  } catch (error) {
+
+    console.error("GET INVOICE BY BOOKING ID ERROR:", error.message)
+
+    res.status(500).json({ success: false, message: error.message })
+
+  }
+
+}
+
+// ==============================
 // PUBLISH INVOICE
 // ==============================
 

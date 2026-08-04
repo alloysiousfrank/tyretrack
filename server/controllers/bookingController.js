@@ -180,6 +180,41 @@ exports.getUserBookings = async (req, res) => {
 }
 
 
+// GET SINGLE BOOKING BY BOOKING ID (public - Live Tracking search bar)
+exports.getBookingById = async (req, res) => {
+
+  try {
+
+    const { bookingId } = req.params
+
+    const booking = await Booking.findOne({ bookingId })
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "No booking found with that ID",
+      })
+    }
+
+    res.json({
+      success: true,
+      booking,
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch booking",
+    })
+
+  }
+
+}
+
+
 // UPDATE BOOKING STATUS
 exports.updateBookingStatus = async (req, res) => {
 

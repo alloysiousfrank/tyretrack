@@ -13,8 +13,15 @@ export default function Tracking() {
     "loading" | "online" | "waking" | "error"
   >("loading")
 
+  // Search-by-Booking-ID (works without being logged in)
+  const [searchInput, setSearchInput] = useState("")
+  const [searchError, setSearchError] = useState("")
+  const [activeBookingId, setActiveBookingId] = useState<string | null>(null)
+
   const errorCountRef = useRef(0)           // track consecutive failures
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const isLoggedIn = !!localStorage.getItem("userEmail")
 
   const stages = [
     "Booking Confirmed",
@@ -24,14 +31,38 @@ export default function Tracking() {
     "Completed",
   ]
 
-  const fetchLatestBooking = async () => {
+  // Fetches invoice for whatever booking is currently active,
+  // regardless of whether it came from login or a manual search.
+  const fetchInvoiceForBooking = async (currentBooking: any) => {
+
+    if (!currentBooking.invoiceGenerated) return
+
+    try {
+
+      const invoiceResponse = await fetch(
+        `${SERVER}/api/invoices/booking/${currentBooking.bookingId}`
+      )
+
+      const invoiceData = await invoiceResponse.json()
+
+      if (invoiceData.success && invoiceData.invoice) {
+        setInvoice(invoiceData.invoice)
+      }
+
+    } catch (invoiceError) {
+      console.log("Invoice fetch failed (non-fatal):", invoiceError)
+    }
+
+  }
+
+  // LOGGED-IN PATH: auto-fetch the customer's latest booking by email
+  const fetchLatestBookingForUser = async () => {
 
     try {
 
       const currentUserEmail = localStorage.getItem("userEmail")
       if (!currentUserEmail) return
 
-      // ✅ FIX: encode email so @ and . don't break the URL
       const encodedEmail = encodeURIComponent(currentUserEmail)
 
       const response = await fetch(
@@ -44,45 +75,14 @@ export default function Tracking() {
 
       const data = await response.json()
 
-      // ✅ Server is responding — reset error count
       errorCountRef.current = 0
       setServerStatus("online")
 
       if (data.success && data.bookings.length > 0) {
 
-        setBooking(data.bookings[0])
         const currentBooking = data.bookings[0]
-
-        // Fetch invoice only if flagged
-        if (currentBooking.invoiceGenerated) {
-
-          try {
-
-            const invoiceResponse = await fetch(
-              `${SERVER}/api/invoices/customer/${encodedEmail}`
-            )
-
-            const invoiceData = await invoiceResponse.json()
-
-            if (invoiceData.success && invoiceData.invoices.length > 0) {
-
-              const customerInvoice = invoiceData.invoices.find(
-                (inv: any) =>
-                  inv.bookingId === currentBooking.bookingId &&
-                  inv.isPublished === true
-              )
-
-              if (customerInvoice) {
-                setInvoice(customerInvoice)
-              }
-
-            }
-
-          } catch (invoiceError) {
-            console.log("Invoice fetch failed (non-fatal):", invoiceError)
-          }
-
-        }
+        setBooking(currentBooking)
+        fetchInvoiceForBooking(currentBooking)
 
       }
 
@@ -92,12 +92,10 @@ export default function Tracking() {
       console.log(`Fetch attempt ${errorCountRef.current} failed:`, error)
 
       if (errorCountRef.current === 1) {
-        // First failure — show waking message (Render cold start)
         setServerStatus("waking")
       }
 
       if (errorCountRef.current >= 5) {
-        // ✅ FIX: after 5 consecutive failures, stop hammering the server
         setServerStatus("error")
         if (intervalRef.current) {
           clearInterval(intervalRef.current)
@@ -109,14 +107,93 @@ export default function Tracking() {
 
   }
 
+  // SEARCH PATH: fetch a specific booking by its Booking ID
+  const fetchBookingById = async (bookingId: string) => {
+
+    try {
+
+      setSearchError("")
+
+      const response = await fetch(
+        `${SERVER}/api/bookings/${encodeURIComponent(bookingId)}`
+      )
+
+      const data = await response.json()
+
+      errorCountRef.current = 0
+      setServerStatus("online")
+
+      if (data.success && data.booking) {
+
+        setBooking(data.booking)
+        setInvoice(null)
+        fetchInvoiceForBooking(data.booking)
+
+      } else {
+
+        setBooking(null)
+        setInvoice(null)
+        setSearchError("No booking found with that ID. Check and try again.")
+
+      }
+
+    } catch (error) {
+
+      console.log("Booking search failed:", error)
+      setSearchError("Couldn't reach the server — try again in a moment.")
+
+    }
+
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+
+    e.preventDefault()
+
+    const trimmed = searchInput.trim().toUpperCase()
+
+    if (!trimmed) {
+      setSearchError("Enter a Booking ID first.")
+      return
+    }
+
+    // Stop polling by email (if it was running) — we're now tracking
+    // a manually searched booking instead.
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+
+    setActiveBookingId(trimmed)
+    fetchBookingById(trimmed)
+
+    // Poll this specific booking every 5s for live status updates,
+    // same as the logged-in experience.
+    intervalRef.current = setInterval(
+      () => fetchBookingById(trimmed),
+      5000
+    )
+
+  }
+
   useEffect(() => {
 
-    fetchLatestBooking()
+    if (isLoggedIn) {
 
-    // ✅ FIX: poll every 5s (not 3s) — less aggressive on Render free tier
-    intervalRef.current = setInterval(fetchLatestBooking, 5000)
+      fetchLatestBookingForUser()
 
-    // ✅ FIX: always clear interval on unmount
+      intervalRef.current = setInterval(
+        fetchLatestBookingForUser,
+        5000
+      )
+
+    } else {
+
+      // Not logged in — nothing to auto-fetch, just wait for a search.
+      setServerStatus("online")
+
+    }
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
@@ -125,14 +202,36 @@ export default function Tracking() {
 
   }, [])
 
-  // Retry button — resets error state and restarts polling
+  // Retry button — resets error state and restarts whichever mode was active
   const handleRetry = () => {
+
     errorCountRef.current = 0
     setServerStatus("loading")
-    fetchLatestBooking()
-    if (!intervalRef.current) {
-      intervalRef.current = setInterval(fetchLatestBooking, 5000)
+
+    if (activeBookingId) {
+
+      fetchBookingById(activeBookingId)
+
+      if (!intervalRef.current) {
+        intervalRef.current = setInterval(
+          () => fetchBookingById(activeBookingId),
+          5000
+        )
+      }
+
+    } else if (isLoggedIn) {
+
+      fetchLatestBookingForUser()
+
+      if (!intervalRef.current) {
+        intervalRef.current = setInterval(
+          fetchLatestBookingForUser,
+          5000
+        )
+      }
+
     }
+
   }
 
   return (
@@ -142,6 +241,32 @@ export default function Tracking() {
       <div className="tracking-card">
 
         <h1>Live Service Tracking</h1>
+
+        {/* SEARCH BAR — works whether logged in or not */}
+
+        <form
+          className="tracking-search-bar"
+          onSubmit={handleSearchSubmit}
+        >
+
+          <input
+            type="text"
+            placeholder="Enter your Booking ID (e.g. TYR73757)"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+
+          <button type="submit">
+            Track
+          </button>
+
+        </form>
+
+        {searchError && (
+          <p className="tracking-search-error">
+            {searchError}
+          </p>
+        )}
 
         {/* SERVER STATUS BANNERS */}
 
@@ -167,7 +292,9 @@ export default function Tracking() {
           <p className="no-booking">
             {serverStatus === "loading" || serverStatus === "waking"
               ? "Connecting to server..."
-              : "No active booking found"}
+              : isLoggedIn
+                ? "No active booking found"
+                : "Search using your Booking ID above to see live status"}
           </p>
 
         ) : (
