@@ -3,22 +3,26 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import wheelImage from '../../assets/wheel.png'
 import './CinematicHero.css'
 
+// ✅ FIX: compute the wheel's off-screen entry position synchronously,
+// on first render, instead of via useEffect (which only runs after the
+// initial paint). This removes the post-mount jump/inconsistency that
+// showed up as "lag" on some devices.
+function getInitialEntryX() {
+  if (typeof window === 'undefined') return -500
+  return window.innerWidth < 768 ? -180 : -window.innerWidth / 2
+}
+
 export default function CinematicHero() {
   const [start, setStart] = useState(false)
   const [showText, setShowText] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [entryX, setEntryX] = useState(-500)
+  const [entryX] = useState(getInitialEntryX)
 
   const { scrollYProgress } = useScroll()
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 300])
   const glowY = useTransform(scrollYProgress, [0, 1], [0, 500])
 
   useEffect(() => {
-if (window.innerWidth < 768) {
-  setEntryX(-180)
-} else {
-  setEntryX(-window.innerWidth / 2)
-}
     const onScroll = () => setIsScrolled(window.scrollY > 120)
     window.addEventListener('scroll', onScroll)
     onScroll()
@@ -67,8 +71,16 @@ if (window.innerWidth < 768) {
                 : {}
             }
             transition={{
-              duration: 2,
-              ease: [0.22, 1, 0.36, 1],
+              // Position/rotation/scale keep their original roll-in feel —
+              // untouched.
+              x: { duration: 2, ease: [0.22, 1, 0.36, 1] },
+              y: { duration: 2, ease: [0.22, 1, 0.36, 1] },
+              rotate: { duration: 2, ease: [0.22, 1, 0.36, 1] },
+              scale: { duration: 2, ease: [0.22, 1, 0.36, 1] },
+              // ✅ FIX: opacity now resolves quickly and independently, so
+              // the wheel is visible right as it starts rolling in instead
+              // of staying nearly invisible until it's already landed.
+              opacity: { duration: 0.35, ease: 'easeOut' },
             }}
             whileHover={{
               scale: isScrolled ? 0.42 : 1.03,

@@ -76,7 +76,7 @@ red={true}
   <GlassCard className="glass-red" red>
 
     <SectionHeading
-      eyebrow="New"
+      eyebrow="Get a Quote"
       title="Need a Tyre Quotation?"
       subtitle="Receive a personalized quotation based on your vehicle and tyre requirements."
     />

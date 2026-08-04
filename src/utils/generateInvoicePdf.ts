@@ -184,7 +184,7 @@ export const generateInvoicePdf = async (
   doc.setFont("helvetica", "normal")
   doc.setFontSize(7.8)
   const compLines = [
-    "107/2 Pasumai Nagar, Mangalam Road, Tiruppur",
+    "107/2 Pasumai Nagar Opp. Gokulam Apartment, Andipalayam, Mangalam Road, Tiruppur",
     "Phone : 9443738487 / 7448787979",
     "Email : tyretrack2024@gmail.com",
     "GSTIN : 33AAWFT5612K1ZP",
