@@ -291,6 +291,15 @@ box-shadow:
 .service-item input[type="checkbox"] {
   width: 18px;
   height: 18px;
+  margin-top: 0;
+  margin-right: 10px;
+  vertical-align: middle;
+  accent-color: #e10600;
+}
+
+.service-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
   padding: 0;
   margin-top: 0;
   margin-right: 10px;

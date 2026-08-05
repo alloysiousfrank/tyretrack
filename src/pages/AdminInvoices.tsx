@@ -1951,9 +1951,6 @@ customServices
 
 </div> {/* admin-bookings */}
 
-</div> {/* admin-container */}
-
 </div> 
-
-)
-  }
+  )
+}
