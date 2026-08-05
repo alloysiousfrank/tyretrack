@@ -351,6 +351,7 @@ async (
    setVehicleHistory(
     data.invoices
    )
+   setShowHistory(data.invoices.length > 0)
 if(data.invoices.length > 0){
 
  const latest =
@@ -389,10 +390,12 @@ if(data.invoices.length > 0){
 
 } else {
   setCustomerProfile(null)
+  setShowHistory(false)
 }
   } else {
     setVehicleHistory([])
     setCustomerProfile(null)
+    setShowHistory(false)
   }
 
  }catch(error){
@@ -903,11 +906,13 @@ Customer Name
               fetchCustomerHistory(
                 value.trim()
               )
+              setShowHistory(true)
 
             } else {
 
               setVehicleHistory([])
               setCustomerProfile(null)
+              setShowHistory(false)
 
             }
 
@@ -1140,8 +1145,8 @@ showHistory
  className="history-invoices"
 >
 {
- showHistory &&
- vehicleHistory.length > 0 && (
+ showHistory && (
+ vehicleHistory.length > 0 ? (
 
 <div
  className="admin-card"
@@ -1327,8 +1332,14 @@ service.serviceName
 
 </div>
 
+) : (
+  <div className="admin-card">
+    <p>No customer history found for this name yet.</p>
+  </div>
 )
-}
+      )
+    }
+  </div>
 
        <h3>Select Services</h3>
 
@@ -1786,12 +1797,16 @@ Tyre Qty :
      <tr key={service}>
 
       <td>
-       {service}
-       {
-        service !== "Multi Branded Tyres" && (
-         <> &times; {serviceDetails[service]?.quantity ?? 1}</>
-        )
-       }
+         {service}
+         {
+          service !== "Multi Branded Tyres" && (
+           <>
+            &times; {serviceDetails[service]?.quantity ?? 1}
+            {' '}
+            @ Rs {Number(serviceDetails[service]?.amount || 0)}
+           </>
+          )
+         }
       </td>
 
      <td>
@@ -1828,9 +1843,8 @@ customServices
    <tr key={index}>
 
     <td>
-     {service.serviceName}
-     ×
-     {service.quantity}
+       {service.serviceName}
+       × {service.quantity} @ Rs {Number(service.amount || 0)}
     </td>
 
     <td>

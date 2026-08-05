@@ -315,8 +315,11 @@ export const generateInvoicePdf = async (
   }
 
   lineItems.forEach((cs: any) => {
-    const amt = Number(cs.amount || 0) * Number(cs.quantity || 1)
-    rows.push([sn++, cs.serviceName + " x " + (cs.quantity || 1), "Rs " + fmt(amt)])
+    const unit = Number(cs.amount || 0)
+    const qty = Number(cs.quantity || 1)
+    const amt = unit * qty
+    const desc = `${cs.serviceName} x ${qty} @ Rs ${fmt(unit)}`
+    rows.push([sn++, desc, "Rs " + fmt(amt)])
   })
 
   autoTable(doc, {
