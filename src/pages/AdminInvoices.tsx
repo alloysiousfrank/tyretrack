@@ -1394,10 +1394,12 @@ service !== "Multi Branded Tyres" && (
 
 <div className="admin-card">
 
+<div className="form-group">
+<label>Quantity</label>
 <input
  type="number"
  min="1"
- placeholder="Qty"
+ placeholder="Enter Quantity"
  value={
   serviceDetails[service]?.quantity ?? 1
  }
@@ -1411,11 +1413,14 @@ service !== "Multi Branded Tyres" && (
   }))
  }
 />
+</div>
 
+<div className="form-group">
+<label>Amount (₹)</label>
 <input
  type="number"
  min="0"
- placeholder="Amount (₹)"
+ placeholder="Enter Amount"
  value={
   serviceDetails[service]?.amount ?? 0
  }
@@ -1429,6 +1434,7 @@ service !== "Multi Branded Tyres" && (
   }))
  }
 />
+</div>
 
 </div>
 
@@ -1489,10 +1495,12 @@ Select Tyre Brand
 
 </select>
 
+<div className="form-group">
+<label>Amount (₹)</label>
 <input
  type="number"
  min="0"
- placeholder="Amount (₹)"
+ placeholder="Enter Amount"
  value={tyreAmount}
  onChange={(e)=>
   setTyreAmount(
@@ -1500,10 +1508,14 @@ Select Tyre Brand
   )
  }
 />
+</div>
 
+<div className="form-group">
+<label>Quantity</label>
 <input
  type="number"
  min="1"
+ placeholder="Enter Quantity"
  value={tyreQuantity}
  onChange={(e)=>
   setTyreQuantity(
@@ -1511,6 +1523,7 @@ Select Tyre Brand
   )
  }
 />
+</div>
 
 <p>
 
@@ -1543,8 +1556,10 @@ customServices.map(
    className="admin-card"
   >
 
+   <div className="form-group">
+   <label>Service Name</label>
    <input
-    placeholder="Service Name"
+    placeholder="Enter Service Name"
     value={service.serviceName}
     onChange={(e)=>
      updateCustomService(
@@ -1554,10 +1569,13 @@ customServices.map(
      )
     }
    />
+   </div>
 
+   <div className="form-group">
+   <label>Quantity</label>
    <input
     type="number"
-    placeholder="Qty"
+    placeholder="Enter Quantity"
     value={service.quantity}
     onChange={(e)=>
      updateCustomService(
@@ -1567,10 +1585,13 @@ customServices.map(
      )
     }
    />
+   </div>
 
+   <div className="form-group">
+   <label>Amount (₹)</label>
    <input
     type="number"
-    placeholder="Amount"
+    placeholder="Enter Amount"
     value={service.amount}
     onChange={(e)=>
      updateCustomService(
@@ -1580,6 +1601,7 @@ customServices.map(
      )
     }
    />
+   </div>
 
   </div>
 
