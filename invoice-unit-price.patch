@@ -1,0 +1,484 @@
+diff --git a/server/controllers/invoiceController.js b/server/controllers/invoiceController.js
+index f28d65f..85b02ef 100644
+--- a/server/controllers/invoiceController.js
++++ b/server/controllers/invoiceController.js
+@@ -289,6 +289,60 @@ exports.getInvoicesByCustomerName = async (req, res) => {
+ 
+ }
+ 
++// ==============================
++// CUSTOMER NAME SUGGESTIONS (as-you-type, 3+ characters)
++// ==============================
++// Returns distinct matching customer names (with phone, for telling
++// apart two customers who share a first name) so the admin can pick
++// one instead of typing the full exact name.
++
++exports.getCustomerNameSuggestions = async (req, res) => {
++
++  try {
++
++    const rawQuery = decodeURIComponent(req.params.query).trim()
++
++    if (rawQuery.length < 3) {
++      return res.json({ success: true, customers: [] })
++    }
++
++    const escapedQuery = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
++
++    const matches = await Invoice.aggregate([
++      {
++        $match: {
++          customerName: { $regex: `^${escapedQuery}`, $options: "i" },
++        },
++      },
++      {
++        $group: {
++          _id: { $toLower: "$customerName" },
++          customerName: { $first: "$customerName" },
++          phone: { $first: "$phone" },
++        },
++      },
++      { $sort: { customerName: 1 } },
++      { $limit: 8 },
++    ])
++
++    res.json({
++      success: true,
++      customers: matches.map((m) => ({
++        customerName: m.customerName,
++        phone: m.phone,
++      })),
++    })
++
++  } catch (error) {
++
++    console.error("GET CUSTOMER NAME SUGGESTIONS ERROR:", error.message)
++
++    res.status(500).json({ success: false, message: error.message })
++
++  }
++
++}
++
+ // ==============================
+ // GET PUBLISHED INVOICE BY BOOKING ID (public - Live Tracking search bar)
+ // ==============================
+diff --git a/server/routes/invoiceRoutes.js b/server/routes/invoiceRoutes.js
+index 5eac194..dc2a22a 100644
+--- a/server/routes/invoiceRoutes.js
++++ b/server/routes/invoiceRoutes.js
+@@ -9,6 +9,7 @@ const {
+   getInvoicesByVehicle,
+   getInvoicesByCustomer,
+   getInvoicesByCustomerName,
++  getCustomerNameSuggestions,
+   getInvoiceByBookingId,
+   publishInvoice,
+   updateInvoice,
+@@ -45,6 +46,11 @@ router.get(
+   getInvoicesByCustomerName
+ )
+ 
++router.get(
++  "/customer-name-suggestions/:query",
++  getCustomerNameSuggestions
++)
++
+ router.get(
+   "/booking/:bookingId",
+   getInvoiceByBookingId
+diff --git a/src/pages/AdminInvoices.css b/src/pages/AdminInvoices.css
+index af696d7..a518764 100644
+--- a/src/pages/AdminInvoices.css
++++ b/src/pages/AdminInvoices.css
+@@ -228,6 +228,79 @@ color:#cfcfcf;
+ 
+ }
+ 
++.name-suggestions-dropdown{
++
++position:absolute;
++
++top:100%;
++
++left:0;
++
++right:0;
++
++z-index:20;
++
++margin-top:6px;
++
++background:#111;
++
++border:1px solid rgba(225,6,0,.25);
++
++border-radius:14px;
++
++overflow:hidden;
++
++box-shadow:
++0 10px 30px rgba(0,0,0,.4);
++
++}
++
++.name-suggestion-item{
++
++display:flex;
++
++justify-content:space-between;
++
++align-items:center;
++
++padding:14px 18px;
++
++cursor:pointer;
++
++border-bottom:1px solid rgba(255,255,255,.06);
++
++transition:.2s;
++
++}
++
++.name-suggestion-item:last-child{
++
++border-bottom:none;
++
++}
++
++.name-suggestion-item:hover{
++
++background:rgba(225,6,0,.12);
++
++}
++
++.name-suggestion-name{
++
++color:white;
++
++font-weight:600;
++
++}
++
++.name-suggestion-phone{
++
++color:#9a9a9a;
++
++font-size:13px;
++
++}
++
+ .form-group input:not([type="checkbox"]),
+ .form-group select,
+ .form-group textarea,
+diff --git a/src/pages/AdminInvoices.tsx b/src/pages/AdminInvoices.tsx
+index 133b020..7368a49 100644
+--- a/src/pages/AdminInvoices.tsx
++++ b/src/pages/AdminInvoices.tsx
+@@ -52,6 +52,12 @@ useState("")
+   const [customerName, setCustomerName] =
+     useState("")
+ 
++  const [nameSuggestions, setNameSuggestions] =
++    useState<{customerName:string, phone:string}[]>([])
++
++  const [showSuggestions, setShowSuggestions] =
++    useState(false)
++
+   const [vehicleNumber, setVehicleNumber] =
+     useState("")
+ 
+@@ -329,6 +335,35 @@ bookingData.bookingId || ""
+ // matching backend route: GET /api/invoices/customer-name/:name
+ // (case-insensitive match on customerName). If your backend doesn't
+ // have that route yet, tell me its invoices-route file and I'll add it.
++const fetchNameSuggestions =
++async (
++ query:string
++)=>{
++
++ try{
++
++  const response =
++   await fetch(
++
++`https://tyretrack-server.onrender.com/api/invoices/customer-name-suggestions/${encodeURIComponent(query)}`
++
++   )
++
++  const data =
++   await response.json()
++
++  if(data.success){
++   setNameSuggestions(data.customers)
++  }
++
++ }catch(error){
++
++  console.log(error)
++
++ }
++
++}
++
+ const fetchCustomerHistory =
+ async (
+  name:string
+@@ -885,7 +920,7 @@ Invoice Generator
+ 
+ <div className="invoice-form-grid">
+ 
+-<div className="form-group">
++<div className="form-group" style={{position:"relative"}}>
+ 
+ <label>
+ Customer Name
+@@ -903,6 +938,11 @@ Customer Name
+ 
+             if(value.trim().length >= 3){
+ 
++              fetchNameSuggestions(
++                value.trim()
++              )
++              setShowSuggestions(true)
++
+               fetchCustomerHistory(
+                 value.trim()
+               )
+@@ -910,6 +950,8 @@ Customer Name
+ 
+             } else {
+ 
++              setNameSuggestions([])
++              setShowSuggestions(false)
+               setVehicleHistory([])
+               setCustomerProfile(null)
+               setShowHistory(false)
+@@ -917,7 +959,61 @@ Customer Name
+             }
+ 
+           }}
++          onFocus={()=>{
++            if(nameSuggestions.length > 0){
++              setShowSuggestions(true)
++            }
++          }}
++          onBlur={()=>{
++            // small delay so a click on a suggestion registers
++            // before the dropdown disappears
++            setTimeout(()=>setShowSuggestions(false), 150)
++          }}
+         />
++
++{
++showSuggestions &&
++nameSuggestions.length > 0 && (
++
++<div className="name-suggestions-dropdown">
++
++{
++nameSuggestions.map((customer,index)=>(
++
++<div
++ key={index}
++ className="name-suggestion-item"
++ onMouseDown={()=>{
++
++  setCustomerName(customer.customerName)
++  setShowSuggestions(false)
++
++  fetchCustomerHistory(
++    customer.customerName
++  )
++  setShowHistory(true)
++
++ }}
++>
++
++<span className="name-suggestion-name">
++{customer.customerName}
++</span>
++
++<span className="name-suggestion-phone">
++{customer.phone}
++</span>
++
++</div>
++
++))
++}
++
++</div>
++
++)
++}
++
+ </div>
+ <div className="form-group">
+ 
+@@ -1394,10 +1490,12 @@ service !== "Multi Branded Tyres" && (
+ 
+ <div className="admin-card">
+ 
++<div className="form-group">
++<label>Quantity</label>
+ <input
+  type="number"
+  min="1"
+- placeholder="Qty"
++ placeholder="Enter Quantity"
+  value={
+   serviceDetails[service]?.quantity ?? 1
+  }
+@@ -1411,11 +1509,14 @@ service !== "Multi Branded Tyres" && (
+   }))
+  }
+ />
++</div>
+ 
++<div className="form-group">
++<label>Amount (₹)</label>
+ <input
+  type="number"
+  min="0"
+- placeholder="Amount (₹)"
++ placeholder="Enter Amount"
+  value={
+   serviceDetails[service]?.amount ?? 0
+  }
+@@ -1429,6 +1530,7 @@ service !== "Multi Branded Tyres" && (
+   }))
+  }
+ />
++</div>
+ 
+ </div>
+ 
+@@ -1489,10 +1591,12 @@ Select Tyre Brand
+ 
+ </select>
+ 
++<div className="form-group">
++<label>Amount (₹)</label>
+ <input
+  type="number"
+  min="0"
+- placeholder="Amount (₹)"
++ placeholder="Enter Amount"
+  value={tyreAmount}
+  onChange={(e)=>
+   setTyreAmount(
+@@ -1500,10 +1604,14 @@ Select Tyre Brand
+   )
+  }
+ />
++</div>
+ 
++<div className="form-group">
++<label>Quantity</label>
+ <input
+  type="number"
+  min="1"
++ placeholder="Enter Quantity"
+  value={tyreQuantity}
+  onChange={(e)=>
+   setTyreQuantity(
+@@ -1511,6 +1619,7 @@ Select Tyre Brand
+   )
+  }
+ />
++</div>
+ 
+ <p>
+ 
+@@ -1543,8 +1652,10 @@ customServices.map(
+    className="admin-card"
+   >
+ 
++   <div className="form-group">
++   <label>Service Name</label>
+    <input
+-    placeholder="Service Name"
++    placeholder="Enter Service Name"
+     value={service.serviceName}
+     onChange={(e)=>
+      updateCustomService(
+@@ -1554,10 +1665,13 @@ customServices.map(
+      )
+     }
+    />
++   </div>
+ 
++   <div className="form-group">
++   <label>Quantity</label>
+    <input
+     type="number"
+-    placeholder="Qty"
++    placeholder="Enter Quantity"
+     value={service.quantity}
+     onChange={(e)=>
+      updateCustomService(
+@@ -1567,10 +1681,13 @@ customServices.map(
+      )
+     }
+    />
++   </div>
+ 
++   <div className="form-group">
++   <label>Amount (₹)</label>
+    <input
+     type="number"
+-    placeholder="Amount"
++    placeholder="Enter Amount"
+     value={service.amount}
+     onChange={(e)=>
+      updateCustomService(
+@@ -1580,6 +1697,7 @@ customServices.map(
+      )
+     }
+    />
++   </div>
+ 
+   </div>
+ 
+diff --git a/src/utils/generateInvoicePdf.ts b/src/utils/generateInvoicePdf.ts
+index 55ccc37..19b7629 100644
+--- a/src/utils/generateInvoicePdf.ts
++++ b/src/utils/generateInvoicePdf.ts
+@@ -318,14 +318,19 @@ export const generateInvoicePdf = async (
+     const unit = Number(cs.amount || 0)
+     const qty = Number(cs.quantity || 1)
+     const amt = unit * qty
+-    const desc = `${cs.serviceName} x ${qty} @ Rs ${fmt(unit)}`
+-    rows.push([sn++, desc, "Rs " + fmt(amt)])
++    rows.push([
++      sn++,
++      cs.serviceName,
++      qty,
++      "Rs " + fmt(unit),
++      "Rs " + fmt(amt),
++    ])
+   })
+ 
+   autoTable(doc, {
+     startY:  tableStartY,
+     margin:  { left: ML, right: MR },
+-    head:    [["#", "Service / Description", "Amount (Rs)"]],
++    head:    [["#", "Service / Description", "Qty", "Rate (Rs)", "Amount (Rs)"]],
+     body:    rows,
+     theme:   "grid",
+     styles: {
+@@ -343,9 +348,11 @@ export const generateInvoicePdf = async (
+       fontSize:  9,
+     },
+     columnStyles: {
+-      0: { cellWidth: 12,     halign: "center" },
++      0: { cellWidth: 10,     halign: "center" },
+       1: { cellWidth: "auto"                   },
+-      2: { cellWidth: 40,     halign: "right", fontStyle: "bold" },
++      2: { cellWidth: 16,     halign: "center" },
++      3: { cellWidth: 28,     halign: "right"  },
++      4: { cellWidth: 32,     halign: "right", fontStyle: "bold" },
+     },
+   })
+ 
