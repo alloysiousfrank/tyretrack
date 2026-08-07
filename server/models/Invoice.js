@@ -33,6 +33,10 @@ financialYear:{
  type:String,
  default:""
  },
+ customerAddress:{
+ type:String,
+ default:""
+ },
 
  vehicleKm:{
  type:String,

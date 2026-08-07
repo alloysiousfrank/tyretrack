@@ -290,6 +290,57 @@ exports.getInvoicesByCustomerName = async (req, res) => {
 }
 
 // ==============================
+// CUSTOMER NAME SUGGESTIONS (as-you-type, 3+ characters)
+// ==============================
+
+exports.getCustomerNameSuggestions = async (req, res) => {
+
+  try {
+
+    const rawQuery = decodeURIComponent(req.params.query).trim()
+
+    if (rawQuery.length < 3) {
+      return res.json({ success: true, customers: [] })
+    }
+
+    const escapedQuery = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+    const matches = await Invoice.aggregate([
+      {
+        $match: {
+          customerName: { $regex: `^${escapedQuery}`, $options: "i" },
+        },
+      },
+      {
+        $group: {
+          _id: { $toLower: "$customerName" },
+          customerName: { $first: "$customerName" },
+          phone: { $first: "$phone" },
+        },
+      },
+      { $sort: { customerName: 1 } },
+      { $limit: 8 },
+    ])
+
+    res.json({
+      success: true,
+      customers: matches.map((m) => ({
+        customerName: m.customerName,
+        phone: m.phone,
+      })),
+    })
+
+  } catch (error) {
+
+    console.error("GET CUSTOMER NAME SUGGESTIONS ERROR:", error.message)
+
+    res.status(500).json({ success: false, message: error.message })
+
+  }
+
+}
+
+// ==============================
 // GET PUBLISHED INVOICE BY BOOKING ID (public - Live Tracking search bar)
 // ==============================
 

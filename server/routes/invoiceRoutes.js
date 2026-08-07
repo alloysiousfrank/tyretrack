@@ -9,6 +9,7 @@ const {
   getInvoicesByVehicle,
   getInvoicesByCustomer,
   getInvoicesByCustomerName,
+  getCustomerNameSuggestions,
   getInvoiceByBookingId,
   publishInvoice,
   updateInvoice,
@@ -43,6 +44,11 @@ router.get(
 router.get(
   "/customer-name/:name",
   getInvoicesByCustomerName
+)
+
+router.get(
+  "/customer-name-suggestions/:query",
+  getCustomerNameSuggestions
 )
 
 router.get(

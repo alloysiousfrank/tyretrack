@@ -223,9 +223,10 @@ export const generateInvoicePdf = async (
   let   ry  = boxY + 12
 
   const leftItems  = [
-    ["Name",  invoice.customerName || "—"],
-    ["Phone", invoice.phone        || "—"],
-    ["Email", invoice.email        || "—"],
+    ["Name",    invoice.customerName  || "—"],
+    ["Phone",   invoice.phone         || "—"],
+    ["Email",   invoice.email         || "—"],
+    ["Address", invoice.customerAddress || "—"],
   ]
   const rightItems = [
     ["Vehicle No",    invoice.vehicleNumber || "—"],
@@ -318,14 +319,19 @@ export const generateInvoicePdf = async (
     const unit = Number(cs.amount || 0)
     const qty = Number(cs.quantity || 1)
     const amt = unit * qty
-    const desc = `${cs.serviceName} x ${qty} @ Rs ${fmt(unit)}`
-    rows.push([sn++, desc, "Rs " + fmt(amt)])
+    rows.push([
+      sn++,
+      cs.serviceName,
+      qty,
+      "Rs " + fmt(unit),
+      "Rs " + fmt(amt),
+    ])
   })
 
   autoTable(doc, {
     startY:  tableStartY,
     margin:  { left: ML, right: MR },
-    head:    [["#", "Service / Description", "Amount (Rs)"]],
+    head:    [["#", "Service / Description", "Qty", "Rate (Rs)", "Amount (Rs)"]],
     body:    rows,
     theme:   "grid",
     styles: {
@@ -343,9 +349,11 @@ export const generateInvoicePdf = async (
       fontSize:  9,
     },
     columnStyles: {
-      0: { cellWidth: 12,     halign: "center" },
+      0: { cellWidth: 10,     halign: "center" },
       1: { cellWidth: "auto"                   },
-      2: { cellWidth: 40,     halign: "right", fontStyle: "bold" },
+      2: { cellWidth: 16,     halign: "center" },
+      3: { cellWidth: 28,     halign: "right"  },
+      4: { cellWidth: 32,     halign: "right", fontStyle: "bold" },
     },
   })
 

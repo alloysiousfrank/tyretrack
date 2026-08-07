@@ -52,6 +52,15 @@ useState("")
   const [customerName, setCustomerName] =
     useState("")
 
+  const [nameSuggestions, setNameSuggestions] =
+    useState<{customerName:string, phone:string}[]>([])
+
+  const [showSuggestions, setShowSuggestions] =
+    useState(false)
+
+  const [customerAddress, setCustomerAddress] =
+    useState("")
+
   const [vehicleNumber, setVehicleNumber] =
     useState("")
 
@@ -329,6 +338,35 @@ bookingData.bookingId || ""
 // matching backend route: GET /api/invoices/customer-name/:name
 // (case-insensitive match on customerName). If your backend doesn't
 // have that route yet, tell me its invoices-route file and I'll add it.
+const fetchNameSuggestions =
+async (
+ query:string
+)=>{
+
+ try{
+
+  const response =
+   await fetch(
+
+`https://tyretrack-server.onrender.com/api/invoices/customer-name-suggestions/${encodeURIComponent(query)}`
+
+   )
+
+  const data =
+   await response.json()
+
+  if(data.success){
+   setNameSuggestions(data.customers)
+  }
+
+ }catch(error){
+
+  console.log(error)
+
+ }
+
+}
+
 const fetchCustomerHistory =
 async (
  name:string
@@ -703,6 +741,7 @@ email: email || "",
    vehicleType,
    vehicleKm,
    customerGST,
+   customerAddress,
    services:selectedServices,
    customServices:
    combinedCustomServices,
@@ -885,7 +924,7 @@ Invoice Generator
 
 <div className="invoice-form-grid">
 
-<div className="form-group">
+<div className="form-group" style={{position:"relative"}}>
 
 <label>
 Customer Name
@@ -903,6 +942,11 @@ Customer Name
 
             if(value.trim().length >= 3){
 
+              fetchNameSuggestions(
+                value.trim()
+              )
+              setShowSuggestions(true)
+
               fetchCustomerHistory(
                 value.trim()
               )
@@ -910,6 +954,8 @@ Customer Name
 
             } else {
 
+              setNameSuggestions([])
+              setShowSuggestions(false)
               setVehicleHistory([])
               setCustomerProfile(null)
               setShowHistory(false)
@@ -917,8 +963,78 @@ Customer Name
             }
 
           }}
+          onFocus={()=>{
+            if(nameSuggestions.length > 0){
+              setShowSuggestions(true)
+            }
+          }}
+          onBlur={()=>{
+            setTimeout(()=>setShowSuggestions(false), 150)
+          }}
         />
+
+{
+showSuggestions &&
+nameSuggestions.length > 0 && (
+
+<div className="name-suggestions-dropdown">
+
+{
+nameSuggestions.map((customer,index)=>(
+
+<div
+ key={index}
+ className="name-suggestion-item"
+ onMouseDown={()=>{
+
+  setCustomerName(customer.customerName)
+  setShowSuggestions(false)
+
+  fetchCustomerHistory(
+    customer.customerName
+  )
+  setShowHistory(true)
+
+ }}
+>
+
+<span className="name-suggestion-name">
+{customer.customerName}
+</span>
+
+<span className="name-suggestion-phone">
+{customer.phone}
+</span>
+
 </div>
+
+))
+}
+
+</div>
+
+)
+}
+
+</div>
+
+<div className="form-group">
+
+<label>
+Customer Address
+</label>
+<input
+  type="text"
+  placeholder="Customer Address"
+  value={customerAddress}
+  onChange={(e)=>
+    setCustomerAddress(
+      e.target.value
+    )
+  }
+/>
+</div>
+
 <div className="form-group">
 
 <label>
