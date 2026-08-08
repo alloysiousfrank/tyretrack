@@ -1,0 +1,11 @@
+--- a/src/pages/AdminInvoices.tsx
++++ b/src/pages/AdminInvoices.tsx
+@@ -397,7 +397,7 @@
+ 
+     const totalRevenue =
+      data.invoices.reduce(
+-      (sum:number,invoice:any)=
++      (sum:number,invoice:any)=>
+        sum +
+        Number(
+         invoice.totalAmount || 0

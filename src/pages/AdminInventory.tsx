@@ -283,6 +283,10 @@ Inventory Management
 <input
  className="inventory-search"
  placeholder=" Search Product"
+ value={search}
+ onChange={(e)=>
+ setSearch(e.target.value)
+}
 />
 <div className="field-group">
 

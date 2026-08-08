@@ -97,14 +97,6 @@ notes
 
 if(response.data.success){
 
-if(onCreated){
-
-onCreated(response.data.quotation._id)
-
-return
-
-}
-
 alert(
 
 `Quotation Submitted Successfully!

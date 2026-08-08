@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import React from 'react'
 import type { ReactNode } from 'react'
 
 interface RevealSectionProps {
@@ -18,15 +17,6 @@ export default function RevealSection({ children, className = '', delay = 0, sta
         staggerChildren: 0.12,
         delayChildren: delay,
       },
-    },
-  } : undefined
-
-  const itemVariants = stagger ? {
-    hidden: { opacity: 0, y: 40 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
     },
   } : undefined
 

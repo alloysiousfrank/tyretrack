@@ -10,7 +10,6 @@ import "./AdminInvoices.css"
 import { sendInvoiceEmail }
 from "../utils/sendInvoiceEmail"
 import {
-useNavigate,
 useLocation
 } from "react-router-dom"
 export default function AdminInvoices() {
@@ -35,8 +34,6 @@ useState<any[]>([
  }
 
 ])
-
-const navigate = useNavigate()
 
 const location = useLocation()
 
@@ -89,9 +86,6 @@ useState<any[]>([])
 const [customerProfile,setCustomerProfile] =
 useState<any>(null)
 
-const [applyGST,setApplyGST] =
-useState(true)
-
 const [expandedInvoice,
 setExpandedInvoice] =
 useState("")
@@ -106,52 +100,6 @@ useState(true)
 
 const totalVisits =
 vehicleHistory.length
-
-const totalSpent =
-vehicleHistory.reduce(
- (sum,invoice)=>
- sum +
- Number(
-  invoice.totalAmount || 0
- ),
- 0
-)
-
-const lastVisit =
-vehicleHistory.length > 0
-? new Date(
- vehicleHistory[0].createdAt
-).toLocaleDateString()
-: "-"
-
-const favouriteService =
-vehicleHistory.length > 0
-? vehicleHistory
-   .flatMap(
-    invoice =>
-    invoice.services || []
-   )
-   .sort(
-    (a,b)=>
-     vehicleHistory
-      .flatMap(
-       invoice =>
-       invoice.services || []
-      )
-      .filter(
-       x=>x===b
-      ).length
-     -
-     vehicleHistory
-      .flatMap(
-       invoice =>
-       invoice.services || []
-      )
-      .filter(
-       x=>x===a
-      ).length
-   )[0]
-: "-"
 
 const [showHistory,setShowHistory] =
 useState(false)
@@ -397,7 +345,7 @@ async (
 
     const totalRevenue =
      data.invoices.reduce(
-      (sum:number,invoice:any)=
+      (sum:number, invoice:any) =>
        sum +
        Number(
         invoice.totalAmount || 0
@@ -541,7 +489,6 @@ includeGST
  tyreAmount,
  selectedTyreBrand,
  tyreBrands,
-  applyGST,
    includeGST
 ])
 
@@ -2060,10 +2007,6 @@ customServices
 </button>
 
 </div>
-
-      <h3>
-        {invoice.invoiceId}
-      </h3>
 
       <p>
         Customer :

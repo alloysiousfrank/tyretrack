@@ -381,19 +381,25 @@ export const generateInvoicePdf = async (
 
   hLine(doc, tbX, tbY + 8, tbW)
 
-  // CGST
-  tbY += 14
-  const cgst = Number((invoice.gst || 0) / 2).toFixed(2)
-  priceLabel("CGST (9%) :", tbY)
-  textRight(doc, "Rs " + cgst, tbX + tbW - 3, tbY)
+  if (invoice.includeGST) {
+    // CGST
+    tbY += 14
+    const cgst = Number((invoice.gst || 0) / 2).toFixed(2)
+    priceLabel("CGST (9%) :", tbY)
+    textRight(doc, "Rs " + cgst, tbX + tbW - 3, tbY)
 
-  // SGST
-  tbY += 6
-  const sgst = Number((invoice.gst || 0) / 2).toFixed(2)
-  priceLabel("SGST (9%) :", tbY)
-  textRight(doc, "Rs " + sgst, tbX + tbW - 3, tbY)
+    // SGST
+    tbY += 6
+    const sgst = Number((invoice.gst || 0) / 2).toFixed(2)
+    priceLabel("SGST (9%) :", tbY)
+    textRight(doc, "Rs " + sgst, tbX + tbW - 3, tbY)
 
-  hLine(doc, tbX, tbY + 2.5, tbW, RED)
+    hLine(doc, tbX, tbY + 2.5, tbW, RED)
+  } else {
+    // Non-GST invoice: no CGST/SGST breakdown, go straight to the total.
+    tbY += 8
+    hLine(doc, tbX, tbY + 2.5, tbW, RED)
+  }
 
   // GRAND TOTAL — red filled row
   tbY += 3

@@ -324,8 +324,12 @@ if (data.success) {
       items,
     })
 
-    const whatsappResult = await sendQuoteWhatsApp(data.quotation, pdfBlob)
-    console.log(whatsappResult)
+    if (!pdfBlob) {
+      console.warn("Skipping WhatsApp send: quote PDF could not be generated.")
+    } else {
+      const whatsappResult = await sendQuoteWhatsApp(data.quotation, pdfBlob)
+      console.log(whatsappResult)
+    }
 
   } catch (waErr) {
     console.log("Quote WhatsApp send failed:", waErr)
