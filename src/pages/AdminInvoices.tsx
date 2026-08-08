@@ -400,9 +400,13 @@ async (
 const STANDARD_SERVICES = [
  "Wheel Alignment",
  "Wheel Balancing",
+ "Wheel Alignment & Balancing Combo",
  "Foam Wash",
+ "Mouth & Water Wash",
  "Automatic Car Spa",
  "Multi Branded Tyres",
+ "Bike Tyre",
+ "Car Tyre",
  "Interior Cleaning",
  "Teflon Coating",
  "Ceramic Coating",
