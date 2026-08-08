@@ -398,20 +398,23 @@ async (
 // types the real amount (and quantity) for whichever services they pick,
 // in the box that opens up next to each one.
 const STANDARD_SERVICES = [
+  "Bike Tyre",
+ "Car Tyre",
  "Wheel Alignment",
  "Wheel Balancing",
  "Wheel Alignment & Balancing Combo",
  "Foam Wash",
- "Mouth & Water Wash",
+
  "Automatic Car Spa",
  "Multi Branded Tyres",
- "Bike Tyre",
- "Car Tyre",
+ 
  "Interior Cleaning",
  "Teflon Coating",
  "Ceramic Coating",
  "General Service",
  "Accessories",
+  "Mouth",
+ "Water Wash"
 ]
 
 const [selectedServices,
