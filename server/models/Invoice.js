@@ -100,6 +100,10 @@ tyrePrice:{
  subtotal:Number,
 
  gst:Number,
+ includeGST:{
+ type:Boolean,
+ default:true
+ },
 
  totalAmount:Number,
 

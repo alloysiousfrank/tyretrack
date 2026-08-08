@@ -29,8 +29,15 @@ exports.createInvoice = async (req, res) => {
       financialYearStart = new Date(now.getFullYear() - 1, 3, 1)
     }
 
+    // ✅ GST invoices and non-GST invoices are numbered as two
+    // completely separate sequences, per the owner's auditor's
+    // requirement - a non-GST invoice must never take up a number
+    // in the GST invoice series, and vice versa.
+    const isGST = !!req.body.includeGST
+
     const lastInvoice = await Invoice.findOne({
       createdAt: { $gte: financialYearStart },
+      includeGST: isGST,
     }).sort({ invoiceNumber: -1 })
 
     let nextNumber = 1
@@ -39,7 +46,9 @@ exports.createInvoice = async (req, res) => {
       nextNumber = (lastInvoice.invoiceNumber || 0) + 1
     }
 
-    const invoiceId = `INV-${financialYear}-${String(nextNumber).padStart(6, "0")}`
+    const invoiceId = isGST
+      ? `INV-${financialYear}-${String(nextNumber).padStart(6, "0")}`
+      : `NGST-${financialYear}-${String(nextNumber).padStart(6, "0")}`
 
     // =====================
     // STOCK VALIDATION
