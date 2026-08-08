@@ -95,8 +95,21 @@
 
   .admin-header,
   .quotes-header {
+    flex-direction: column;
     text-align: center;
     justify-content: center;
+    gap: 14px;
+  }
+
+  .admin-header h1 {
+    width: 100%;
+  }
+
+  .admin-header .clear-btn,
+  .admin-header .logout-btn,
+  .quotes-header .create-quote-btn {
+    margin: 0;
+    width: 100%;
   }
 
   .admin-controls {
@@ -109,6 +122,19 @@
   .filter-select {
     width: 100%;
     min-width: 0;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .stat-card p {
+    font-size: 1.7rem;
   }
 
   .admin-nav {

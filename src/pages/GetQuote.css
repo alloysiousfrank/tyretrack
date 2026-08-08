@@ -31,6 +31,58 @@ overflow-x:hidden;
 
 }
 
+/* ===========================
+ADMIN-EMBEDDED MODE
+Used when this wizard is opened
+from the AdminQuotes "Create
+Quotation" button instead of the
+public /getquote route.
+=========================== */
+
+.quote-page.embedded{
+
+    padding:80px 0 60px;
+
+}
+
+.quote-close-btn{
+
+    position:fixed;
+
+    top:24px;
+
+    right:24px;
+
+    width:48px;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:rgba(255,255,255,.08);
+
+    color:#fff;
+
+    font-size:20px;
+
+    cursor:pointer;
+
+    z-index:10;
+
+    transition:.25s ease;
+
+}
+
+.quote-close-btn:hover{
+
+    background:#ff2b2b;
+
+    transform:translateY(-2px);
+
+}
+
 .quote-overlay{
 
     position:absolute;

@@ -97,6 +97,14 @@ notes
 
 if(response.data.success){
 
+if(onCreated){
+
+onCreated(response.data.quotation._id)
+
+return
+
+}
+
 alert(
 
 `Quotation Submitted Successfully!
@@ -158,7 +166,7 @@ error.response?.data?.message ||
 }
   return (
 
-    <section className="quote-page">
+    <section className={`quote-page ${embedded ? "embedded" : ""}`}>
 
       {embedded && (
 
@@ -180,6 +188,26 @@ error.response?.data?.message ||
 
       <div className="quote-overlay"></div>
 
+      {embedded && (
+
+        <button
+
+          type="button"
+
+          className="quote-close-btn"
+
+          onClick={onClose}
+
+          aria-label="Close"
+
+        >
+
+          ✕
+
+        </button>
+
+      )}
+
       <div className="quote-container">
 
         {/* HERO */}
@@ -188,20 +216,23 @@ error.response?.data?.message ||
 
           <p className="quote-tag">
 
-            TYRETRACK PREMIUM AUTO CARE
+            {embedded ? "TYRETRACK ADMIN PANEL" : "TYRETRACK PREMIUM AUTO CARE"}
 
           </p>
 
           <h1>
 
-            Premium Tyre Quotation
+            {embedded ? "Create New Quotation" : "Premium Tyre Quotation"}
 
           </h1>
 
           <p className="quote-description">
 
-            Get a personalised quotation for your vehicle
-            within minutes.
+            {embedded
+
+              ? "Enter the customer and vehicle details to start a new quotation."
+
+              : "Get a personalised quotation for your vehicle within minutes."}
 
           </p>
 
@@ -945,21 +976,25 @@ Customer Details
 
 <div>
 
-✅ Your quotation request will be reviewed by our TyreTrack experts.
+{embedded ? "✅ This will create a new quotation record." : "✅ Your quotation request will be reviewed by our TyreTrack experts."}
 
 </div>
 
 <div>
 
-📞 Our team may contact you if additional information is required.
+{embedded ? "💰 You'll be taken straight to pricing after this." : "📞 Our team may contact you if additional information is required."}
 
 </div>
+
+{!embedded && (
 
 <div>
 
 📄 A professional quotation will be generated and shared with you.
 
 </div>
+
+)}
 
 </div>
 
@@ -971,7 +1006,7 @@ onClick={submitQuotation}
 
 >
 
-Submit Premium Quotation Request
+{embedded ? "Create Quotation" : "Submit Premium Quotation Request"}
 
 </button>
 

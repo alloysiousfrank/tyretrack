@@ -390,52 +390,51 @@ async (
     data.invoices
    )
    setShowHistory(data.invoices.length > 0)
-if(data.invoices.length > 0){
+   if(data.invoices.length > 0){
 
- const latest =
- data.invoices[0]
+    const latest =
+     data.invoices[0]
 
- const totalRevenue =
- data.invoices.reduce(
-  (sum:number,invoice:any)=>
-   sum +
-   Number(
-    invoice.totalAmount || 0
-   ),
- 0
- )
+    const totalRevenue =
+     data.invoices.reduce(
+      (sum:number,invoice:any)=
+       sum +
+       Number(
+        invoice.totalAmount || 0
+       ),
+      0
+     )
 
- setCustomerProfile({
+    setCustomerProfile({
 
-  customerName:
-  latest.customerName,
+     customerName:
+      latest.customerName,
 
-  phone:
-  latest.phone,
+     phone:
+      latest.phone,
 
-  vehicleNumber:
-  latest.vehicleNumber,
+     vehicleNumber:
+      latest.vehicleNumber,
 
-  totalVisits:
-  data.invoices.length,
+     totalVisits:
+      data.invoices.length,
 
-  totalRevenue,
+     totalRevenue,
 
-  lastVisit:
-  latest.createdAt
+     lastVisit:
+      latest.createdAt
 
- })
+    })
 
-} else {
-  setCustomerProfile(null)
-  setShowHistory(false)
-}
+   } else {
+    setCustomerProfile(null)
+    setShowHistory(false)
+   }
   } else {
     setVehicleHistory([])
     setCustomerProfile(null)
     setShowHistory(false)
   }
-
  }catch(error){
 
   console.log(error)
@@ -935,8 +934,7 @@ Customer Name
           value={customerName}
           onChange={(e)=>{
 
-            const value =
-              e.target.value
+            const value = e.target.value
 
             setCustomerName(value)
 
