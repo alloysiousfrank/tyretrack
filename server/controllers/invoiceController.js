@@ -269,6 +269,117 @@ exports.getInvoicesByCustomer = async (req, res) => {
 }
 
 // ==============================
+// GET BY CUSTOMER NAME (exact match, case-insensitive)
+// ==============================
+
+exports.getInvoicesByCustomerName = async (req, res) => {
+
+  try {
+
+    const rawName = decodeURIComponent(req.params.name).trim()
+
+    // Escape regex special characters so a name like "O'Brien" or
+    // "A.J." can't break the pattern or be used for regex injection.
+    const escapedName = rawName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+    const invoices = await Invoice.find({
+      customerName: { $regex: `^${escapedName}$`, $options: "i" },
+    }).sort({ createdAt: -1 })
+
+    res.json({ success: true, invoices })
+
+  } catch (error) {
+
+    console.error("GET INVOICES BY CUSTOMER NAME ERROR:", error.message)
+
+    res.status(500).json({ success: false, message: error.message })
+
+  }
+
+}
+
+// ==============================
+// CUSTOMER NAME SUGGESTIONS (as-you-type, 3+ characters)
+// ==============================
+// Returns distinct matching customer names (with phone, for telling
+// apart two customers who share a first name) so the admin can pick
+// one instead of typing the full exact name.
+
+exports.getCustomerNameSuggestions = async (req, res) => {
+
+  try {
+
+    const rawQuery = decodeURIComponent(req.params.query).trim()
+
+    if (rawQuery.length < 3) {
+      return res.json({ success: true, customers: [] })
+    }
+
+    const escapedQuery = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+    const matches = await Invoice.aggregate([
+      {
+        $match: {
+          customerName: { $regex: `^${escapedQuery}`, $options: "i" },
+        },
+      },
+      {
+        $group: {
+          _id: { $toLower: "$customerName" },
+          customerName: { $first: "$customerName" },
+          phone: { $first: "$phone" },
+        },
+      },
+      { $sort: { customerName: 1 } },
+      { $limit: 8 },
+    ])
+
+    res.json({
+      success: true,
+      customers: matches.map((m) => ({
+        customerName: m.customerName,
+        phone: m.phone,
+      })),
+    })
+
+  } catch (error) {
+
+    console.error("GET CUSTOMER NAME SUGGESTIONS ERROR:", error.message)
+
+    res.status(500).json({ success: false, message: error.message })
+
+  }
+
+}
+
+// ==============================
+// GET PUBLISHED INVOICE BY BOOKING ID (public - Live Tracking search bar)
+// ==============================
+
+exports.getInvoiceByBookingId = async (req, res) => {
+
+  try {
+
+    const { bookingId } = req.params
+
+    const invoice = await Invoice.findOne({
+      bookingId,
+      isPublished: true,
+    }).sort({ createdAt: -1 })
+
+    res.json({ success: true, invoice: invoice || null })
+
+  } catch (error) {
+
+    console.error("GET INVOICE BY BOOKING ID ERROR:", error.message)
+
+    res.status(500).json({ success: false, message: error.message })
+
+  }
+
+}
+
+// ==============================
 // PUBLISH INVOICE
 // ==============================
 
