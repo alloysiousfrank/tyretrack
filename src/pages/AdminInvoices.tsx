@@ -80,6 +80,9 @@ const [invoices,
  setInvoices] =
  useState<any[]>([])
 
+const [editingInvoiceId, setEditingInvoiceId] =
+useState("")
+
  const [tyreBrands,setTyreBrands] =
 useState<any[]>([])
 
@@ -345,7 +348,7 @@ async (
 
     const totalRevenue =
      data.invoices.reduce(
-      (sum:number, invoice:any) =>
+      (sum:number,invoice:any)=>
        sum +
        Number(
         invoice.totalAmount || 0
@@ -582,6 +585,106 @@ const updateCustomService = (
 
 }
 
+// Loads an already-created invoice back into this same form so the
+// admin can change it. On save, saveInvoice will PUT to update it
+// instead of POSTing a new one.
+//
+// Line items get saved folded together into `customServices` (see
+// combinedCustomServices in saveInvoice), so this reverses that:
+// anything whose name matches a standard service or the tyre brand
+// line goes back into its own box; anything left over is a genuine
+// free-form custom service.
+const startEditInvoice = (invoice: any) => {
+
+ setEditingInvoiceId(invoice._id)
+
+ setCustomerName(invoice.customerName || "")
+ setEmail(invoice.email || "")
+ setPhone(invoice.phone || "")
+ setVehicleNumber(invoice.vehicleNumber || "")
+ setVehicleType(invoice.vehicleType || "")
+ setVehicleKm(invoice.vehicleKm || "")
+ setCustomerGST(invoice.customerGST || "")
+ setCustomerAddress(invoice.customerAddress || "")
+ setBookingId(invoice.bookingId || "")
+ setIncludeGST(invoice.includeGST ?? true)
+
+ const services: string[] = invoice.services || []
+ setSelectedServices(services)
+
+ const lineItems: any[] = invoice.customServices || []
+
+ const nextServiceDetails: Record<string, { quantity: number; amount: number }> = {}
+ const matchedLineItems = new Set<any>()
+
+ services
+  .filter(service => service !== "Multi Branded Tyres")
+  .forEach(service => {
+   const match = lineItems.find(
+    item => item.serviceName === service && !matchedLineItems.has(item)
+   )
+   if (match) {
+    matchedLineItems.add(match)
+    nextServiceDetails[service] = {
+     quantity: match.quantity || 1,
+     amount: match.amount || 0,
+    }
+   }
+  })
+ setServiceDetails(nextServiceDetails)
+
+ if (services.includes("Multi Branded Tyres")) {
+  setSelectedTyreBrand(invoice.tyreBrand || "")
+  setTyreQuantity(invoice.tyreQuantity || 1)
+  setTyreAmount(invoice.tyrePrice || 0)
+
+  const tyreLineName = `${invoice.tyreBrand} Tyres`
+  const tyreMatch = lineItems.find(
+   item => item.serviceName === tyreLineName && !matchedLineItems.has(item)
+  )
+  if (tyreMatch) matchedLineItems.add(tyreMatch)
+ } else {
+  setSelectedTyreBrand("")
+  setTyreQuantity(1)
+  setTyreAmount(0)
+ }
+
+ const remainingCustomServices = lineItems.filter(
+  item => !matchedLineItems.has(item)
+ )
+ setCustomServices(
+  remainingCustomServices.length > 0
+   ? remainingCustomServices.map(item => ({
+      serviceName: item.serviceName,
+      quantity: item.quantity || 1,
+      amount: item.amount || 0,
+     }))
+   : [{ serviceName: "", quantity: 1, amount: 0 }]
+ )
+
+ window.scrollTo({ top: 0, behavior: "smooth" })
+}
+
+const cancelEditInvoice = () => {
+ setEditingInvoiceId("")
+ setCustomerName("")
+ setEmail("")
+ setPhone("")
+ setVehicleNumber("")
+ setVehicleType("")
+ setVehicleKm("")
+ setCustomerGST("")
+ setCustomerAddress("")
+ setBookingId("")
+ setSelectedServices([])
+ setServiceDetails({})
+ setSelectedTyreBrand("")
+ setTyreQuantity(1)
+ setTyreAmount(0)
+ setCustomServices([{ serviceName: "", quantity: 1, amount: 0 }])
+ setIncludeGST(true)
+}
+
 const saveInvoice =
 async()=>{
 if(!customerName){
@@ -677,11 +780,15 @@ const combinedCustomServices = [
  ),
 ]
 
+const isEditing = !!editingInvoiceId
+
 const response =
 await fetch(
- "https://tyretrack-server.onrender.com/api/invoices",
+ isEditing
+  ? `https://tyretrack-server.onrender.com/api/invoices/${editingInvoiceId}`
+  : "https://tyretrack-server.onrender.com/api/invoices",
  {
-  method:"POST",
+  method: isEditing ? "PUT" : "POST",
   headers:{
    "Content-Type":"application/json"
   },
@@ -728,7 +835,7 @@ alert(errorText)
 
  alert(
   data.message ||
-  "Invoice Generation Failed"
+  (isEditing ? "Invoice Update Failed" : "Invoice Generation Failed")
  )
 
  return
@@ -737,7 +844,11 @@ alert(errorText)
 
 
 
-alert("Invoice Created ✅")
+alert(isEditing ? "Invoice Updated ✅" : "Invoice Created ✅")
+
+if (isEditing) {
+ cancelEditInvoice()
+}
 
 fetchInvoices()
 
@@ -1725,11 +1836,24 @@ Apply GST (18%)
     Grand Total : ₹ {total}
   </h2>
 
+  {editingInvoiceId && (
+    <div className="admin-card" style={{ marginBottom: "10px" }}>
+      ✏️ Editing an existing invoice — saving will update it, not create a new one.
+      <button
+        className="update-btn"
+        style={{ marginLeft: "10px" }}
+        onClick={cancelEditInvoice}
+      >
+        Cancel Edit
+      </button>
+    </div>
+  )}
+
   <button
     className="update-btn"
     onClick={saveInvoice}
   >
-    Generate Invoice
+    {editingInvoiceId ? "Update Invoice" : "Generate Invoice"}
   </button>
 
 </div>
@@ -2011,6 +2135,21 @@ customServices
  ? "Published"
  : "🚀 Publish"
 }
+</button>
+
+<button
+ className="update-btn"
+ onClick={()=>
+  startEditInvoice(invoice)
+ }
+ disabled={invoice.isPublished}
+ title={
+  invoice.isPublished
+   ? "Published invoices can't be edited to keep the GST invoice numbering sequence intact."
+   : "Edit this invoice"
+ }
+>
+ ✏️ Edit
 </button>
 
 </div>
