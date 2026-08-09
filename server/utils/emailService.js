@@ -1,21 +1,34 @@
-const nodemailer = require("nodemailer")
+const { Resend } = require("resend")
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,                // STARTTLS — do NOT use true on port 587
-  family: 4,                    // force IPv4 — fixes ENETUNREACH on Render
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-  tls: {
-    rejectUnauthorized: false,
-  },
-})
+// Render's free tier blocks outbound SMTP ports, which is why the old
+// Nodemailer/Gmail transport was unreliable there. Resend sends over
+// HTTPS instead, so it isn't affected by that block.
+//
+// Built lazily (not at module load) because the Resend constructor
+// throws immediately if RESEND_API_KEY is missing — creating it at
+// the top of this file would crash the whole server on boot before
+// the env var is ever set. Building it on first send instead means a
+// missing key only fails the email itself (caught by callers below).
+let resendClient = null
+
+const getResendClient = () => {
+
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY)
+  }
+
+  return resendClient
+
+}
+
+// Must be an address on the domain verified in the Resend dashboard,
+// e.g. "TyreTrack Premium Auto Care <invoices@yourdomain.com>".
+// Set RESEND_FROM_EMAIL in Render's environment variables — falls back
+// to Resend's shared test address so nothing crashes if it's unset,
+// but that fallback can only send to your own Resend account email.
+const FROM_ADDRESS =
+  process.env.RESEND_FROM_EMAIL ||
+  "TyreTrack Premium Auto Care <onboarding@resend.dev>"
 
 const sendEmail = async ({
   to,
@@ -23,13 +36,33 @@ const sendEmail = async ({
   html,
   attachments = [],
 }) => {
-  return transporter.sendMail({
-    from: `"TyreTrack Premium Auto Care" <${process.env.EMAIL_USER}>`,
+
+  // Nodemailer-style attachments ({ filename, content }) map directly
+  // onto Resend's shape — Resend also accepts a raw Buffer as content.
+  const resendAttachments = attachments.map((att) => ({
+    filename: att.filename,
+    content: att.content,
+  }))
+
+  const { data, error } = await getResendClient().emails.send({
+    from: FROM_ADDRESS,
     to,
     subject,
     html,
-    attachments,
+    attachments:
+      resendAttachments.length > 0
+        ? resendAttachments
+        : undefined,
   })
+
+  if (error) {
+    throw new Error(
+      error.message || "Failed to send email via Resend"
+    )
+  }
+
+  return data
+
 }
 
 // ==============================
