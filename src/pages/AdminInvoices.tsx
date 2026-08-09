@@ -900,7 +900,9 @@ const publishInvoice = async (id: string) => {
 
           await generateInvoicePdf(
 
-            publishedInvoice
+            publishedInvoice,
+
+            false
 
           )
 

@@ -85,7 +85,8 @@ function amountInWords(amount: number): string {
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 export const generateInvoicePdf = async (
-  invoice:any
+  invoice:any,
+  autoDownload: boolean = true
 ): Promise<Blob> => {
   // 0. Build dynamic UPI QR for this exact invoice amount
   const upiString =
@@ -172,7 +173,6 @@ export const generateInvoicePdf = async (
   const compLines = [
     "107/2, Pasumai Nagar, Opp. Gokulam Apartment, Andipalayam, Mangalam Road, Tiruppur",
     "Phone : 9443738487 / 7448787979",
-    "www.tyretrack.in",
     "GSTIN : 33AAWFT5612K1ZP",
     "PAN : AKDPP7420L   |   HSN/SAC : 40111010",
   ]
@@ -181,6 +181,10 @@ export const generateInvoicePdf = async (
     doc.text(line, ML, cy)
     cy += 4.2
   }
+  doc.setTextColor(...RED)
+  doc.textWithLink("www.tyretrack.in", ML, cy, { url: "https://www.tyretrack.in" })
+  doc.setTextColor(DARK[0], DARK[1], DARK[2])
+  cy += 4.2
 
   // ═══════════════════════════════════════════════════════════════════════
   // 5. DIVIDER
@@ -554,9 +558,11 @@ export const generateInvoicePdf = async (
   // ═══════════════════════════════════════════════════════════════════════
 const pdfBlob = doc.output("blob")
 
-doc.save(
-  `${invoice.invoiceId || "TyreTrack-Invoice"}.pdf`
-)
+if (autoDownload) {
+  doc.save(
+    `${invoice.invoiceId || "TyreTrack-Invoice"}.pdf`
+  )
+}
 
 return pdfBlob
 }

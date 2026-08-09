@@ -3,10 +3,10 @@ import { sendQuoteWhatsApp } from "../../utils/sendQuoteWhatsApp"
 import "./QuoteEditor.css"
 
 // Dynamic import for generateQuotePDF so a missing file doesn't break the build.
-const generateQuotePDF = async (payload: any) => {
+const generateQuotePDF = async (payload: any, download: boolean = true) => {
   try {
     const mod = await import("../../utils/generateQuotePDF")
-    return mod.generateQuotePDF(payload)
+    return mod.generateQuotePDF(payload, download)
   } catch (e) {
     console.warn("generateQuotePDF module not available:", e)
     return
@@ -322,7 +322,7 @@ if (data.success) {
       gst,
       total,
       items,
-    })
+    }, false)
 
     if (!pdfBlob) {
       console.warn("Skipping WhatsApp send: quote PDF could not be generated.")

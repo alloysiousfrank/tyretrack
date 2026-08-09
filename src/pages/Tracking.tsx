@@ -438,10 +438,10 @@ export default function Tracking() {
 
               <div className="invoice-row">
                 <span>Service</span>
-                <b>{invoice.service}</b>
+                <b>{invoice.services?.join(", ") || "—"}</b>
               </div>
 
-              {invoice.items && invoice.items.length > 0 && (
+              {invoice.customServices && invoice.customServices.length > 0 && (
 
                 <table className="invoice-items-table">
                   <thead>
@@ -453,12 +453,12 @@ export default function Tracking() {
                     </tr>
                   </thead>
                   <tbody>
-                    {invoice.items.map((item: any, i: number) => (
+                    {invoice.customServices.map((item: any, i: number) => (
                       <tr key={i}>
-                        <td>{item.description}</td>
+                        <td>{item.serviceName}</td>
                         <td>{item.quantity}</td>
-                        <td>₹{item.rate}</td>
                         <td>₹{item.amount}</td>
+                        <td>₹{item.total}</td>
                       </tr>
                     ))}
                   </tbody>

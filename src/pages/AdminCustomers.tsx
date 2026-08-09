@@ -50,7 +50,7 @@ export default function AdminCustomers() {
     customers.filter(
       (customer) =>
 
-        customer.name
+        (customer.name || "")
           .toLowerCase()
           .includes(
             search.toLowerCase()
@@ -58,7 +58,7 @@ export default function AdminCustomers() {
 
         ||
 
-        customer.email
+        (customer.email || "")
           .toLowerCase()
           .includes(
             search.toLowerCase()
