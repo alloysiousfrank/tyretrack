@@ -26,7 +26,7 @@ export const GARAGE = {
   phone1: '9443738487',
   phone2: '7448787979',
 
-  whatsapp: '9443738487',
+  whatsapp: '7448787979',
 
   email: 'tyretrack2024@gmail.com',
 

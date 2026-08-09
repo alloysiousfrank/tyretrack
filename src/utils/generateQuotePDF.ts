@@ -397,9 +397,9 @@ export const generateQuotePDF = async (
   // ═══════════════════════════════════════════════════════════════════════
   // 12. BOTTOM RED FOOTER BAR
   // ═══════════════════════════════════════════════════════════════════════
-  const footerY = PH - 14
+  const footerY = PH - 18
   doc.setFillColor(RED[0], RED[1], RED[2])
-  doc.rect(0, footerY, PW, 14, "F")
+  doc.rect(0, footerY, PW, 18, "F")
 
   doc.setFont("helvetica", "bolditalic")
   doc.setFontSize(9)
@@ -414,6 +414,15 @@ export const generateQuotePDF = async (
   const refTxt = (data.quoteNumber || "Quote") + "  |  " + quoteDate
   const refW   = doc.getTextWidth(refTxt)
   doc.text(refTxt, (PW - refW) / 2, footerY + 11)
+
+  // Clickable website link
+  doc.setFontSize(7)
+  doc.setTextColor(255, 255, 255)
+  const siteTxt = "Visit us at www.tyretrack.in"
+  const siteW = doc.getTextWidth(siteTxt)
+  doc.textWithLink(siteTxt, (PW - siteW) / 2, footerY + 15.5, {
+    url: "https://www.tyretrack.in",
+  })
 
   // ═══════════════════════════════════════════════════════════════════════
   // 13. SAVE PDF

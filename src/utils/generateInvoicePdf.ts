@@ -172,7 +172,7 @@ export const generateInvoicePdf = async (
   const compLines = [
     "107/2, Pasumai Nagar, Opp. Gokulam Apartment, Andipalayam, Mangalam Road, Tiruppur",
     "Phone : 9443738487 / 7448787979",
-    "Email : tyretrack2024@gmail.com",
+    "www.tyretrack.in",
     "GSTIN : 33AAWFT5612K1ZP",
     "PAN : AKDPP7420L   |   HSN/SAC : 40111010",
   ]
@@ -520,9 +520,9 @@ export const generateInvoicePdf = async (
   // ═══════════════════════════════════════════════════════════════════════
   // 12. BOTTOM RED FOOTER BAR
   // ═══════════════════════════════════════════════════════════════════════
-  const footerY = PH - 14
+  const footerY = PH - 18
   doc.setFillColor(RED[0], RED[1], RED[2])
-  doc.rect(0, footerY, PW, 14, "F")
+  doc.rect(0, footerY, PW, 18, "F")
 
   // Thank you text — centred
   doc.setFont("helvetica", "bolditalic")
@@ -539,6 +539,15 @@ export const generateInvoicePdf = async (
   const refTxt = invoice.invoiceId + "  |  " + new Date().toLocaleDateString("en-IN")
   const refW   = doc.getTextWidth(refTxt)
   doc.text(refTxt, (PW - refW) / 2, footerY + 11)
+
+  // Clickable website link
+  doc.setFontSize(7)
+  doc.setTextColor(255, 255, 255)
+  const siteTxt = "Visit us at www.tyretrack.in"
+  const siteW = doc.getTextWidth(siteTxt)
+  doc.textWithLink(siteTxt, (PW - siteW) / 2, footerY + 15.5, {
+    url: "https://www.tyretrack.in",
+  })
 
   // ═══════════════════════════════════════════════════════════════════════
   // 13. SAVE PDF

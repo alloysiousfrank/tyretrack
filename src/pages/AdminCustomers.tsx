@@ -124,30 +124,45 @@ export default function AdminCustomers() {
                     </strong>
 
                     {
-                     new Date(
- customer.createdAt
-)
-                        .toLocaleDateString()
+                     customer.joinedDate
+                       ? new Date(
+                          customer.joinedDate
+                         ).toLocaleDateString()
+                       : "—"
                     }
                   </p>
 
                   <p>
                     <strong>
-                      Total Bookings:
+                      Total Invoices:
                     </strong>
 
                     {
-                      customer.totalBookings
+                      customer.totalInvoices
                     }
                   </p>
 
                   <p>
                     <strong>
-                      Last Booking:
+                      Total Spent:
+                    </strong>
+
+                    ₹ {
+                      customer.totalSpent
+                    }
+                  </p>
+
+                  <p>
+                    <strong>
+                      Last Visit:
                     </strong>
 
                     {
-                      customer.lastBooking
+                     customer.lastVisit
+                       ? new Date(
+                          customer.lastVisit
+                         ).toLocaleDateString()
+                       : "—"
                     }
                   </p>
 

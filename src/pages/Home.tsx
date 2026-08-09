@@ -4,6 +4,7 @@ import RevealSection from '../components/ui/RevealSection'
 import SectionHeading from '../components/ui/SectionHeading'
 import GlassCard from '../components/ui/GlassCard'
 import Footer from '../components/layout/Footer'
+import WhatsAppButton from '../components/ui/WhatsAppButton'
 import { services, GARAGE } from '../data/services'
 import { getDemoStages } from '../data/tracking'
 import './Home.css'
@@ -157,6 +158,7 @@ red={true}
       </section>
 
       <Footer />
+      <WhatsAppButton />
     </section>
   )
 }
