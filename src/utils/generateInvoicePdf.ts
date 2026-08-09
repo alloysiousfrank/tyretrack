@@ -179,12 +179,12 @@ export const generateInvoicePdf = async (
   let cy = 40
   for (const line of compLines) {
     doc.text(line, ML, cy)
-    cy += 5.2
+    cy += 4.2
   }
   doc.setTextColor(...RED)
   doc.textWithLink("www.tyretrack.in", ML, cy, { url: "https://www.tyretrack.in" })
   doc.setTextColor(DARK[0], DARK[1], DARK[2])
-  cy += 5.2
+  cy += 4.2
 
   // ═══════════════════════════════════════════════════════════════════════
   // 5. DIVIDER
