@@ -254,7 +254,9 @@ exports.getInvoicesByCustomer = async (req, res) => {
     // ✅ FIX: decode email param — frontend sends encodeURIComponent(email)
     const email = decodeURIComponent(req.params.email).toLowerCase()
 
-    const invoices = await Invoice.find({ email }).sort({ createdAt: -1 })
+    // Only published invoices — a customer's portal shouldn't show
+    // the admin's in-progress drafts (same rule Live Tracking follows).
+    const invoices = await Invoice.find({ email, isPublished: true }).sort({ createdAt: -1 })
 
     res.json({ success: true, invoices })
 

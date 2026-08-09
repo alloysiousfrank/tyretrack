@@ -1,0 +1,96 @@
+diff a/server/controllers/adminCustomerController.js b/server/controllers/adminCustomerController.js	(rejected hunks)
+@@ -1,51 +1,53 @@
+-const User = require("../models/User")
+-const Booking = require("../models/Booking")
++const Invoice = require("../models/Invoice")
+ 
+ exports.getCustomers = async (req, res) => {
+ 
+   try {
+ 
+-    const users =
+-      await User.find()
+-      .sort({ createdAt: -1 })
++    // Built from actual invoices, not just registered logins — a
++    // walk-in customer the admin billed directly (no account signup)
++    // still shows up here. Grouped by phone number where we have one,
++    // since that's the most reliable way to tell two customers apart
++    // (falls back to name if a record has no phone on file).
++    const customers = await Invoice.aggregate([
++
++      { $sort: { createdAt: -1 } },
++
++      {
++        $addFields: {
++          customerKey: {
++            $cond: [
++              { $and: [
++                { $ne: ["$phone", null] },
++                { $ne: ["$phone", ""] },
++              ] },
++              "$phone",
++              { $toLower: "$customerName" },
++            ],
++          },
++        },
++      },
++
++      {
++        $group: {
++          _id: "$customerKey",
++          name: { $first: "$customerName" },
++          phone: { $first: "$phone" },
++          email: { $first: "$email" },
++          totalInvoices: { $sum: 1 },
++          totalSpent: {
++            $sum: {
++              $cond: ["$isPublished", "$totalAmount", 0],
++            },
++          },
++          lastVisit: { $first: "$createdAt" },
++          joinedDate: { $last: "$createdAt" },
++        },
++      },
+ 
+-    const customers =
+-      await Promise.all(
++      { $sort: { lastVisit: -1 } },
+ 
+-        users.map(async (user) => {
+-
+-          const bookings =
+-            await Booking.find({
+-              email: user.email,
+-            })
+-
+-          return {
+-
+-            _id: user._id,
+-
+-            name: user.name,
+-
+-            email: user.email,
+-
+-            phone: user.phone,
+-
+-            joinedDate:
+-              user.createdAt,
+-
+-            totalBookings:
+-              bookings.length,
+-
+-            lastBooking:
+-
+-              bookings.length > 0
+-                ? bookings[0].date
+-                : "No Booking",
+-
+-          }
+-
+-        })
+-
+-      )
++    ])
+ 
+     res.json({
+       success: true,

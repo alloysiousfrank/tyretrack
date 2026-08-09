@@ -8,3 +8,19 @@
   max-width: 1300px;
   margin: auto;
 }
+
+.analytics-chart-card {
+  margin-bottom: 30px;
+}
+
+.analytics-chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .analytics-chart-row {
+    grid-template-columns: 1fr;
+  }
+}

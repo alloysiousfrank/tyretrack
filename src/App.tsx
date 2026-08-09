@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react"
 import { Routes, Route } from "react-router-dom"
 
 import Layout from "./components/layout/Layout"
@@ -14,17 +15,35 @@ import Login from "./pages/Login"
 import History from "./pages/History"
 import CurrentBooking from "./pages/CurrentBooking"
 import CustomerInvoices from "./pages/CustomerInvoices"
-
-import Admin from "./pages/Admin"
-import AdminLogin from "./pages/AdminLogin"
-import AdminDashboard from "./pages/AdminDashboard"
-import AdminCustomers from "./pages/AdminCustomers"
-import AdminAnalytics from "./pages/AdminAnalytics"
-import AdminReports from "./pages/AdminReports"
-import AdminInvoices from "./pages/AdminInvoices"
-import AdminInventory from "./pages/AdminInventory"
 import GetQuote from "./pages/GetQuote"
-import AdminQuotes from "./pages/AdminQuotes"
+
+// Admin-only pages are lazy-loaded — customers browsing the public
+// site should never have to download admin code (charts, invoice
+// editor, etc.) just to view the home page.
+const Admin = lazy(() => import("./pages/Admin"))
+const AdminLogin = lazy(() => import("./pages/AdminLogin"))
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"))
+const AdminCustomers = lazy(() => import("./pages/AdminCustomers"))
+const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"))
+const AdminReports = lazy(() => import("./pages/AdminReports"))
+const AdminInvoices = lazy(() => import("./pages/AdminInvoices"))
+const AdminInventory = lazy(() => import("./pages/AdminInventory"))
+const AdminQuotes = lazy(() => import("./pages/AdminQuotes"))
+
+function AdminLoadingFallback() {
+  return (
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#f5f5f7",
+      background: "#050505",
+    }}>
+      Loading…
+    </div>
+  )
+}
 
 function App() {
 
@@ -100,16 +119,22 @@ function App() {
 
       <Route
         path="/admin-login"
-        element={<AdminLogin />}
+        element={
+          <Suspense fallback={<AdminLoadingFallback />}>
+            <AdminLogin />
+          </Suspense>
+        }
       />
 
       {/* PROTECTED ADMIN ROUTES */}
 
       <Route
         element={
-          localStorage.getItem("adminToken")
-            ? <AdminLayout />
-            : <AdminLogin />
+          <Suspense fallback={<AdminLoadingFallback />}>
+            {localStorage.getItem("adminToken")
+              ? <AdminLayout />
+              : <AdminLogin />}
+          </Suspense>
         }
       >
 

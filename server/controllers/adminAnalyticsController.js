@@ -83,3 +83,122 @@ exports.getAnalytics = async (
   }
 
 }
+
+// ==============================
+// REVENUE TRENDS (for the charts dashboard)
+// ==============================
+// Only published invoices count — same "realized revenue" rule
+// used everywhere else in the admin analytics.
+
+exports.getRevenueTrends = async (req, res) => {
+
+  try {
+
+    // --- Monthly revenue, last 12 months (including zero-revenue months) ---
+    const startOfWindow = new Date()
+    startOfWindow.setMonth(startOfWindow.getMonth() - 11)
+    startOfWindow.setDate(1)
+    startOfWindow.setHours(0, 0, 0, 0)
+
+    const monthlyRaw = await Invoice.aggregate([
+      {
+        $match: {
+          isPublished: true,
+          createdAt: { $gte: startOfWindow },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          revenue: { $sum: "$totalAmount" },
+          invoiceCount: { $sum: 1 },
+        },
+      },
+    ])
+
+    const monthlyMap = new Map(
+      monthlyRaw.map((entry) => [
+        `${entry._id.year}-${entry._id.month}`,
+        entry,
+      ])
+    )
+
+    const monthNames = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ]
+
+    const monthlyRevenue = []
+    const cursor = new Date(startOfWindow)
+
+    for (let i = 0; i < 12; i++) {
+      const year = cursor.getFullYear()
+      const month = cursor.getMonth() + 1
+      const entry = monthlyMap.get(`${year}-${month}`)
+
+      monthlyRevenue.push({
+        month: `${monthNames[month - 1]} ${year}`,
+        revenue: entry?.revenue || 0,
+        invoiceCount: entry?.invoiceCount || 0,
+      })
+
+      cursor.setMonth(cursor.getMonth() + 1)
+    }
+
+    // --- GST vs non-GST revenue split ---
+    const gstSplitRaw = await Invoice.aggregate([
+      { $match: { isPublished: true } },
+      {
+        $group: {
+          _id: "$includeGST",
+          revenue: { $sum: "$totalAmount" },
+          count: { $sum: 1 },
+        },
+      },
+    ])
+
+    const gstEntry = gstSplitRaw.find((e) => e._id === true)
+    const nonGstEntry = gstSplitRaw.find((e) => e._id === false)
+
+    const gstSplit = [
+      { name: "GST Invoices", revenue: gstEntry?.revenue || 0, count: gstEntry?.count || 0 },
+      { name: "Non-GST Invoices", revenue: nonGstEntry?.revenue || 0, count: nonGstEntry?.count || 0 },
+    ]
+
+    // --- Top services by actual billed revenue ---
+    const serviceRevenue = await Invoice.aggregate([
+      { $match: { isPublished: true } },
+      { $unwind: "$customServices" },
+      {
+        $group: {
+          _id: "$customServices.serviceName",
+          revenue: { $sum: "$customServices.total" },
+        },
+      },
+      { $match: { _id: { $nin: [null, ""] } } },
+      { $sort: { revenue: -1 } },
+      { $limit: 8 },
+      { $project: { _id: 0, service: "$_id", revenue: 1 } },
+    ])
+
+    res.json({
+      success: true,
+      monthlyRevenue,
+      gstSplit,
+      serviceRevenue,
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+    })
+
+  }
+
+}

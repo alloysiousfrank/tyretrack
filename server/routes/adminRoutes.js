@@ -12,6 +12,7 @@ const {
 
 const {
   getAnalytics,
+  getRevenueTrends,
 } = require("../controllers/adminAnalyticsController")
 
 const {
@@ -37,6 +38,11 @@ router.get(
 router.get(
   "/analytics",
   getAnalytics
+)
+
+router.get(
+  "/revenue-trends",
+  getRevenueTrends
 )
 
 router.get(

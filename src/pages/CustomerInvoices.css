@@ -16,6 +16,14 @@ margin-bottom:30px;
 
 }
 
+.invoice-history-login-note{
+
+color:#e10600;
+font-weight:600;
+margin-bottom:20px;
+
+}
+
 .customer-history-stats{
 
 display:grid;

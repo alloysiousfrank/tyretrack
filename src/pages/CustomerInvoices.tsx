@@ -35,6 +35,8 @@ useEffect(()=>{
 const fetchInvoices =
 async()=>{
 
+ if (!userEmail) return
+
  try{
 
 const response =
@@ -84,6 +86,12 @@ return(
 <h1>
 📄 My Service History
 </h1>
+
+{!userEmail && (
+<p className="invoice-history-login-note">
+ Please log in to view your service history and invoices.
+</p>
+)}
 
 <div className="customer-history-stats">
 
