@@ -91,6 +91,7 @@ export default function Login() {
 
         <input
           type="text"
+          aria-label="Enter Name"
           placeholder="Enter Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -98,6 +99,7 @@ export default function Login() {
 
         <input
           type="email"
+          aria-label="Enter Email"
           placeholder="Enter Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -105,6 +107,7 @@ export default function Login() {
 
         <input
           type="text"
+          aria-label="Enter Phone Number"
           placeholder="Enter Phone Number"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}

@@ -149,18 +149,18 @@ export default function Booking() {
       <div className="booking-card">
         <h1>Book Your Service</h1>
         <form onSubmit={handleSubmit}>
-          <input type="text" name="name" placeholder="Your Name" value={formData.name} onChange={handleChange} readOnly required />
-          <input type="email" name="email" placeholder="Your Email" value={formData.email} onChange={handleChange} readOnly required />
-          <input type="text" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} readOnly required />
-          <input type="text" name="vehicleNumber" placeholder="Vehicle Number" value={formData.vehicleNumber} onChange={handleChange} required />
+          <input type="text" name="name" aria-label="Your Name" placeholder="Your Name" value={formData.name} onChange={handleChange} readOnly required />
+          <input type="email" name="email" aria-label="Your Email" placeholder="Your Email" value={formData.email} onChange={handleChange} readOnly required />
+          <input type="text" name="phone" aria-label="Phone Number" placeholder="Phone Number" value={formData.phone} onChange={handleChange} readOnly required />
+          <input type="text" name="vehicleNumber" aria-label="Vehicle Number" placeholder="Vehicle Number" value={formData.vehicleNumber} onChange={handleChange} required />
 
-          <select name="vehicleType" value={formData.vehicleType} onChange={handleChange} required>
+          <select name="vehicleType" aria-label="Select Vehicle Type" value={formData.vehicleType} onChange={handleChange} required>
             <option value="">Select Vehicle Type</option>
             <option value="Bike">Bike</option>
             <option value="Car">Car</option>
           </select>
 
-          <select name="service" value={formData.service} onChange={handleChange} required>
+          <select name="service" aria-label="Select Service" value={formData.service} onChange={handleChange} required>
             <option value="">Select Service</option>
             <option value="Wheel Alignment">Wheel Alignment</option>
             <option value="Wheel Balancing">Wheel Balancing</option>
@@ -174,8 +174,8 @@ export default function Booking() {
             <option value="General Service">General Service</option>
           </select>
 
-          <input type="date" name="date" value={formData.date} onChange={handleChange} required />
-          <input type="time" name="time" value={formData.time} onChange={handleChange} min="09:00" max="19:00" required />
+          <input type="date" name="date" aria-label="Preferred Date" value={formData.date} onChange={handleChange} required />
+          <input type="time" name="time" aria-label="Preferred Time" value={formData.time} onChange={handleChange} min="09:00" max="19:00" required />
 
           <button type="submit">{loading ? "Booking..." : "Book Now"}</button>
         </form>
