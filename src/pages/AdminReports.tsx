@@ -29,8 +29,10 @@ const PIE_COLORS = [RED, "#f5f5f7"]
 
 const API_BASE = "https://tyretrack-server.onrender.com/api/admin"
 
-type MonthlyRevenue = {
-  month: string
+type DayOption = "today" | "yesterday" | "custom"
+
+type HourlyRevenue = {
+  hour: string
   revenue: number
   invoiceCount: number
 }
@@ -46,18 +48,33 @@ type ServiceRevenueEntry = {
   revenue: number
 }
 
-type TrendsData = {
-  monthlyRevenue: MonthlyRevenue[]
+type DailyReport = {
+  date: string
+  totalRevenue: number
+  invoiceCount: number
+  hourlyRevenue: HourlyRevenue[]
   gstSplit: GstSplitEntry[]
   serviceRevenue: ServiceRevenueEntry[]
 }
 
-type ReportData = {
-  totalUsers: number
-  totalBookings: number
-  completedBookings: number
-  pendingBookings: number
-  revenue: number
+// The business runs on IST, so "today" and "yesterday" are computed
+// against the IST calendar date, not the browser's local timezone —
+// otherwise a device set to a different timezone could pick the
+// wrong day.
+const toIstDateString = (offsetDays: number) => {
+
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000
+  const now = new Date()
+  const istNow = new Date(now.getTime() + IST_OFFSET_MS)
+
+  istNow.setUTCDate(istNow.getUTCDate() + offsetDays)
+
+  const year = istNow.getUTCFullYear()
+  const month = String(istNow.getUTCMonth() + 1).padStart(2, "0")
+  const day = String(istNow.getUTCDate()).padStart(2, "0")
+
+  return `${year}-${month}-${day}`
+
 }
 
 // Turns a value into a safe CSV cell — wraps in quotes and escapes
@@ -100,13 +117,21 @@ const downloadCsv = (filename: string, rows: (string | number)[][]) => {
 
 export default function AdminReports() {
 
+  const [dayOption,
+    setDayOption] =
+    useState<DayOption>("today")
+
+  const [customDate,
+    setCustomDate] =
+    useState(toIstDateString(0))
+
   const [report,
     setReport] =
-    useState<ReportData | null>(null)
+    useState<DailyReport | null>(null)
 
-  const [trends,
-    setTrends] =
-    useState<TrendsData | null>(null)
+  const [loading,
+    setLoading] =
+    useState(true)
 
   const [lastUpdated,
     setLastUpdated] =
@@ -116,65 +141,59 @@ export default function AdminReports() {
     setExporting] =
     useState(false)
 
+  const selectedDate =
+    dayOption === "today"
+      ? toIstDateString(0)
+      : dayOption === "yesterday"
+      ? toIstDateString(-1)
+      : customDate
+
   useEffect(() => {
 
-    fetchReports()
-    fetchRevenueTrends()
+    fetchDailyReport(selectedDate)
 
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate])
 
-  const fetchReports =
-    async () => {
+  const fetchDailyReport =
+    async (date: string) => {
 
-      try {
-
-        const response =
-          await fetch(
-            `${API_BASE}/reports`
-          )
-
-        const data =
-          await response.json()
-
-        setReport(data)
-        setLastUpdated(new Date())
-
-      } catch (error) {
-
-        console.log(error)
-
-      }
-
-    }
-
-  const fetchRevenueTrends =
-    async () => {
+      setLoading(true)
 
       try {
 
         const response =
           await fetch(
-            `${API_BASE}/revenue-trends`
+            `${API_BASE}/daily-report?date=${date}`,
+            { cache: "no-store" }
           )
 
         const result =
           await response.json()
 
         if (result.success) {
-          setTrends(result)
+          setReport(result)
+          setLastUpdated(new Date())
         }
 
       } catch (error) {
 
         console.log(error)
 
+      } finally {
+
+        setLoading(false)
+
       }
 
     }
 
-  // Pulls fresh data from both endpoints — every export always
-  // reflects whatever invoices exist in the database at that moment,
-  // so there's nothing to update by hand before exporting.
+  const handleRefresh = () => {
+    fetchDailyReport(selectedDate)
+  }
+
+  // Pulls a fresh copy of the selected day's report before exporting,
+  // so the CSV always matches exactly what's on screen.
   const handleExportCsv =
     async () => {
 
@@ -182,62 +201,49 @@ export default function AdminReports() {
 
       try {
 
-        const [reportsRes, trendsRes] = await Promise.all([
-          fetch(`${API_BASE}/reports`),
-          fetch(`${API_BASE}/revenue-trends`),
-        ])
+        const response =
+          await fetch(
+            `${API_BASE}/daily-report?date=${selectedDate}`,
+            { cache: "no-store" }
+          )
 
-        const freshReport: ReportData = await reportsRes.json()
-        const freshTrendsRaw = await trendsRes.json()
-        const freshTrends: TrendsData | null =
-          freshTrendsRaw.success ? freshTrendsRaw : null
+        const freshReport: DailyReport =
+          await response.json()
 
         const rows: (string | number)[][] = []
 
-        rows.push(["TyreTrack Business Report"])
+        rows.push([`TyreTrack Daily Report — ${freshReport.date}`])
         rows.push(["Generated At", new Date().toLocaleString()])
         rows.push([])
 
         rows.push(["Summary"])
         rows.push(["Metric", "Value"])
-        rows.push(["Total Users", freshReport.totalUsers])
-        rows.push(["Total Bookings", freshReport.totalBookings])
-        rows.push(["Completed Bookings", freshReport.completedBookings])
-        rows.push(["Pending Bookings", freshReport.pendingBookings])
-        rows.push(["Total Revenue (Published Invoices)", freshReport.revenue])
+        rows.push(["Total Revenue", freshReport.totalRevenue])
+        rows.push(["Invoice Count", freshReport.invoiceCount])
         rows.push([])
 
-        if (freshTrends) {
+        rows.push(["Hourly Revenue (IST)"])
+        rows.push(["Hour", "Revenue", "Invoice Count"])
+        freshReport.hourlyRevenue.forEach((h) => {
+          rows.push([h.hour, h.revenue, h.invoiceCount])
+        })
+        rows.push([])
 
-          rows.push(["Monthly Revenue (Last 12 Months)"])
-          rows.push(["Month", "Revenue", "Invoice Count"])
-          freshTrends.monthlyRevenue.forEach((m) => {
-            rows.push([m.month, m.revenue, m.invoiceCount])
-          })
-          rows.push([])
+        rows.push(["GST vs Non-GST Revenue"])
+        rows.push(["Category", "Revenue", "Invoice Count"])
+        freshReport.gstSplit.forEach((g) => {
+          rows.push([g.name, g.revenue, g.count])
+        })
+        rows.push([])
 
-          rows.push(["GST vs Non-GST Revenue"])
-          rows.push(["Category", "Revenue", "Invoice Count"])
-          freshTrends.gstSplit.forEach((g) => {
-            rows.push([g.name, g.revenue, g.count])
-          })
-          rows.push([])
-
-          rows.push(["Top Services by Revenue"])
-          rows.push(["Service", "Revenue"])
-          freshTrends.serviceRevenue.forEach((s) => {
-            rows.push([s.service, s.revenue])
-          })
-
-        }
-
-        const timestamp = new Date()
-          .toISOString()
-          .slice(0, 19)
-          .replace(/[:T]/g, "-")
+        rows.push(["Top Services by Revenue"])
+        rows.push(["Service", "Revenue"])
+        freshReport.serviceRevenue.forEach((s) => {
+          rows.push([s.service, s.revenue])
+        })
 
         downloadCsv(
-          `tyretrack-report-${timestamp}.csv`,
+          `tyretrack-daily-report-${freshReport.date}.csv`,
           rows
         )
 
@@ -253,9 +259,6 @@ export default function AdminReports() {
 
     }
 
-  if (!report)
-    return <p>Loading...</p>
-
   return (
 
     <div className="admin-page">
@@ -265,17 +268,14 @@ export default function AdminReports() {
         <div className="reports-header-row">
 
           <h1>
-            Business Reports
+            Daily Reports
           </h1>
 
           <div className="reports-export-group">
 
             <button
               className="export-btn secondary"
-              onClick={() => {
-                fetchReports()
-                fetchRevenueTrends()
-              }}
+              onClick={handleRefresh}
             >
               Refresh
             </button>
@@ -283,7 +283,7 @@ export default function AdminReports() {
             <button
               className="export-btn"
               onClick={handleExportCsv}
-              disabled={exporting}
+              disabled={exporting || !report}
             >
               {exporting ? "Exporting..." : "Export CSV"}
             </button>
@@ -292,54 +292,90 @@ export default function AdminReports() {
 
         </div>
 
+        <div className="day-selector">
+
+          <button
+            className={
+              dayOption === "today"
+                ? "day-option day-option-active"
+                : "day-option"
+            }
+            onClick={() => setDayOption("today")}
+          >
+            Today
+          </button>
+
+          <button
+            className={
+              dayOption === "yesterday"
+                ? "day-option day-option-active"
+                : "day-option"
+            }
+            onClick={() => setDayOption("yesterday")}
+          >
+            Yesterday
+          </button>
+
+          <button
+            className={
+              dayOption === "custom"
+                ? "day-option day-option-active"
+                : "day-option"
+            }
+            onClick={() => setDayOption("custom")}
+          >
+            Specific Date
+          </button>
+
+          {dayOption === "custom" && (
+            <input
+              type="date"
+              className="day-date-input"
+              value={customDate}
+              max={toIstDateString(0)}
+              onChange={(e) => setCustomDate(e.target.value)}
+            />
+          )}
+
+        </div>
+
         {lastUpdated && (
           <p className="reports-updated-note">
-            Live from invoices &amp; bookings · last refreshed{" "}
+            Showing {selectedDate} (IST) · last refreshed{" "}
             {lastUpdated.toLocaleTimeString()}
           </p>
         )}
 
-        <div className="admin-stats">
-
-          <div className="stat-card">
-            <h3>Total Users</h3>
-            <p>{report.totalUsers}</p>
-          </div>
-
-          <div className="stat-card">
-            <h3>Total Bookings</h3>
-            <p>{report.totalBookings}</p>
-          </div>
-
-          <div className="stat-card">
-            <h3>Completed</h3>
-            <p>{report.completedBookings}</p>
-          </div>
-
-          <div className="stat-card">
-            <h3>Pending</h3>
-            <p>{report.pendingBookings}</p>
-          </div>
-
-          <div className="stat-card">
-            <h3>Revenue</h3>
-            <p>₹ {report.revenue}</p>
-          </div>
-
-        </div>
-
-        {trends && (
+        {loading || !report ? (
+          <p>Loading...</p>
+        ) : (
           <>
-            <h2>Revenue Trend (Last 12 Months)</h2>
+
+            <div className="admin-stats">
+
+              <div className="stat-card">
+                <h3>Invoices That Day</h3>
+                <p>{report.invoiceCount}</p>
+              </div>
+
+              <div className="stat-card">
+                <h3>Total Revenue</h3>
+                <p>₹ {report.totalRevenue}</p>
+              </div>
+
+            </div>
+
+            <h2>Revenue by Hour (IST)</h2>
 
             <div className="admin-card analytics-chart-card">
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={trends.monthlyRevenue}>
+                <LineChart data={report.hourlyRevenue}>
                   <CartesianGrid stroke={GRID_COLOR} vertical={false} />
                   <XAxis
-                    dataKey="month"
+                    dataKey="hour"
                     stroke={TEXT_MUTED}
-                    tick={{ fill: TEXT_MUTED, fontSize: 12 }}
+                    tick={{ fill: TEXT_MUTED, fontSize: 11 }}
+                    interval={2}
                   />
                   <YAxis
                     stroke={TEXT_MUTED}
@@ -360,7 +396,7 @@ export default function AdminReports() {
                     dataKey="revenue"
                     stroke={RED}
                     strokeWidth={3}
-                    dot={{ fill: RED, r: 4 }}
+                    dot={{ fill: RED, r: 3 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
@@ -374,7 +410,7 @@ export default function AdminReports() {
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie
-                      data={trends.gstSplit}
+                      data={report.gstSplit}
                       dataKey="revenue"
                       nameKey="name"
                       cx="50%"
@@ -382,7 +418,7 @@ export default function AdminReports() {
                       outerRadius={90}
                       label={(entry: any) => `₹${entry.revenue.toLocaleString()}`}
                     >
-                      {trends.gstSplit.map((_entry: any, index: number) => (
+                      {report.gstSplit.map((_entry: any, index: number) => (
                         <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
@@ -402,37 +438,42 @@ export default function AdminReports() {
               </div>
 
               <div className="admin-card analytics-chart-card">
-                <h2>Top Services by Revenue</h2>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={trends.serviceRevenue} layout="vertical">
-                    <CartesianGrid stroke={GRID_COLOR} horizontal={false} />
-                    <XAxis
-                      type="number"
-                      stroke={TEXT_MUTED}
-                      tick={{ fill: TEXT_MUTED, fontSize: 12 }}
-                      tickFormatter={(v) => `₹${v}`}
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="service"
-                      stroke={TEXT_MUTED}
-                      tick={{ fill: TEXT_MUTED, fontSize: 12 }}
-                      width={130}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#0c0c0c",
-                        border: `1px solid ${RED_SOFT}`,
-                        borderRadius: 12,
-                      }}
-                      formatter={(value: any) => [`₹${Number(value).toLocaleString()}`, "Revenue"]}
-                    />
-                    <Bar dataKey="revenue" fill={RED} radius={[0, 6, 6, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <h2>Top Services That Day</h2>
+                {report.serviceRevenue.length === 0 ? (
+                  <p className="reports-updated-note">No services billed on this date.</p>
+                ) : (
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={report.serviceRevenue} layout="vertical">
+                      <CartesianGrid stroke={GRID_COLOR} horizontal={false} />
+                      <XAxis
+                        type="number"
+                        stroke={TEXT_MUTED}
+                        tick={{ fill: TEXT_MUTED, fontSize: 12 }}
+                        tickFormatter={(v) => `₹${v}`}
+                      />
+                      <YAxis
+                        type="category"
+                        dataKey="service"
+                        stroke={TEXT_MUTED}
+                        tick={{ fill: TEXT_MUTED, fontSize: 12 }}
+                        width={130}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          background: "#0c0c0c",
+                          border: `1px solid ${RED_SOFT}`,
+                          borderRadius: 12,
+                        }}
+                        formatter={(value: any) => [`₹${Number(value).toLocaleString()}`, "Revenue"]}
+                      />
+                      <Bar dataKey="revenue" fill={RED} radius={[0, 6, 6, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
 
             </div>
+
           </>
         )}
 

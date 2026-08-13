@@ -202,3 +202,147 @@ exports.getRevenueTrends = async (req, res) => {
   }
 
 }
+
+// ==============================
+// DAILY REPORT (Reports page — Today / Yesterday / specific date)
+// ==============================
+// Business runs on IST, so "today" and day boundaries are computed in
+// IST (+05:30), not the server's own timezone — otherwise a date
+// picked as "today" in India could pull in the wrong day's invoices
+// depending on where Render's servers are physically running.
+
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000
+
+// Turns a "YYYY-MM-DD" string into the UTC instant that is midnight
+// IST on that date, i.e. the correct start-of-day boundary for a
+// Mongo query against createdAt (which is stored in UTC).
+const istDateStringToUtcStart = (dateString) => {
+  const [year, month, day] = dateString.split("-").map(Number)
+  const utcMidnightForDate = Date.UTC(year, month - 1, day, 0, 0, 0, 0)
+  return new Date(utcMidnightForDate - IST_OFFSET_MS)
+}
+
+exports.getDailyReport = async (req, res) => {
+
+  try {
+
+    const { date } = req.query
+
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({
+        success: false,
+        message: "Query param 'date' is required in YYYY-MM-DD format",
+      })
+    }
+
+    const dayStart = istDateStringToUtcStart(date)
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000)
+
+    const dayMatch = {
+      isPublished: true,
+      createdAt: { $gte: dayStart, $lt: dayEnd },
+    }
+
+    // --- Summary: total revenue + invoice count for the day ---
+    const summaryResult = await Invoice.aggregate([
+      { $match: dayMatch },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$totalAmount" },
+          invoiceCount: { $sum: 1 },
+        },
+      },
+    ])
+
+    const totalRevenue = summaryResult[0]?.totalRevenue || 0
+    const invoiceCount = summaryResult[0]?.invoiceCount || 0
+
+    // --- Hourly breakdown (0-23, IST), including zero-revenue hours ---
+    const hourlyRaw = await Invoice.aggregate([
+      { $match: dayMatch },
+      {
+        $group: {
+          _id: {
+            $hour: {
+              date: "$createdAt",
+              timezone: "+05:30",
+            },
+          },
+          revenue: { $sum: "$totalAmount" },
+          invoiceCount: { $sum: 1 },
+        },
+      },
+    ])
+
+    const hourlyMap = new Map(
+      hourlyRaw.map((entry) => [entry._id, entry])
+    )
+
+    const hourlyRevenue = []
+    for (let hour = 0; hour < 24; hour++) {
+      const entry = hourlyMap.get(hour)
+      hourlyRevenue.push({
+        hour: `${String(hour).padStart(2, "0")}:00`,
+        revenue: entry?.revenue || 0,
+        invoiceCount: entry?.invoiceCount || 0,
+      })
+    }
+
+    // --- GST vs non-GST split for the day ---
+    const gstSplitRaw = await Invoice.aggregate([
+      { $match: dayMatch },
+      {
+        $group: {
+          _id: "$includeGST",
+          revenue: { $sum: "$totalAmount" },
+          count: { $sum: 1 },
+        },
+      },
+    ])
+
+    const gstEntry = gstSplitRaw.find((e) => e._id === true)
+    const nonGstEntry = gstSplitRaw.find((e) => e._id === false)
+
+    const gstSplit = [
+      { name: "GST Invoices", revenue: gstEntry?.revenue || 0, count: gstEntry?.count || 0 },
+      { name: "Non-GST Invoices", revenue: nonGstEntry?.revenue || 0, count: nonGstEntry?.count || 0 },
+    ]
+
+    // --- Top services billed that day ---
+    const serviceRevenue = await Invoice.aggregate([
+      { $match: dayMatch },
+      { $unwind: "$customServices" },
+      {
+        $group: {
+          _id: "$customServices.serviceName",
+          revenue: { $sum: "$customServices.total" },
+        },
+      },
+      { $match: { _id: { $nin: [null, ""] } } },
+      { $sort: { revenue: -1 } },
+      { $limit: 8 },
+      { $project: { _id: 0, service: "$_id", revenue: 1 } },
+    ])
+
+    res.json({
+      success: true,
+      date,
+      totalRevenue,
+      invoiceCount,
+      hourlyRevenue,
+      gstSplit,
+      serviceRevenue,
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+    })
+
+  }
+
+}

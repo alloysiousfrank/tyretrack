@@ -13,6 +13,7 @@ const {
 const {
   getAnalytics,
   getRevenueTrends,
+  getDailyReport,
 } = require("../controllers/adminAnalyticsController")
 
 const {
@@ -53,6 +54,11 @@ router.get(
 router.get(
   "/reports",
   getReports
+)
+
+router.get(
+  "/daily-report",
+  getDailyReport
 )
 
 module.exports = router

@@ -27,6 +27,46 @@ const GRID_COLOR = "rgba(255, 255, 255, 0.08)"
 const TEXT_MUTED = "rgba(245, 245, 247, 0.55)"
 const PIE_COLORS = [RED, "#f5f5f7"]
 
+const API_BASE = "https://tyretrack-server.onrender.com/api/admin"
+
+// Turns a value into a safe CSV cell — wraps in quotes and escapes
+// any quotes inside, so names/commas in the data can't break columns.
+const csvCell = (value: string | number) => {
+
+  const str = String(value)
+
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+
+  return str
+
+}
+
+const downloadCsv = (filename: string, rows: (string | number)[][]) => {
+
+  const csvContent = rows
+    .map((row) => row.map(csvCell).join(","))
+    .join("\n")
+
+  const blob = new Blob(
+    ["\uFEFF" + csvContent],
+    { type: "text/csv;charset=utf-8;" }
+  )
+
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement("a")
+  link.href = url
+  link.setAttribute("download", filename)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+
+  URL.revokeObjectURL(url)
+
+}
+
 export default function AdminAnalytics() {
 
   const [data,
@@ -35,6 +75,14 @@ export default function AdminAnalytics() {
 
   const [trends, setTrends] =
     useState<any>(null)
+
+  const [lastUpdated,
+    setLastUpdated] =
+    useState<Date | null>(null)
+
+  const [exporting,
+    setExporting] =
+    useState(false)
 
   useEffect(() => {
 
@@ -50,7 +98,8 @@ export default function AdminAnalytics() {
 
         const response =
           await fetch(
-            "https://tyretrack-server.onrender.com/api/admin/analytics"
+            `${API_BASE}/analytics`,
+            { cache: "no-store" }
           )
 
         const analytics =
@@ -59,6 +108,8 @@ export default function AdminAnalytics() {
         setData(
           analytics
         )
+
+        setLastUpdated(new Date())
 
       } catch (error) {
 
@@ -75,7 +126,8 @@ export default function AdminAnalytics() {
 
         const response =
           await fetch(
-            "https://tyretrack-server.onrender.com/api/admin/revenue-trends"
+            `${API_BASE}/revenue-trends`,
+            { cache: "no-store" }
           )
 
         const result =
@@ -93,6 +145,97 @@ export default function AdminAnalytics() {
 
     }
 
+  const handleRefresh = () => {
+    fetchAnalytics()
+    fetchRevenueTrends()
+  }
+
+  // Pulls fresh data before exporting, so the CSV always reflects
+  // whatever invoices exist in the database at that exact moment.
+  const handleExportCsv =
+    async () => {
+
+      setExporting(true)
+
+      try {
+
+        const [analyticsRes, trendsRes] = await Promise.all([
+          fetch(`${API_BASE}/analytics`, { cache: "no-store" }),
+          fetch(`${API_BASE}/revenue-trends`, { cache: "no-store" }),
+        ])
+
+        const freshData = await analyticsRes.json()
+        const freshTrendsRaw = await trendsRes.json()
+        const freshTrends = freshTrendsRaw.success ? freshTrendsRaw : null
+
+        const rows: (string | number)[][] = []
+
+        rows.push(["TyreTrack Analytics — Overall"])
+        rows.push(["Generated At", new Date().toLocaleString()])
+        rows.push([])
+
+        rows.push(["Summary"])
+        rows.push(["Metric", "Value"])
+        rows.push(["Total Bookings", freshData.totalBookings])
+        rows.push(["Completed Bookings", freshData.completedBookings])
+        rows.push(["Pending Bookings", freshData.pendingBookings])
+        rows.push(["Total Revenue (Published Invoices)", freshData.revenue])
+        rows.push(["Most Popular Service", freshData.popularService])
+        rows.push([])
+
+        rows.push(["Service Statistics"])
+        rows.push(["Service", "Total Bookings"])
+        ;(freshData.serviceStats || []).forEach((item: any) => {
+          rows.push([item._id, item.count])
+        })
+        rows.push([])
+
+        if (freshTrends) {
+
+          rows.push(["Monthly Revenue (Last 12 Months)"])
+          rows.push(["Month", "Revenue", "Invoice Count"])
+          freshTrends.monthlyRevenue.forEach((m: any) => {
+            rows.push([m.month, m.revenue, m.invoiceCount])
+          })
+          rows.push([])
+
+          rows.push(["GST vs Non-GST Revenue"])
+          rows.push(["Category", "Revenue", "Invoice Count"])
+          freshTrends.gstSplit.forEach((g: any) => {
+            rows.push([g.name, g.revenue, g.count])
+          })
+          rows.push([])
+
+          rows.push(["Top Services by Revenue"])
+          rows.push(["Service", "Revenue"])
+          freshTrends.serviceRevenue.forEach((s: any) => {
+            rows.push([s.service, s.revenue])
+          })
+
+        }
+
+        const timestamp = new Date()
+          .toISOString()
+          .slice(0, 19)
+          .replace(/[:T]/g, "-")
+
+        downloadCsv(
+          `tyretrack-analytics-${timestamp}.csv`,
+          rows
+        )
+
+      } catch (error) {
+
+        console.log(error)
+
+      } finally {
+
+        setExporting(false)
+
+      }
+
+    }
+
   if (!data)
     return <p>Loading...</p>
 
@@ -102,9 +245,39 @@ export default function AdminAnalytics() {
 
       <div className="admin-container">
 
-        <h1>
-          Analytics Dashboard
-        </h1>
+        <div className="analytics-header-row">
+
+          <h1>
+            Analytics Dashboard
+          </h1>
+
+          <div className="analytics-export-group">
+
+            <button
+              className="export-btn secondary"
+              onClick={handleRefresh}
+            >
+              Refresh
+            </button>
+
+            <button
+              className="export-btn"
+              onClick={handleExportCsv}
+              disabled={exporting}
+            >
+              {exporting ? "Exporting..." : "Export CSV"}
+            </button>
+
+          </div>
+
+        </div>
+
+        {lastUpdated && (
+          <p className="analytics-updated-note">
+            Live from invoices &amp; bookings · last refreshed{" "}
+            {lastUpdated.toLocaleTimeString()}
+          </p>
+        )}
 
         <div className="admin-stats">
 

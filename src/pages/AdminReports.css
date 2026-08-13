@@ -55,3 +55,45 @@
     align-items: flex-start;
   }
 }
+
+.day-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.day-option {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(245, 245, 247, 0.75);
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.day-option:hover {
+  border-color: rgba(255, 43, 43, 0.5);
+  color: white;
+}
+
+.day-option-active {
+  background: linear-gradient(135deg, #ff2b2b, #7a0000);
+  border-color: transparent;
+  color: white;
+}
+
+.day-date-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  color-scheme: dark;
+}
