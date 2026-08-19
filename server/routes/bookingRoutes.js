@@ -7,6 +7,7 @@ const {
   createBooking,
   getBookings,
   getUserBookings,
+  getBookedSlots,
   getBookingById,
   updateBookingStatus,
   deleteBooking,
@@ -23,6 +24,14 @@ router.get("/", getBookings)
 router.get(
   "/user/:email",
   getUserBookings
+)
+
+// GET BOOKED TIME SLOTS FOR A DATE (public — used by the booking form
+// to flag a slot another customer already took). Must stay above the
+// "/:bookingId" route below, or "slots" gets matched as a bookingId.
+router.get(
+  "/slots/:date",
+  getBookedSlots
 )
 
 // GET SINGLE BOOKING BY BOOKING ID (public - used by Live Tracking search)

@@ -180,6 +180,48 @@ exports.getUserBookings = async (req, res) => {
 }
 
 
+// GET BOOKED TIME SLOTS FOR A DATE (public — the booking form uses this
+// to warn a customer off a slot someone else already booked, before they
+// submit). Only returns the taken time strings for that date, nothing
+// else about the other customers' bookings.
+exports.getBookedSlots = async (req, res) => {
+
+  try {
+
+    const { date } = req.params
+
+    const startOfDay = new Date(date)
+    startOfDay.setHours(0, 0, 0, 0)
+
+    const endOfDay = new Date(date)
+    endOfDay.setHours(23, 59, 59, 999)
+
+    const bookings = await Booking.find({
+      date: { $gte: startOfDay, $lte: endOfDay },
+      cancelled: { $ne: true },
+    }).select("time -_id")
+
+    const times = bookings.map((b) => b.time)
+
+    res.json({
+      success: true,
+      times,
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch booked slots",
+    })
+
+  }
+
+}
+
+
 // GET SINGLE BOOKING BY BOOKING ID (public - Live Tracking search bar)
 exports.getBookingById = async (req, res) => {
 

@@ -42,3 +42,15 @@ export const getUserBookings =
   return response.json()
 
 }
+
+// GET BOOKED TIME SLOTS FOR A DATE
+export const getBookedSlots =
+  async (date: string) => {
+
+  const response = await fetch(
+    `${API}/slots/${date}`
+  )
+
+  return response.json()
+
+}

@@ -57,3 +57,44 @@
   opacity: 0.8;
   cursor: not-allowed;
 }
+
+.slot-conflict-box {
+  margin-top: -6px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 43, 43, 0.08);
+  border: 1px solid rgba(255, 43, 43, 0.35);
+}
+
+.slot-conflict-box p {
+  margin: 0 0 12px;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.slot-conflict-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.slot-conflict-actions button {
+  flex: 1;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.slot-conflict-ok {
+  background: #ff2b2b;
+  color: white;
+}
+
+.slot-conflict-cancel {
+  background: #1c1c1c;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}

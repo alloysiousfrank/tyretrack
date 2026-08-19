@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import "./Booking.css"
-import { createBooking } from "../api/bookingApi"
+import { createBooking, getBookedSlots } from "../api/bookingApi"
 import { useSearchParams } from "react-router-dom"
 export default function Booking() {
 
@@ -25,7 +25,7 @@ export default function Booking() {
   const BUSINESS_CLOSE_HOUR = 19  // 7:00 PM
   const SLOT_INTERVAL_MINUTES = 30
 
-  const getSuggestedTime = (forDate: string) => {
+  const getSuggestedTime = (forDate: string, takenTimes: string[] = []) => {
     const now = new Date()
     const isToday = forDate === today
 
@@ -55,7 +55,42 @@ export default function Booking() {
 
     const hh = String(hours).padStart(2, "0")
     const mm = String(minutes).padStart(2, "0")
-    return `${hh}:${mm}`
+    const candidate = `${hh}:${mm}`
+
+    // Skip past any slot that's already taken so the auto-filled time is
+    // always one that's actually free, not just the next chronological one.
+    return findNextAvailableTime(candidate, takenTimes)
+  }
+
+  // Walks forward in SLOT_INTERVAL_MINUTES steps from `fromTime` (inclusive)
+  // within business hours until it finds a time that isn't in `takenTimes`.
+  // If every remaining slot today is taken, it just returns `fromTime` —
+  // the customer can still pick any time manually.
+  const findNextAvailableTime = (fromTime: string, takenTimes: string[]) => {
+    let [hours, minutes] = fromTime.split(":").map(Number)
+
+    for (let i = 0; i < 48; i++) {
+      if (hours >= BUSINESS_CLOSE_HOUR) {
+        hours = BUSINESS_OPEN_HOUR
+        minutes = 0
+      }
+
+      const hh = String(hours).padStart(2, "0")
+      const mm = String(minutes).padStart(2, "0")
+      const candidate = `${hh}:${mm}`
+
+      if (!takenTimes.includes(candidate)) {
+        return candidate
+      }
+
+      minutes += SLOT_INTERVAL_MINUTES
+      if (minutes >= 60) {
+        minutes -= 60
+        hours += 1
+      }
+    }
+
+    return fromTime
   }
 
   const serviceMap: any = {
@@ -81,6 +116,40 @@ export default function Booking() {
   })
 
   const [timeManuallySet, setTimeManuallySet] = useState(false)
+  const [bookedTimes, setBookedTimes] = useState<string[]>([])
+  const [slotConflict, setSlotConflict] = useState<{ suggested: string } | null>(null)
+
+  // Keep the list of already-taken slots in sync with whichever date is
+  // selected, and re-run the auto-fill suggestion (only while the
+  // customer hasn't manually typed a time) so it never lands on a slot
+  // someone else already booked.
+  useEffect(() => {
+    let cancelled = false
+
+    const loadSlots = async () => {
+      try {
+        const res = await getBookedSlots(formData.date)
+        if (cancelled) return
+        const times: string[] = res.success ? res.times : []
+        setBookedTimes(times)
+
+        if (!timeManuallySet) {
+          setFormData((prev) => ({
+            ...prev,
+            time: getSuggestedTime(prev.date, times),
+          }))
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    loadSlots()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.date])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -89,6 +158,7 @@ export default function Booking() {
 
     if (name === "time") {
       setTimeManuallySet(true)
+      setSlotConflict(null)
       setFormData({ ...formData, time: value })
       return
     }
@@ -97,18 +167,61 @@ export default function Booking() {
       setFormData({
         ...formData,
         date: value,
-        time: timeManuallySet ? formData.time : getSuggestedTime(value),
+        time: timeManuallySet ? formData.time : getSuggestedTime(value, bookedTimes),
       })
+      setSlotConflict(null)
       return
     }
 
     setFormData({ ...formData, [name]: value })
   }
 
+  // Runs once the customer finishes picking/typing a time. If it collides
+  // with a slot someone else already booked, offer the next free slot
+  // instead — but only apply it if they say OK.
+  const handleTimeBlur = () => {
+    if (!formData.time) return
+
+    if (bookedTimes.includes(formData.time)) {
+      const suggested = findNextAvailableTime(formData.time, bookedTimes)
+      if (suggested !== formData.time) {
+        setSlotConflict({ suggested })
+      }
+    } else {
+      setSlotConflict(null)
+    }
+  }
+
+  const acceptSuggestedSlot = () => {
+    if (!slotConflict) return
+    setFormData({ ...formData, time: slotConflict.suggested })
+    setTimeManuallySet(true)
+    setSlotConflict(null)
+  }
+
+  const keepOwnTime = () => {
+    // Customer chose to keep the time they typed even though it collides.
+    // Nothing to change here — the field already holds what they typed,
+    // and they're free to keep editing it; we just close the notice.
+    setSlotConflict(null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       setLoading(true)
+
+      // Final check right before booking — in case another customer took
+      // this exact slot in the time since it was last checked.
+      const latest = await getBookedSlots(formData.date)
+      const latestTaken: string[] = latest.success ? latest.times : []
+      if (latestTaken.includes(formData.time)) {
+        const suggested = findNextAvailableTime(formData.time, latestTaken)
+        setBookedTimes(latestTaken)
+        setSlotConflict({ suggested })
+        setLoading(false)
+        return
+      }
 
       const bookingId = "TYR" + Math.floor(Math.random() * 1000000)
 
@@ -131,9 +244,10 @@ export default function Booking() {
         vehicleNumber: "",
         vehicleType: "",
         service: "",
-        time: getSuggestedTime(formData.date),
+        time: getSuggestedTime(formData.date, [...latestTaken, formData.time]),
       })
       setTimeManuallySet(false)
+      setSlotConflict(null)
 
       window.location.href = "/current-booking"
     } catch (error) {
@@ -175,7 +289,24 @@ export default function Booking() {
           </select>
 
           <input type="date" name="date" aria-label="Preferred Date" value={formData.date} onChange={handleChange} required />
-          <input type="time" name="time" aria-label="Preferred Time" value={formData.time} onChange={handleChange} min="09:00" max="19:00" required />
+          <input type="time" name="time" aria-label="Preferred Time" value={formData.time} onChange={handleChange} onBlur={handleTimeBlur} min="09:00" max="19:00" required />
+
+          {slotConflict && (
+            <div className="slot-conflict-box" role="alert">
+              <p>
+                That slot ({formData.time}) has already been taken. Would you like{" "}
+                {slotConflict.suggested} instead?
+              </p>
+              <div className="slot-conflict-actions">
+                <button type="button" className="slot-conflict-ok" onClick={acceptSuggestedSlot}>
+                  OK
+                </button>
+                <button type="button" className="slot-conflict-cancel" onClick={keepOwnTime}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
 
           <button type="submit">{loading ? "Booking..." : "Book Now"}</button>
         </form>
