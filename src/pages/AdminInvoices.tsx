@@ -318,9 +318,15 @@ async (
 
 }
 
+// `autofill` is only ever passed as true when this is triggered by the
+// admin clicking a name out of the suggestions dropdown — that's the
+// single moment we auto-fill the address & phone boxes from the
+// customer's most recent invoice. The plain onChange lookup (typing 3+
+// letters) keeps its old behaviour and never autofills anything.
 const fetchCustomerHistory =
 async (
- name:string
+ name:string,
+ autofill:boolean = false
 )=>{
 
  try{
@@ -376,6 +382,11 @@ async (
       latest.createdAt
 
     })
+
+    if(autofill){
+     setPhone(latest.phone || "")
+     setCustomerAddress(latest.customerAddress || "")
+    }
 
    } else {
     setCustomerProfile(null)
@@ -683,6 +694,11 @@ const cancelEditInvoice = () => {
  setTyreAmount(0)
  setCustomServices([{ serviceName: "", quantity: 1, amount: 0 }])
  setIncludeGST(true)
+ setNameSuggestions([])
+ setShowSuggestions(false)
+ setVehicleHistory([])
+ setCustomerProfile(null)
+ setShowHistory(false)
 }
 
 const saveInvoice =
@@ -846,9 +862,10 @@ alert(errorText)
 
 alert(isEditing ? "Invoice Updated ✅" : "Invoice Created ✅")
 
-if (isEditing) {
- cancelEditInvoice()
-}
+// Reset the form fresh and ready for the next invoice every time a
+// save succeeds — whether that save created a new invoice or updated
+// one being edited.
+cancelEditInvoice()
 
 fetchInvoices()
 
@@ -1055,8 +1072,14 @@ nameSuggestions.map((customer,index)=>(
   setCustomerName(customer.customerName)
   setShowSuggestions(false)
 
+  // Instant fill from the suggestion itself, then
+  // fetchCustomerHistory (autofill=true) confirms/fills the
+  // address once the full record comes back.
+  setPhone(customer.phone || "")
+
   fetchCustomerHistory(
-    customer.customerName
+    customer.customerName,
+    true
   )
   setShowHistory(true)
 
