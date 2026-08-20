@@ -54,7 +54,7 @@ export default function AdminDashboard() {
 
         <div className="stat-card">
           <h3>Revenue</h3>
-          <p>₹{stats.revenue || 0}</p>
+          <p>₹{Number(stats.revenue || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</p>
         </div>
 
       </div>

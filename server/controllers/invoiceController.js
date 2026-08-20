@@ -112,6 +112,10 @@ exports.createInvoice = async (req, res) => {
       subtotal,
       gst,
       totalAmount,
+      // Store the normalized boolean, not whatever raw value the client
+      // sent — keeps every downstream GST-split chart/report reconciling
+      // exactly against the invoice's own totalAmount.
+      includeGST: isGST,
       tyrePrice: Number(req.body.tyrePrice || 0),
       email: req.body.email ? req.body.email.toLowerCase() : "",
       vehicleNumber: req.body.vehicleNumber
@@ -501,6 +505,10 @@ exports.updateInvoice = async (req, res) => {
 
     const totalAmount = Number((subtotal + gst).toFixed(2))
 
+    // Same normalization as createInvoice — store a clean boolean,
+    // never whatever raw value the client happened to send.
+    const isGST = !!req.body.includeGST
+
     const invoice = await Invoice.findByIdAndUpdate(
       req.params.id,
       {
@@ -509,6 +517,7 @@ exports.updateInvoice = async (req, res) => {
         subtotal,
         gst,
         totalAmount,
+        includeGST: isGST,
         tyrePrice: Number(req.body.tyrePrice || 0),
         email: req.body.email ? req.body.email.toLowerCase() : "",
         vehicleNumber: req.body.vehicleNumber

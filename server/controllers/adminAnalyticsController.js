@@ -149,11 +149,25 @@ exports.getRevenueTrends = async (req, res) => {
     }
 
     // --- GST vs non-GST revenue split ---
+    // Scoped to the same last-12-months window as monthlyRevenue above,
+    // so the numbers on this page always add up against each other
+    // instead of one being an all-time total and the other a 12-month one.
     const gstSplitRaw = await Invoice.aggregate([
-      { $match: { isPublished: true } },
+      {
+        $match: {
+          isPublished: true,
+          createdAt: { $gte: startOfWindow },
+        },
+      },
       {
         $group: {
-          _id: "$includeGST",
+          // Normalizes anything that isn't strictly true (false, null,
+          // missing) into the Non-GST bucket, so this split's total
+          // always equals the same-scoped revenue total elsewhere on
+          // the page — a record can never silently disappear from the
+          // chart just because its includeGST value wasn't a clean
+          // boolean.
+          _id: { $eq: ["$includeGST", true] },
           revenue: { $sum: "$totalAmount" },
           count: { $sum: 1 },
         },
@@ -169,8 +183,14 @@ exports.getRevenueTrends = async (req, res) => {
     ]
 
     // --- Top services by actual billed revenue ---
+    // Also scoped to the same 12-month window, for the same reason.
     const serviceRevenue = await Invoice.aggregate([
-      { $match: { isPublished: true } },
+      {
+        $match: {
+          isPublished: true,
+          createdAt: { $gte: startOfWindow },
+        },
+      },
       { $unwind: "$customServices" },
       {
         $group: {
@@ -184,8 +204,18 @@ exports.getRevenueTrends = async (req, res) => {
       { $project: { _id: 0, service: "$_id", revenue: 1 } },
     ])
 
+    // Sum of the monthly buckets above — exposed so the frontend can show
+    // one number that's guaranteed to equal what the line chart adds up
+    // to, next to the all-time "Revenue" stat card (which can differ if
+    // there's ever data older than 12 months).
+    const totalRevenueLast12Months = monthlyRevenue.reduce(
+      (sum, m) => sum + m.revenue,
+      0
+    )
+
     res.json({
       success: true,
+      totalRevenueLast12Months,
       monthlyRevenue,
       gstSplit,
       serviceRevenue,
@@ -294,7 +324,13 @@ exports.getDailyReport = async (req, res) => {
       { $match: dayMatch },
       {
         $group: {
-          _id: "$includeGST",
+          // Normalizes anything that isn't strictly true (false, null,
+          // missing) into the Non-GST bucket, so this split's total
+          // always equals the same-scoped revenue total elsewhere on
+          // the page — a record can never silently disappear from the
+          // chart just because its includeGST value wasn't a clean
+          // boolean.
+          _id: { $eq: ["$includeGST", true] },
           revenue: { $sum: "$totalAmount" },
           count: { $sum: 1 },
         },
@@ -331,6 +367,183 @@ exports.getDailyReport = async (req, res) => {
       totalRevenue,
       invoiceCount,
       hourlyRevenue,
+      gstSplit,
+      serviceRevenue,
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+    })
+
+  }
+
+}
+
+// ==============================
+// RANGE REPORT (Reports page — month-wise, or any custom start/end date)
+// ==============================
+// Same "realized revenue" rule (isPublished invoices only) and same
+// IST day-boundary handling as getDailyReport above, generalised to a
+// multi-day span instead of a single day. The frontend uses this both
+// for "pick a month" (start = 1st of month, end = last day of month)
+// and for "pick a date range" (any start/end the admin chooses).
+const MAX_RANGE_DAYS = 366
+
+exports.getRangeReport = async (req, res) => {
+
+  try {
+
+    const { start, end } = req.query
+
+    if (!start || !/^\d{4}-\d{2}-\d{2}$/.test(start)) {
+      return res.status(400).json({
+        success: false,
+        message: "Query param 'start' is required in YYYY-MM-DD format",
+      })
+    }
+
+    if (!end || !/^\d{4}-\d{2}-\d{2}$/.test(end)) {
+      return res.status(400).json({
+        success: false,
+        message: "Query param 'end' is required in YYYY-MM-DD format",
+      })
+    }
+
+    const rangeStart = istDateStringToUtcStart(start)
+    const rangeEndExclusive = new Date(
+      istDateStringToUtcStart(end).getTime() + 24 * 60 * 60 * 1000
+    )
+
+    if (rangeEndExclusive <= rangeStart) {
+      return res.status(400).json({
+        success: false,
+        message: "'end' must be on or after 'start'",
+      })
+    }
+
+    const totalDays = Math.round(
+      (rangeEndExclusive - rangeStart) / (24 * 60 * 60 * 1000)
+    )
+
+    if (totalDays > MAX_RANGE_DAYS) {
+      return res.status(400).json({
+        success: false,
+        message: `Date range is too large — please pick ${MAX_RANGE_DAYS} days or fewer`,
+      })
+    }
+
+    const rangeMatch = {
+      isPublished: true,
+      createdAt: { $gte: rangeStart, $lt: rangeEndExclusive },
+    }
+
+    // --- Summary: total revenue + invoice count for the whole range ---
+    const summaryResult = await Invoice.aggregate([
+      { $match: rangeMatch },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$totalAmount" },
+          invoiceCount: { $sum: 1 },
+        },
+      },
+    ])
+
+    const totalRevenue = summaryResult[0]?.totalRevenue || 0
+    const invoiceCount = summaryResult[0]?.invoiceCount || 0
+
+    // --- Day-by-day breakdown (IST calendar day), including zero days ---
+    const dailyRaw = await Invoice.aggregate([
+      { $match: rangeMatch },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+05:30",
+            },
+          },
+          revenue: { $sum: "$totalAmount" },
+          invoiceCount: { $sum: 1 },
+        },
+      },
+    ])
+
+    const dailyMap = new Map(
+      dailyRaw.map((entry) => [entry._id, entry])
+    )
+
+    const [startYear, startMonth, startDay] = start.split("-").map(Number)
+
+    const dailyRevenue = []
+    for (let i = 0; i < totalDays; i++) {
+      const labelDate = new Date(
+        Date.UTC(startYear, startMonth - 1, startDay + i)
+      )
+      const label = labelDate.toISOString().slice(0, 10)
+      const entry = dailyMap.get(label)
+
+      dailyRevenue.push({
+        date: label,
+        revenue: entry?.revenue || 0,
+        invoiceCount: entry?.invoiceCount || 0,
+      })
+    }
+
+    // --- GST vs non-GST split for the range ---
+    const gstSplitRaw = await Invoice.aggregate([
+      { $match: rangeMatch },
+      {
+        $group: {
+          // Normalizes anything that isn't strictly true (false, null,
+          // missing) into the Non-GST bucket, so this split's total
+          // always equals the same-scoped revenue total elsewhere on
+          // the page — a record can never silently disappear from the
+          // chart just because its includeGST value wasn't a clean
+          // boolean.
+          _id: { $eq: ["$includeGST", true] },
+          revenue: { $sum: "$totalAmount" },
+          count: { $sum: 1 },
+        },
+      },
+    ])
+
+    const gstEntry = gstSplitRaw.find((e) => e._id === true)
+    const nonGstEntry = gstSplitRaw.find((e) => e._id === false)
+
+    const gstSplit = [
+      { name: "GST Invoices", revenue: gstEntry?.revenue || 0, count: gstEntry?.count || 0 },
+      { name: "Non-GST Invoices", revenue: nonGstEntry?.revenue || 0, count: nonGstEntry?.count || 0 },
+    ]
+
+    // --- Top services billed within the range ---
+    const serviceRevenue = await Invoice.aggregate([
+      { $match: rangeMatch },
+      { $unwind: "$customServices" },
+      {
+        $group: {
+          _id: "$customServices.serviceName",
+          revenue: { $sum: "$customServices.total" },
+        },
+      },
+      { $match: { _id: { $nin: [null, ""] } } },
+      { $sort: { revenue: -1 } },
+      { $limit: 8 },
+      { $project: { _id: 0, service: "$_id", revenue: 1 } },
+    ])
+
+    res.json({
+      success: true,
+      start,
+      end,
+      totalRevenue,
+      invoiceCount,
+      dailyRevenue,
       gstSplit,
       serviceRevenue,
     })
