@@ -14,6 +14,7 @@ const {
   getAnalytics,
   getRevenueTrends,
   getDailyReport,
+  getRangeReport,
 } = require("../controllers/adminAnalyticsController")
 
 const {
@@ -59,6 +60,11 @@ router.get(
 router.get(
   "/daily-report",
   getDailyReport
+)
+
+router.get(
+  "/range-report",
+  getRangeReport
 )
 
 module.exports = router

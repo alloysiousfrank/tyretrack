@@ -97,3 +97,50 @@
   font-size: 0.88rem;
   color-scheme: dark;
 }
+
+.day-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.day-range-sep {
+  color: rgba(245, 245, 247, 0.5);
+  font-size: 0.85rem;
+}
+
+.reports-error-note {
+  color: #ff6b6b;
+}
+
+.pie-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pie-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+  color: rgba(245, 245, 247, 0.85);
+}
+
+.pie-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.pie-legend-name {
+  flex: 1;
+}
+
+.pie-legend-value {
+  font-weight: 700;
+  color: white;
+}
