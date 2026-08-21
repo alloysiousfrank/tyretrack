@@ -19,6 +19,7 @@ const quotationRoutes =
 require("./routes/quotationRoutes")
 const emailRoutes = require("./routes/emailRoutes")
 const whatsappRoutes = require("./routes/whatsappRoutes")
+const reportingRoutes = require("./routes/reportingRoutes")
 
 const app = express()
 
@@ -59,6 +60,7 @@ app.use(
 )
 app.use("/api/email", emailRoutes)
 app.use("/api/whatsapp", whatsappRoutes)
+app.use("/api/reporting", reportingRoutes)
 
 
 // TEST ROUTE
