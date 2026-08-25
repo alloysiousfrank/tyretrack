@@ -1,6 +1,7 @@
 const Invoice = require("../models/Invoice")
 const Booking = require("../models/Booking")
 const Inventory = require("../models/Inventory")
+const Counter = require("../models/Counter")
 const {
   sendServiceCompletedWhatsApp,
 } = require("../utils/whatsappMessages")
@@ -35,20 +36,19 @@ exports.createInvoice = async (req, res) => {
     // in the GST invoice series, and vice versa.
     const isGST = !!req.body.includeGST
 
-    const lastInvoice = await Invoice.findOne({
-      createdAt: { $gte: financialYearStart },
-      includeGST: isGST,
-    }).sort({ invoiceNumber: -1 })
-
-    let nextNumber = 1
-
-    if (lastInvoice) {
-      nextNumber = (lastInvoice.invoiceNumber || 0) + 1
-    }
-
-    const invoiceId = isGST
-      ? `INV-${financialYear}-${String(nextNumber).padStart(6, "0")}`
-      : `NGST-${financialYear}-${String(nextNumber).padStart(6, "0")}`
+    // ✅ FIX: invoice numbers used to be picked by reading the highest
+    // existing invoiceNumber (findOne().sort()) and adding 1 in JS. Two
+    // requests arriving close together could both read the same "last"
+    // number and then both try to insert the same invoiceId, which is
+    // exactly what caused the E11000 duplicate key error.
+    //
+    // A Mongo $inc on a dedicated counter document is atomic at the
+    // database level, so concurrent requests are guaranteed to get
+    // different sequential numbers. Each financial year + GST/non-GST
+    // series has its own counter document.
+    //
+    // Run server/scripts/seedInvoiceCounters.js ONCE after deploying this
+    // so the counters start above your existing highest invoice numbers.
 
     // =====================
     // STOCK VALIDATION
@@ -107,26 +107,63 @@ exports.createInvoice = async (req, res) => {
     // CREATE INVOICE
     // =====================
 
-    const invoice = await Invoice.create({
-      ...req.body,
-      subtotal,
-      gst,
-      totalAmount,
-      // Store the normalized boolean, not whatever raw value the client
-      // sent — keeps every downstream GST-split chart/report reconciling
-      // exactly against the invoice's own totalAmount.
-      includeGST: isGST,
-      tyrePrice: Number(req.body.tyrePrice || 0),
-      email: req.body.email ? req.body.email.toLowerCase() : "",
-      vehicleNumber: req.body.vehicleNumber
-        ? req.body.vehicleNumber.toUpperCase()
-        : "",
-      status: "Completed",
-      customServices,
-      invoiceId,
-      financialYear,
-      invoiceNumber: nextNumber,
-    })
+    const counterKey = `${financialYear}_${isGST ? "GST" : "NGST"}`
+    const prefix = isGST ? "INV" : "NGST"
+
+    // Belt-and-suspenders: even though the counter increment above is
+    // atomic, we still retry on a duplicate-key error (e.g. if an old
+    // invoiceId was ever created/edited manually and happens to collide).
+    // This makes invoice creation self-healing instead of failing outright.
+    let invoice
+    let nextNumber
+    let invoiceId
+    const MAX_ATTEMPTS = 5
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const counter = await Counter.findOneAndUpdate(
+        { _id: counterKey },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      )
+
+      nextNumber = counter.seq
+      invoiceId = `${prefix}-${financialYear}-${String(nextNumber).padStart(6, "0")}`
+
+      try {
+        invoice = await Invoice.create({
+          ...req.body,
+          subtotal,
+          gst,
+          totalAmount,
+          // Store the normalized boolean, not whatever raw value the client
+          // sent — keeps every downstream GST-split chart/report reconciling
+          // exactly against the invoice's own totalAmount.
+          includeGST: isGST,
+          tyrePrice: Number(req.body.tyrePrice || 0),
+          email: req.body.email ? req.body.email.toLowerCase() : "",
+          vehicleNumber: req.body.vehicleNumber
+            ? req.body.vehicleNumber.toUpperCase()
+            : "",
+          status: "Completed",
+          customServices,
+          invoiceId,
+          financialYear,
+          invoiceNumber: nextNumber,
+        })
+        break // success
+      } catch (err) {
+        const isDuplicateInvoiceId =
+          err.code === 11000 && err.message.includes("invoiceId")
+
+        if (isDuplicateInvoiceId && attempt < MAX_ATTEMPTS) {
+          // Someone/something already holds this invoiceId — loop again,
+          // which pulls a fresh atomic number from the counter.
+          continue
+        }
+
+        throw err
+      }
+    }
 
     // =====================
     // STOCK DEDUCTION
