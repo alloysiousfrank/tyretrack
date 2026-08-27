@@ -384,8 +384,18 @@ async (
     })
 
     if(autofill){
+     // Auto-fill everything we know about this customer from their most
+     // recent invoice. Guarded with `|| ""` for each field since older
+     // invoices may predate a field being added to the schema (e.g.
+     // customerGST, vehicleType) — we never want to overwrite the form
+     // with "undefined".
      setPhone(latest.phone || "")
      setCustomerAddress(latest.customerAddress || "")
+     setVehicleNumber(latest.vehicleNumber || "")
+     setVehicleType(latest.vehicleType || "")
+     setCustomerGST(latest.customerGST || "")
+     setEmail(latest.email || "")
+     setVehicleKm(latest.vehicleKm || "")
     }
 
    } else {
