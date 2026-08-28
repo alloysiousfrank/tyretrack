@@ -354,16 +354,20 @@ exports.getCustomerNameSuggestions = async (req, res) => {
 
     const rawQuery = decodeURIComponent(req.params.query).trim()
 
-    if (rawQuery.length < 3) {
+    if (rawQuery.length < 1) {
       return res.json({ success: true, customers: [] })
     }
 
     const escapedQuery = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
+    // WhatsApp-style search: match the query anywhere in the name, not
+    // just as a prefix, so typing "raj" also finds "Suraj Kumar" — but
+    // still rank names that START with the query above ones that merely
+    // contain it, same as WhatsApp's own contact search does.
     const matches = await Invoice.aggregate([
       {
         $match: {
-          customerName: { $regex: `^${escapedQuery}`, $options: "i" },
+          customerName: { $regex: escapedQuery, $options: "i" },
         },
       },
       {
@@ -373,7 +377,18 @@ exports.getCustomerNameSuggestions = async (req, res) => {
           phone: { $first: "$phone" },
         },
       },
-      { $sort: { customerName: 1 } },
+      {
+        $addFields: {
+          startsWithQuery: {
+            $regexMatch: {
+              input: "$customerName",
+              regex: `^${escapedQuery}`,
+              options: "i",
+            },
+          },
+        },
+      },
+      { $sort: { startsWithQuery: -1, customerName: 1 } },
       { $limit: 8 },
     ])
 

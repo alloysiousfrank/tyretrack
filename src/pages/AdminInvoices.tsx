@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { sendInvoiceWhatsApp } from "../utils/sendInvoiceWhatsApp"
 
 import {
@@ -54,6 +54,12 @@ useState("")
 
   const [showSuggestions, setShowSuggestions] =
     useState(false)
+
+  // Debounce the name-suggestions lookup so rapid typing doesn't fire an
+  // API call per keystroke, and track which query is "latest" so a slow
+  // response for an earlier keystroke can never overwrite a newer one.
+  const nameSearchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const latestNameQueryRef = useRef("")
 
   const [customerAddress, setCustomerAddress] =
     useState("")
@@ -122,6 +128,16 @@ const addCustomService = ()=>{
  ])
 
 }
+
+useEffect(()=>{
+
+ return ()=>{
+  if(nameSearchDebounceRef.current){
+   clearTimeout(nameSearchDebounceRef.current)
+  }
+ }
+
+},[])
 
 useEffect(()=>{
 
@@ -306,7 +322,11 @@ async (
   const data =
    await response.json()
 
-  if(data.success){
+  // Guard: if the admin kept typing while this request was in flight,
+  // a slower older response could arrive after a newer one and show
+  // stale suggestions. Only apply results that still match the most
+  // recently typed query.
+  if(data.success && latestNameQueryRef.current === query){
    setNameSuggestions(data.customers)
   }
 
@@ -1032,17 +1052,42 @@ Customer Name
 
             setCustomerName(value)
 
-            if(value.trim().length >= 3){
+            const trimmed = value.trim()
 
-              fetchNameSuggestions(
-                value.trim()
-              )
-              setShowSuggestions(true)
+            latestNameQueryRef.current = trimmed
 
-              fetchCustomerHistory(
-                value.trim()
-              )
-              setShowHistory(true)
+            if(nameSearchDebounceRef.current){
+              clearTimeout(nameSearchDebounceRef.current)
+            }
+
+            if(trimmed.length >= 1){
+
+              // 200ms debounce: fires the search shortly after the admin
+              // pauses typing, WhatsApp-search style, instead of on every
+              // single keystroke.
+              nameSearchDebounceRef.current = setTimeout(()=>{
+
+                fetchNameSuggestions(trimmed)
+                setShowSuggestions(true)
+
+              }, 200)
+
+              // The exact-match history/autofill lookup only matters once
+              // there's a realistic amount of name typed — keep that at
+              // 3+ characters so it doesn't fire (and find nothing) on
+              // every single letter.
+              if(trimmed.length >= 3){
+
+                fetchCustomerHistory(trimmed)
+                setShowHistory(true)
+
+              } else {
+
+                setVehicleHistory([])
+                setCustomerProfile(null)
+                setShowHistory(false)
+
+              }
 
             } else {
 
