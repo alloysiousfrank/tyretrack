@@ -1,13 +1,25 @@
 const Booking = require("../models/Booking")
-const User = require("../models/User")
 const Invoice = require("../models/Invoice")
 
 exports.getReports = async (req,res)=>{
 
   try {
 
-    const totalUsers =
-      await User.countDocuments()
+    // "Total Users" = distinct customers who have had an invoice
+    // generated for them (same definition/normalization as the
+    // dashboard stats and the customer-name search/autofill feature),
+    // not registered app accounts.
+    const totalUsersResult = await Invoice.aggregate([
+      { $match: { customerName: { $exists: true, $ne: "" } } },
+      {
+        $group: {
+          _id: { $toLower: { $trim: { input: "$customerName" } } },
+        },
+      },
+      { $count: "count" },
+    ])
+
+    const totalUsers = totalUsersResult[0]?.count || 0
 
     const totalBookings =
       await Booking.countDocuments()
