@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { sendQuoteWhatsApp } from "../../utils/sendQuoteWhatsApp"
+import { sendQuoteEmail } from "../../utils/sendQuoteEmail"
 import "./QuoteEditor.css"
 
 // Dynamic import for generateQuotePDF so a missing file doesn't break the build.
@@ -325,8 +326,17 @@ if (data.success) {
     }, false)
 
     if (!pdfBlob) {
-      console.warn("Skipping WhatsApp send: quote PDF could not be generated.")
+      console.warn("Skipping email/WhatsApp send: quote PDF could not be generated.")
     } else {
+      // Email first — this is the reliable channel and doesn't depend on
+      // WhatsApp's Meta API access being in good standing.
+      try {
+        const emailResult = await sendQuoteEmail(data.quotation, pdfBlob)
+        console.log(emailResult)
+      } catch (emailErr) {
+        console.log("Quote email send failed:", emailErr)
+      }
+
       const whatsappResult = await sendQuoteWhatsApp(data.quotation, pdfBlob)
       console.log(whatsappResult)
     }
