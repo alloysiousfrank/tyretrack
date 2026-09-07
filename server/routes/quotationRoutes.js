@@ -5,6 +5,8 @@ const router = express.Router()
 const authMiddleware =
 require("../middleware/authMiddleware")
 
+const upload = require("../middleware/uploadMiddleware")
+
 const {
 
   createQuotation,
@@ -20,6 +22,22 @@ const {
   deleteQuotation
 
 } = require("../controllers/quotationController")
+
+const {
+  sendQuotationEmail,
+} = require("../controllers/emailController")
+
+// ==========================
+// SEND QUOTATION EMAIL
+// ==========================
+// Must come before "/:id" below, same reason as the invoice routes —
+// otherwise Express would match "send-email" as the :id param.
+
+router.post(
+  "/send-email",
+  upload.single("quotation"),
+  sendQuotationEmail
+)
 
 // ==========================
 // CREATE QUOTATION

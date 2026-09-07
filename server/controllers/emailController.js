@@ -98,3 +98,110 @@ exports.sendInvoiceEmail = async (req, res) => {
   }
 
 }
+
+// ==============================================================
+// SEND QUOTATION PDF BY EMAIL
+// ==============================================================
+// Mirrors sendInvoiceEmail above. This did not exist before — quotations
+// could previously only be delivered over WhatsApp, which is why a
+// blocked/erroring WhatsApp API meant a quotation had no way to reach the
+// customer at all, even though the "Quotation Published" step itself had
+// already succeeded.
+exports.sendQuotationEmail = async (req, res) => {
+
+  try {
+
+    const { email, customerName, quoteId } = req.body
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Customer email is required",
+      })
+    }
+
+    if (!customerName) {
+      return res.status(400).json({
+        success: false,
+        message: "Customer name is required",
+      })
+    }
+
+    if (!quoteId) {
+      return res.status(400).json({
+        success: false,
+        message: "Quotation ID is required",
+      })
+    }
+
+    // Build attachments array — PDF is optional
+    // (admin may send email without PDF if quotation is viewable online)
+    const attachments = []
+
+    if (req.file) {
+      attachments.push({
+        filename: req.file.originalname || `Quotation-${quoteId}.pdf`,
+        content: req.file.buffer,
+      })
+    }
+
+    await sendEmail({
+      to: email,
+      subject: `TyreTrack Quotation - ${quoteId}`,
+      html: `
+        <div style="font-family:Arial;padding:30px;max-width:600px">
+
+          <h2 style="color:#d62828">
+            🚗 TyreTrack Premium Auto Care
+          </h2>
+
+          <p>Hi <b>${customerName}</b>,</p>
+
+          <p>
+            Your quotation <b>${quoteId}</b> has been
+            generated successfully.
+          </p>
+
+          ${
+            attachments.length > 0
+              ? `<p>Please find your quotation PDF attached to this email.</p>`
+              : `<p>You can view your quotation from the TyreTrack website.</p>`
+          }
+
+          <br>
+
+          <p>
+            Thank you for choosing
+            <b>TyreTrack Premium Auto Care</b>.
+          </p>
+
+          <hr style="border-color:#eee">
+
+          <p style="color:#999;font-size:12px">
+            TyreTrack Premium Auto Care, Tiruppur
+          </p>
+
+        </div>
+      `,
+      attachments,
+    })
+
+    console.log(`Quotation email sent to ${email} for quote ${quoteId}`)
+
+    return res.json({
+      success: true,
+      message: "Quotation email sent successfully",
+    })
+
+  } catch (error) {
+
+    console.error("SEND QUOTATION EMAIL ERROR:", error.message)
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    })
+
+  }
+
+}

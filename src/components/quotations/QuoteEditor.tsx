@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { sendQuoteWhatsApp } from "../../utils/sendQuoteWhatsApp"
 import { sendQuoteEmail } from "../../utils/sendQuoteEmail"
+import { sendWithRetry } from "../../utils/sendWithRetry"
 import "./QuoteEditor.css"
 
 // Dynamic import for generateQuotePDF so a missing file doesn't break the build.
@@ -329,16 +330,34 @@ if (data.success) {
       console.warn("Skipping email/WhatsApp send: quote PDF could not be generated.")
     } else {
       // Email first — this is the reliable channel and doesn't depend on
-      // WhatsApp's Meta API access being in good standing.
+      // WhatsApp's Meta API access being in good standing. Retried once,
+      // since Render's free tier can cold-start-abort the first upload
+      // after a period of inactivity.
+      let emailOk = false
       try {
-        const emailResult = await sendQuoteEmail(data.quotation, pdfBlob)
+        const emailResult = await sendWithRetry(() => sendQuoteEmail(data.quotation, pdfBlob))
         console.log(emailResult)
+        emailOk = !!emailResult?.success
       } catch (emailErr) {
         console.log("Quote email send failed:", emailErr)
       }
 
-      const whatsappResult = await sendQuoteWhatsApp(data.quotation, pdfBlob)
-      console.log(whatsappResult)
+      let whatsappOk = false
+      try {
+        const whatsappResult = await sendWithRetry(() => sendQuoteWhatsApp(data.quotation, pdfBlob))
+        console.log(whatsappResult)
+        whatsappOk = !!whatsappResult?.success
+      } catch (waErr) {
+        console.log("Quote WhatsApp send failed:", waErr)
+      }
+
+      if (!emailOk || !whatsappOk) {
+        alert(
+          `Quotation saved, but delivery to the customer had an issue:\n` +
+          `Email: ${emailOk ? "Sent ✅" : "Failed ❌ (check the email address, or try Publish again)"}\n` +
+          `WhatsApp: ${whatsappOk ? "Sent ✅" : "Failed ❌"}`
+        )
+      }
     }
 
   } catch (waErr) {

@@ -9,6 +9,8 @@ from
 import "./AdminInvoices.css"
 import { sendInvoiceEmail }
 from "../utils/sendInvoiceEmail"
+import { sendWithRetry }
+from "../utils/sendWithRetry"
 import {
 useLocation
 } from "react-router-dom"
@@ -953,31 +955,49 @@ const publishInvoice = async (id: string) => {
 
           )
 
-        const emailResult =
+        let emailOk = false
+        try {
+          const emailResult0 =
+            await sendWithRetry(() =>
+              sendInvoiceEmail(
+                publishedInvoice,
+                pdfBlob
+              )
+            )
+          console.log(emailResult0)
+          emailOk = !!emailResult0?.success
+        } catch (emailErr) {
+          console.log("Invoice email send failed:", emailErr)
+        }
 
-          await sendInvoiceEmail(
+        let whatsappOk = false
+        try {
+          const whatsappResult0 =
+    await sendWithRetry(() =>
+      sendInvoiceWhatsApp(
+        publishedInvoice,
+        pdfBlob
+      )
+    )
+  console.log(whatsappResult0)
+          whatsappOk = !!whatsappResult0?.success
+        } catch (waErr) {
+          console.log("Invoice WhatsApp send failed:", waErr)
+        }
 
-            publishedInvoice,
-
-            pdfBlob
-
+        if (!emailOk || !whatsappOk) {
+          alert(
+            `Invoice saved, but delivery to the customer had an issue:\n` +
+            `Email: ${emailOk ? "Sent ✅" : "Failed ❌ (check the email address, or try Publish again)"}\n` +
+            `WhatsApp: ${whatsappOk ? "Sent ✅" : "Failed ❌"}`
           )
-
-        console.log(emailResult)
-
-        const whatsappResult =
-  await sendInvoiceWhatsApp(
-    publishedInvoice,
-    pdfBlob
-  )
-
-console.log(whatsappResult)
+        }
 
       }
 
       alert(
 
-        "Invoice Published & Email Sent ✅"
+        "Invoice Published ✅"
 
       )
 
