@@ -2,16 +2,71 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Favicon set — generated from the navbar logo (public/logo4.png),
+         padded onto a square canvas so it reads correctly as an icon.
+         Multiple sizes so browsers and Google both pick up a crisp one. -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/favicon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/favicon-512.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0B0B0D" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="TyreTrack — Premium car service garage. Wheel alignment, tyres, wash & interior care." />
+
+    <!-- Open Graph / social + link-preview image (also what many search
+         and messaging surfaces use when showing a preview of the page) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TyreTrack Premium Auto Care" />
+    <meta property="og:title" content="TyreTrack — Premium Auto Care" />
+    <meta property="og:description" content="Wheel alignment, tyres, wash & interior care in Tiruppur." />
+    <meta property="og:image" content="https://tyretrack.in/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="https://tyretrack.in/" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TyreTrack — Premium Auto Care" />
+    <meta name="twitter:description" content="Wheel alignment, tyres, wash & interior care in Tiruppur." />
+    <meta name="twitter:image" content="https://tyretrack.in/og-image.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
     <title>TyreTrack — Premium Auto Care</title>
+
+    <!-- Structured data: this is the piece Google actually reads to
+         associate a logo/brand with the site in search results and any
+         Knowledge Panel — the favicon alone isn't enough for that. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "AutoRepair",
+      "name": "TyreTrack Premium Auto Care",
+      "url": "https://tyretrack.in/",
+      "logo": "https://tyretrack.in/logo4.png",
+      "image": "https://tyretrack.in/og-image.png",
+      "description": "Premium car service garage offering wheel alignment, tyres, car wash and interior care.",
+      "telephone": "+91-74487-87979",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "No 107/2, Pasumai Nagar, opp NCC Gokulam Appt, Andipalayam, Mangalam Road",
+        "addressLocality": "Tiruppur",
+        "postalCode": "641687",
+        "addressRegion": "Tamil Nadu",
+        "addressCountry": "IN"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+
