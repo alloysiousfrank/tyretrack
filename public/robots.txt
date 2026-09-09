@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /admin-dashboard
+Disallow: /admin-customers
+Disallow: /admin-analytics
+Disallow: /admin-reports
+Disallow: /admin-quotes
+Disallow: /admin-invoices
+Disallow: /admin-inventory
+Disallow: /my-invoices
+Disallow: /current-booking
+Disallow: /history
+
+Sitemap: https://tyretrack.in/sitemap.xml
