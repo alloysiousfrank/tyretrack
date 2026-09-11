@@ -1,3 +1,4 @@
+const mongoose = require("mongoose")
 const Invoice = require("../models/Invoice")
 const Booking = require("../models/Booking")
 const Inventory = require("../models/Inventory")
@@ -110,54 +111,74 @@ exports.createInvoice = async (req, res) => {
     const counterKey = `${financialYear}_${isGST ? "GST" : "NGST"}`
     const prefix = isGST ? "INV" : "NGST"
 
-    // Belt-and-suspenders: even though the counter increment above is
-    // atomic, we still retry on a duplicate-key error (e.g. if an old
-    // invoiceId was ever created/edited manually and happens to collide).
-    // This makes invoice creation self-healing instead of failing outright.
+    // ✅ FIX (numbering jump bug): the previous version incremented the
+    // counter with $inc on every attempt, INCLUDING attempts where the
+    // subsequent Invoice.create() then failed — so a burst of failed
+    // attempts (e.g. repeated clicks while the server was slow to
+    // respond) permanently burned real numbers with no invoice ever
+    // created for them, which is exactly what produced unexplained
+    // jumps like 6 -> 26. Wrapping the counter increment and the
+    // invoice insert in a single MongoDB transaction means they now
+    // succeed or fail together: if the insert fails for any reason,
+    // the counter increment is rolled back too, so a retry gets a
+    // genuinely fresh number instead of the sequence silently skipping
+    // ahead.
     let invoice
     let nextNumber
     let invoiceId
     const MAX_ATTEMPTS = 5
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      const counter = await Counter.findOneAndUpdate(
-        { _id: counterKey },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      )
-
-      nextNumber = counter.seq
-      invoiceId = `${prefix}-${financialYear}-${String(nextNumber).padStart(6, "0")}`
+      const session = await mongoose.startSession()
 
       try {
-        invoice = await Invoice.create({
-          ...req.body,
-          subtotal,
-          gst,
-          totalAmount,
-          // Store the normalized boolean, not whatever raw value the client
-          // sent — keeps every downstream GST-split chart/report reconciling
-          // exactly against the invoice's own totalAmount.
-          includeGST: isGST,
-          tyrePrice: Number(req.body.tyrePrice || 0),
-          email: req.body.email ? req.body.email.toLowerCase() : "",
-          vehicleNumber: req.body.vehicleNumber
-            ? req.body.vehicleNumber.toUpperCase()
-            : "",
-          status: "Completed",
-          customServices,
-          invoiceId,
-          financialYear,
-          invoiceNumber: nextNumber,
+        await session.withTransaction(async () => {
+          const counter = await Counter.findOneAndUpdate(
+            { _id: counterKey },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true, session }
+          )
+
+          nextNumber = counter.seq
+          invoiceId = `${prefix}-${financialYear}-${String(nextNumber).padStart(6, "0")}`
+
+          const created = await Invoice.create([{
+            ...req.body,
+            subtotal,
+            gst,
+            totalAmount,
+            // Store the normalized boolean, not whatever raw value the client
+            // sent — keeps every downstream GST-split chart/report reconciling
+            // exactly against the invoice's own totalAmount.
+            includeGST: isGST,
+            tyrePrice: Number(req.body.tyrePrice || 0),
+            email: req.body.email ? req.body.email.toLowerCase() : "",
+            vehicleNumber: req.body.vehicleNumber
+              ? req.body.vehicleNumber.toUpperCase()
+              : "",
+            status: "Completed",
+            customServices,
+            invoiceId,
+            financialYear,
+            invoiceNumber: nextNumber,
+          }], { session })
+
+          invoice = created[0]
         })
-        break // success
+
+        await session.endSession()
+        break // success — counter and invoice committed together
+
       } catch (err) {
+        await session.endSession()
+
         const isDuplicateInvoiceId =
           err.code === 11000 && err.message.includes("invoiceId")
 
         if (isDuplicateInvoiceId && attempt < MAX_ATTEMPTS) {
-          // Someone/something already holds this invoiceId — loop again,
-          // which pulls a fresh atomic number from the counter.
+          // The whole transaction was rolled back, including the counter
+          // increment, so no number was lost here — loop again for a
+          // fresh one.
           continue
         }
 
