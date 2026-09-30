@@ -1,8 +1,25 @@
+const mongoose = require("mongoose")
 const Quotation = require("../models/Quotation")
+const Counter = require("../models/Counter")
 
 // ==============================
 // CREATE QUOTATION
 // ==============================
+// Used by both the public "Get a Quote" page and the admin's own
+// "Create Quotation" flow — both hit this same function, so both need
+// to share one safe, atomic sequence rather than each computing "last
+// quote number + 1" independently, which is exactly what could let
+// a customer submission and an admin-created quote collide on the
+// same quoteId if they happened close together.
+//
+// Same transactional counter pattern used for invoice numbering
+// (server/controllers/invoiceController.js) and for the same reason:
+// findOne().sort() + increment in JS is not atomic, so two nearly-
+// simultaneous requests could read the same "last number" and race.
+// Wrapping the counter increment and the insert in one MongoDB
+// transaction means a failed insert can never leave the counter
+// pointing past reality — if the insert fails, the whole transaction,
+// counter increment included, rolls back together.
 
 exports.createQuotation = async (req, res) => {
 
@@ -15,72 +32,79 @@ exports.createQuotation = async (req, res) => {
         ? `${now.getFullYear()}-${String(now.getFullYear() + 1).slice(-2)}`
         : `${now.getFullYear() - 1}-${String(now.getFullYear()).slice(-2)}`
 
-    let financialYearStart
+    const counterKey = `${financialYear}_QUOTE`
 
-    if (now.getMonth() >= 3) {
+    let quotation
+    let nextNumber
+    let quoteId
+    const MAX_ATTEMPTS = 5
 
-      financialYearStart = new Date(
-        now.getFullYear(),
-        3,
-        1
-      )
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
 
-    } else {
+      const session = await mongoose.startSession()
 
-      financialYearStart = new Date(
-        now.getFullYear() - 1,
-        3,
-        1
-      )
+      try {
 
-    }
+        await session.withTransaction(async () => {
 
-    const lastQuote = await Quotation.findOne({
+          const counter = await Counter.findOneAndUpdate(
+            { _id: counterKey },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true, session }
+          )
 
-      createdAt: {
-        $gte: financialYearStart
+          nextNumber = counter.seq
+          quoteId = `QT-${financialYear}-${String(nextNumber).padStart(6, "0")}`
+
+          const created = await Quotation.create([{
+
+            ...req.body,
+
+            customerName: req.body.customerName || "",
+
+            phone: req.body.phone || "",
+
+            email: req.body.email ? req.body.email.toLowerCase() : "",
+
+            vehicleNumber: req.body.vehicleNumber
+              ? req.body.vehicleNumber.toUpperCase()
+              : "",
+
+            quoteId,
+
+            quoteNumber: nextNumber,
+
+            financialYear,
+
+            quoteStatus: "Pending"
+
+          }], { session })
+
+          quotation = created[0]
+
+        })
+
+        await session.endSession()
+        break // success — counter and quotation committed together
+
+      } catch (err) {
+
+        await session.endSession()
+
+        const isDuplicateQuoteId =
+          err.code === 11000 && err.message.includes("quoteId")
+
+        if (isDuplicateQuoteId && attempt < MAX_ATTEMPTS) {
+          // Whole transaction rolled back, including the counter
+          // increment — no number was lost, loop again for a fresh one.
+          continue
+        }
+
+        throw err
+
       }
 
-    }).sort({
-
-      quoteNumber: -1
-
-    })
-
-    let nextNumber = 1
-
-    if (lastQuote) {
-
-      nextNumber =
-        (lastQuote.quoteNumber || 0) + 1
-
     }
-
-    const quoteId =
-      `QT-${financialYear}-${String(nextNumber).padStart(6, "0")}`
-
-    const quotation = await Quotation.create({
-
-      ...req.body,
-
-      customerName: req.body.customerName,
-
-      phone: req.body.phone,
-
-      email: req.body.email?.toLowerCase(),
-
-      vehicleNumber:
-        req.body.vehicleNumber?.toUpperCase(),
-
-      quoteId,
-
-      quoteNumber: nextNumber,
-
-      financialYear,
-
-      quoteStatus: "Pending"
-
-    })
 
     res.json({
 

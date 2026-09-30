@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import QuoteEditor from "../components/quotations/QuoteEditor"
-import GetQuote from "./GetQuote"
 import "./AdminQuotes.css"
 interface Quotation {
 
@@ -330,17 +329,11 @@ creatingQuote && (
 
 <div className="admin-quote-create-overlay">
 
-<GetQuote
+<QuoteEditor
 
-embedded
-
-onClose={()=>setCreatingQuote(false)}
-
-onCreated={(id)=>{
+onClose={()=>{
 
 setCreatingQuote(false)
-
-setSelectedQuote(id)
 
 fetchQuotes()
 

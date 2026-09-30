@@ -41,7 +41,7 @@ interface Quote {
 }
 
 interface Props {
-  quoteId: string
+  quoteId?: string
   onClose: () => void
 }
 
@@ -49,7 +49,30 @@ const fmtCurrency = (n: number) =>
   Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })
 
 export default function QuoteEditor({ quoteId, onClose }: Props) {
+  // currentQuoteId starts as whatever quoteId was passed in (edit mode);
+  // if none was passed (create mode), it stays empty until the first
+  // successful save, at which point every action after that (Generate
+  // PDF, Publish, further saves) operates on the newly created quote.
+  const [currentQuoteId, setCurrentQuoteId] = useState(quoteId || "")
+  const isCreateMode = !quoteId
+
   const [quote, setQuote] = useState<Quote | null>(null)
+
+  // Customer/vehicle fields are editable now (previously read-only,
+  // display-only) so a brand-new quotation can be filled in directly
+  // in this editor instead of only via the public "Get a Quote" form.
+  // None of these are required — every one can be left blank.
+  const [customerName, setCustomerName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [email, setEmail] = useState("")
+  const [vehicleType, setVehicleType] = useState("")
+  const [vehicleBrand, setVehicleBrand] = useState("")
+  const [vehicleModel, setVehicleModel] = useState("")
+  const [vehicleNumber, setVehicleNumber] = useState("")
+  const [tyreSize, setTyreSize] = useState("")
+  const [preferredBrand, setPreferredBrand] = useState("")
+  const [notes, setNotes] = useState("")
+
   const [tyrePrice, setTyrePrice] = useState(0)
   const [tyreQuantity, setTyreQuantity] = useState(1)
   const [labourCharge, setLabourCharge] = useState(0)
@@ -57,12 +80,17 @@ export default function QuoteEditor({ quoteId, onClose }: Props) {
   const [discount, setDiscount] = useState(0)
   const [includeGST, setIncludeGST] = useState(true)
   const [adminRemarks, setAdminRemarks] = useState("")
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!isCreateMode)
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
 
   useEffect(() => {
-    loadQuote()
+    if (quoteId) {
+      loadQuote()
+    } else {
+      // Create mode: nothing to fetch, start from a blank form.
+      setLoading(false)
+    }
     // Re-fetch whenever a different quote is opened in this editor.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quoteId])
@@ -71,6 +99,17 @@ export default function QuoteEditor({ quoteId, onClose }: Props) {
   // (fresh from the server) we currently have.
   const applyQuoteData = (q: Quote) => {
     setQuote(q)
+    setCurrentQuoteId(q.quoteId)
+    setCustomerName(q.customerName || "")
+    setPhone(q.phone || "")
+    setEmail(q.email || "")
+    setVehicleType(q.vehicleType || "")
+    setVehicleBrand(q.vehicleBrand || "")
+    setVehicleModel(q.vehicleModel || "")
+    setVehicleNumber(q.vehicleNumber || "")
+    setTyreSize(q.tyreSize || "")
+    setPreferredBrand(q.preferredBrand || "")
+    setNotes(q.notes || "")
     setTyrePrice(q.tyrePrice || 0)
     setTyreQuantity(q.tyreQuantity || 1)
     setLabourCharge(q.labourCharge || 0)
@@ -102,7 +141,9 @@ export default function QuoteEditor({ quoteId, onClose }: Props) {
     return <div className="editor-loading">Loading...</div>
   }
 
-  if (!quote) {
+  // Only a real failed lookup of an EXISTING quote is an error — in
+  // create mode there's legitimately no quote yet until the first save.
+  if (!quote && !isCreateMode) {
     return <div className="editor-loading">Quotation Not Found</div>
   }
 
@@ -130,9 +171,64 @@ setSaving(true)
 
 try{
 
+// Create mode (no quote saved yet): POST a brand-new quotation with
+// whatever fields are filled in — none are required, blanks are fine
+// and are sent as empty strings, matching what the backend now accepts.
+if (!currentQuoteId) {
+
+  const response = await fetch(
+
+    "https://tyretrack-server.onrender.com/api/quotations",
+
+    {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        customerName,
+        phone,
+        email,
+        vehicleType,
+        vehicleBrand,
+        vehicleModel,
+        vehicleNumber,
+        tyreSize,
+        preferredBrand,
+        notes,
+        tyrePrice,
+        tyreQuantity,
+        labourCharge,
+        accessoriesCharge,
+        discount,
+        includeGST,
+        adminRemarks,
+      }),
+
+    }
+
+  )
+
+  const data = await response.json()
+
+  if (data.success) {
+    alert("Quotation Created Successfully ✅")
+    applyQuoteData(data.quotation)
+  } else {
+    alert(data.message)
+  }
+
+  setSaving(false)
+  return
+
+}
+
 const response=await fetch(
 
-`https://tyretrack-server.onrender.com/api/quotations/${quoteId}`,
+`https://tyretrack-server.onrender.com/api/quotations/${currentQuoteId}`,
 
 {
 
@@ -147,6 +243,26 @@ Authorization:`Bearer ${token}`
 },
 
 body:JSON.stringify({
+
+customerName,
+
+phone,
+
+email,
+
+vehicleType,
+
+vehicleBrand,
+
+vehicleModel,
+
+vehicleNumber,
+
+tyreSize,
+
+preferredBrand,
+
+notes,
 
 tyrePrice,
 
@@ -204,12 +320,13 @@ setSaving(false)
 
   const handleGeneratePDF = async () => {
     if (!quote) {
+      alert("Save the quotation first, then Generate PDF.")
       return
     }
 
     const items = [
       {
-        description: `${quote.preferredBrand || "Tyre"} Tyre`,
+        description: `${preferredBrand || "Tyre"} Tyre`,
         quantity: tyreQuantity,
         rate: tyrePrice,
         total: tyrePrice * tyreQuantity,
@@ -231,16 +348,16 @@ setSaving(false)
 
     await generateQuotePDF({
       quoteNumber: quote.quoteId,
-      customerName: quote.customerName,
-      phone: quote.phone,
-      email: quote.email,
-      vehicleNumber: quote.vehicleNumber,
-      vehicleType: quote.vehicleType,
-      vehicleBrand: quote.vehicleBrand,
-      vehicleModel: quote.vehicleModel,
-      tyreSize: quote.tyreSize,
-      preferredBrand: quote.preferredBrand,
-      notes: quote.notes,
+      customerName,
+      phone,
+      email,
+      vehicleNumber,
+      vehicleType,
+      vehicleBrand,
+      vehicleModel,
+      tyreSize,
+      preferredBrand,
+      notes,
       validTill: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(
         "en-IN"
       ),
@@ -252,6 +369,14 @@ setSaving(false)
   }
 
 const publishQuote = async()=>{
+
+if(!currentQuoteId){
+
+alert("Save the quotation first, then Publish.")
+
+return
+
+}
 
 const token=localStorage.getItem("adminToken")
 
@@ -269,7 +394,7 @@ try{
 
 const response=await fetch(
 
-`https://tyretrack-server.onrender.com/api/quotations/publish/${quoteId}`,
+`https://tyretrack-server.onrender.com/api/quotations/publish/${currentQuoteId}`,
 
 {
 
@@ -298,7 +423,7 @@ if (data.success) {
 
     const items = [
       {
-        description: `${quote.preferredBrand || "Tyre"} Tyre`,
+        description: `${data.quotation.preferredBrand || "Tyre"} Tyre`,
         quantity: tyreQuantity,
         rate: tyrePrice,
         total: tyrePrice * tyreQuantity,
@@ -410,15 +535,27 @@ e.stopPropagation()
           <div className="editor-grid">
             <div className="field-group">
               <label>Customer Name</label>
-              <input value={quote.customerName} readOnly />
+              <input
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
             <div className="field-group">
               <label>Phone</label>
-              <input value={quote.phone} readOnly />
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
             <div className="field-group">
               <label>Email</label>
-              <input value={quote.email} readOnly />
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
           </div>
         </section>
@@ -429,33 +566,60 @@ e.stopPropagation()
           <div className="editor-grid">
             <div className="field-group">
               <label>Vehicle Type</label>
-              <input value={quote.vehicleType} readOnly />
+              <input
+                value={vehicleType}
+                onChange={(e) => setVehicleType(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
             <div className="field-group">
               <label>Vehicle Brand</label>
-              <input value={quote.vehicleBrand} readOnly />
+              <input
+                value={vehicleBrand}
+                onChange={(e) => setVehicleBrand(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
             <div className="field-group">
               <label>Vehicle Model</label>
-              <input value={quote.vehicleModel} readOnly />
+              <input
+                value={vehicleModel}
+                onChange={(e) => setVehicleModel(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
             <div className="field-group">
               <label>Vehicle Number</label>
-              <input value={quote.vehicleNumber} readOnly />
+              <input
+                value={vehicleNumber}
+                onChange={(e) => setVehicleNumber(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
             <div className="field-group">
               <label>Tyre Size</label>
-              <input value={quote.tyreSize} readOnly />
+              <input
+                value={tyreSize}
+                onChange={(e) => setTyreSize(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
             <div className="field-group">
               <label>Preferred Brand</label>
-              <input value={quote.preferredBrand} readOnly />
+              <input
+                value={preferredBrand}
+                onChange={(e) => setPreferredBrand(e.target.value)}
+                placeholder="Optional"
+              />
             </div>
           </div>
 
-          {quote.notes && (
-            <textarea value={quote.notes} readOnly rows={3} />
-          )}
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Optional notes"
+            rows={3}
+          />
         </section>
 
         {/* PRICING */}
@@ -571,14 +735,26 @@ e.stopPropagation()
 
         <div className="editor-actions">
           <button className="draft" onClick={saveDraft} disabled={saving}>
-            {saving ? "Saving..." : "Save Draft"}
+            {saving
+              ? (currentQuoteId ? "Saving..." : "Creating...")
+              : (currentQuoteId ? "Save Draft" : "Create Quotation")}
           </button>
 
-          <button className="pdf" onClick={handleGeneratePDF}>
+          <button
+            className="pdf"
+            onClick={handleGeneratePDF}
+            disabled={!quote}
+            title={!quote ? "Save the quotation first" : undefined}
+          >
             Generate PDF
           </button>
 
-          <button className="publish" onClick={publishQuote} disabled={publishing}>
+          <button
+            className="publish"
+            onClick={publishQuote}
+            disabled={publishing || !quote}
+            title={!quote ? "Save the quotation first" : undefined}
+          >
             {publishing ? "Publishing..." : "Publish Quote"}
           </button>
         </div>
