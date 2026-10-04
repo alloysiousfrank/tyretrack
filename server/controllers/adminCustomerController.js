@@ -1,5 +1,93 @@
 const Invoice = require("../models/Invoice")
 
+// GET ONE CUSTOMER'S FULL SERVICE HISTORY (for the admin customer detail
+// page / downloadable report). :key is whatever customerKey getCustomers
+// above grouped this customer under — their phone number if they have
+// one on file, otherwise their lowercased name — so a click-through from
+// that list always resolves to the same customer. Matches on either
+// condition rather than guessing which one the key represents, so it
+// works correctly regardless of which branch produced it.
+exports.getCustomerHistory = async (req, res) => {
+
+  try {
+
+    const key = req.params.key
+
+    const invoices = await Invoice.find({
+
+      isPublished: true,
+
+      $or: [
+        { phone: key },
+        { $expr: { $eq: [{ $toLower: "$customerName" }, key.toLowerCase()] } },
+      ],
+
+    }).sort({ createdAt: 1 }).lean()
+
+    if (invoices.length === 0) {
+
+      return res.json({
+        success: true,
+        customer: null,
+        services: [],
+        totalSpent: 0,
+      })
+
+    }
+
+    const latest = invoices[invoices.length - 1]
+
+    const services = []
+    let totalSpent = 0
+
+    invoices.forEach((invoice) => {
+
+      totalSpent += Number(invoice.totalAmount || 0)
+
+      ;(invoice.customServices || []).forEach((line) => {
+
+        services.push({
+          date: invoice.createdAt,
+          invoiceId: invoice.invoiceId,
+          serviceName: line.serviceName || "",
+          quantity: line.quantity || 0,
+          amount: line.amount || 0,
+          total: line.total || 0,
+        })
+
+      })
+
+    })
+
+    res.json({
+
+      success: true,
+
+      customer: {
+        name: latest.customerName,
+        phone: latest.phone,
+        email: latest.email,
+        vehicleNumber: latest.vehicleNumber,
+      },
+
+      services,
+
+      totalSpent,
+
+    })
+
+  } catch (error) {
+
+    console.log(error)
+
+    res.status(500).json({
+      success: false,
+    })
+
+  }
+
+}
+
 exports.getCustomers = async (req, res) => {
 
   try {

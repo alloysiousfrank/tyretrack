@@ -31,3 +31,21 @@
     );
 
 }
+/* Whole customer card is clickable, opening that customer's detail page */
+.customer-card {
+  cursor: pointer;
+}
+
+/* Name transitions from its normal (silver) color to the brand red on
+   hover or active/click, on both the name itself and whenever the
+   card around it is hovered — same red used across the rest of the
+   admin panel (#ff2b2b). */
+.customer-name {
+  transition: color 0.25s ease;
+}
+
+.customer-card:hover .customer-name,
+.customer-name:hover,
+.customer-card:active .customer-name {
+  color: #ff2b2b;
+}

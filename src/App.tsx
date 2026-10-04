@@ -24,6 +24,7 @@ const Admin = lazy(() => import("./pages/Admin"))
 const AdminLogin = lazy(() => import("./pages/AdminLogin"))
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"))
 const AdminCustomers = lazy(() => import("./pages/AdminCustomers"))
+const AdminCustomerDetail = lazy(() => import("./pages/AdminCustomerDetail"))
 const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"))
 const AdminReports = lazy(() => import("./pages/AdminReports"))
 const AdminInvoices = lazy(() => import("./pages/AdminInvoices"))
@@ -151,6 +152,11 @@ function App() {
         <Route
           path="/admin-customers"
           element={<AdminCustomers />}
+        />
+
+        <Route
+          path="/admin-customer/:customerKey"
+          element={<AdminCustomerDetail />}
         />
 
         <Route

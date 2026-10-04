@@ -3,9 +3,13 @@ import {
   useState,
 } from "react"
 
+import { useNavigate } from "react-router-dom"
+
 import "./AdminCustomers.css"
 
 export default function AdminCustomers() {
+
+  const navigate = useNavigate()
 
   const [customers,
     setCustomers] =
@@ -95,10 +99,11 @@ export default function AdminCustomers() {
 
                 <div
                   key={customer._id}
-                  className="admin-card"
+                  className="admin-card customer-card"
+                  onClick={() => navigate(`/admin-customer/${encodeURIComponent(customer._id)}`)}
                 >
 
-                  <h2>
+                  <h2 className="customer-name">
                     {customer.name}
                   </h2>
 
