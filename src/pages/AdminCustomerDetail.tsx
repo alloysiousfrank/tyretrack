@@ -73,6 +73,20 @@ export default function AdminCustomerDetail() {
 
   }
 
+  // Groups the flat service list by invoice (every line on one invoice
+  // shares that invoice's date), so the date/invoice number column is
+  // shown once per invoice instead of repeating on every service row —
+  // same grouping used in the downloaded PDF, kept consistent here.
+  const groupedServices: { invoiceId: string; date: string; rows: ServiceRow[] }[] = []
+  services.forEach((s) => {
+    let group = groupedServices.find((g) => g.invoiceId === s.invoiceId)
+    if (!group) {
+      group = { invoiceId: s.invoiceId, date: s.date, rows: [] }
+      groupedServices.push(group)
+    }
+    group.rows.push(s)
+  })
+
   return (
 
     <div className="admin-page">
@@ -129,18 +143,22 @@ export default function AdminCustomerDetail() {
                       <td colSpan={5} className="customer-history-empty">No service history found.</td>
                     </tr>
                   )}
-                  {services.map((s, i) => (
-                    <tr key={i}>
-                      <td>
-                        {new Date(s.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                        <br />
-                        <span className="customer-history-invoiceid">{s.invoiceId}</span>
-                      </td>
-                      <td>{s.serviceName}</td>
-                      <td>{s.quantity}</td>
-                      <td>₹ {Number(s.amount).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
-                      <td>₹ {Number(s.total).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
-                    </tr>
+                  {groupedServices.map((group) => (
+                    group.rows.map((s, idx) => (
+                      <tr key={`${group.invoiceId}-${idx}`}>
+                        {idx === 0 && (
+                          <td rowSpan={group.rows.length} className="customer-history-datecell">
+                            {new Date(group.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                            <br />
+                            <span className="customer-history-invoiceid">{group.invoiceId}</span>
+                          </td>
+                        )}
+                        <td>{s.serviceName}</td>
+                        <td>{s.quantity}</td>
+                        <td>₹ {Number(s.amount).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
+                        <td>₹ {Number(s.total).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
+                      </tr>
+                    ))
                   ))}
                 </tbody>
               </table>
