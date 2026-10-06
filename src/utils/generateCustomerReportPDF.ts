@@ -57,6 +57,7 @@ export const generateCustomerReportPDF = (
 
   const doc = new jsPDF({ unit: "mm", format: "a4" })
   const PW = 210
+  const PH = 297
   const ML = 14
   const MR = 14
   const CW = PW - ML - MR
@@ -93,6 +94,11 @@ export const generateCustomerReportPDF = (
     cy += 4.6
   }
 
+  // Clickable website link, same pattern as the real invoice PDF
+  doc.setTextColor(...RED)
+  doc.textWithLink("www.tyretrack.in", ML, cy, { url: "https://www.tyretrack.in" })
+  cy += 4.6
+
   // Report title (right)
   doc.setFont("helvetica", "bold")
   doc.setFontSize(16)
@@ -115,38 +121,56 @@ export const generateCustomerReportPDF = (
   doc.setDrawColor(220, 220, 220)
   doc.line(ML, dividerY, PW - MR, dividerY)
 
-  // Customer details box
+  // Customer details box — Name gets its own full-width row (and wraps
+  // if it's long, e.g. a company name) so it can never run into the
+  // Phone label the way a long name did when they shared a row.
+  const colXLeft = ML + 4
+  const colXRight = ML + CW / 2 + 2
+  const labelW = 14 // width reserved for "Name:" / "Phone:" etc. labels
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(9)
+  const nameMaxWidth = CW - 8 - labelW
+  const nameLines = doc.splitTextToSize(customer.name || "-", nameMaxWidth)
+  const nameLineHeight = 4.6
+
+  const headerH = 6
+  const padTop = 6
+  const nameBlockH = nameLines.length * nameLineHeight
+  const otherRowsH = 7 + 7 // Phone/Vehicle row + Email row
+  const padBottom = 4
+  const boxH = headerH + padTop + nameBlockH + otherRowsH + padBottom
+
   const boxY = dividerY + 5
-  const boxH = 26
   doc.setFillColor(...GREY_BG)
   doc.roundedRect(ML, boxY, CW, boxH, 2, 2, "F")
   doc.setFillColor(...RED)
-  doc.rect(ML, boxY, CW, 6, "F")
+  doc.rect(ML, boxY, CW, headerH, "F")
   doc.setFont("helvetica", "bold")
   doc.setFontSize(9)
   doc.setTextColor(255, 255, 255)
   doc.text("CUSTOMER DETAILS", ML + 4, boxY + 4.3)
 
-  doc.setFont("helvetica", "normal")
-  doc.setFontSize(9)
   doc.setTextColor(DARK[0], DARK[1], DARK[2])
 
-  const rowY1 = boxY + 12
-  const rowY2 = boxY + 19
-  const colXLeft = ML + 4
-  const colXRight = ML + CW / 2 + 2
+  const nameRowY = boxY + headerH + padTop
+  doc.setFont("helvetica", "bold")
+  doc.text("Name:", colXLeft, nameRowY)
+  doc.setFont("helvetica", "normal")
+  doc.text(nameLines, colXLeft + labelW, nameRowY)
+
+  const rowY1 = nameRowY + nameBlockH + 3
+  const rowY2 = rowY1 + 7
 
   doc.setFont("helvetica", "bold")
-  doc.text("Name:", colXLeft, rowY1)
-  doc.text("Phone:", colXRight, rowY1)
+  doc.text("Phone:", colXLeft, rowY1)
+  doc.text("Vehicle No:", colXRight, rowY1)
   doc.text("Email:", colXLeft, rowY2)
-  doc.text("Vehicle No:", colXRight, rowY2)
 
   doc.setFont("helvetica", "normal")
-  doc.text(customer.name || "-", colXLeft + 14, rowY1)
-  doc.text(customer.phone || "-", colXRight + 14, rowY1)
-  doc.text(customer.email || "-", colXLeft + 14, rowY2)
-  doc.text(customer.vehicleNumber || "-", colXRight + 18, rowY2)
+  doc.text(customer.phone || "-", colXLeft + labelW, rowY1)
+  doc.text(customer.vehicleNumber || "-", colXRight + 18, rowY1)
+  doc.text(customer.email || "-", colXLeft + labelW, rowY2)
 
   // Services table — grouped by invoice, so the date/invoice number
   // cell spans every service row that belongs to that same invoice
@@ -213,20 +237,25 @@ export const generateCustomerReportPDF = (
   const totalBoxH = 14
   const totalBoxX = PW - MR - totalBoxW
 
-  doc.setFillColor(DARK[0], DARK[1], DARK[2])
+  // Light panel instead of a solid black fill, with the same red accent
+  // strip style used on the Customer Details box above, and normal
+  // (dark) text for the label rather than white-on-black.
+  doc.setFillColor(...GREY_BG)
   doc.roundedRect(totalBoxX, afterTableY, totalBoxW, totalBoxH, 2, 2, "F")
+  doc.setFillColor(...RED)
+  doc.rect(totalBoxX, afterTableY, 3, totalBoxH, "F")
 
   doc.setFont("helvetica", "bold")
   doc.setFontSize(10)
-  doc.setTextColor(255, 255, 255)
-  doc.text("Total Amount Spent", totalBoxX + 4, afterTableY + 9)
+  doc.setTextColor(DARK[0], DARK[1], DARK[2])
+  doc.text("Total Amount Spent", totalBoxX + 7, afterTableY + 9)
 
   doc.setFont("helvetica", "bold")
   doc.setFontSize(11)
   doc.setTextColor(...RED)
   const totalText = `Rs. ${Number(totalSpent).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`
   const totalTextW = doc.getTextWidth(totalText)
-  doc.text(totalText, totalBoxX + totalBoxW - 4 - totalTextW, afterTableY + 9)
+  doc.text(totalText, totalBoxX + totalBoxW - 5 - totalTextW, afterTableY + 9)
 
   // Footer
   const footerY = afterTableY + totalBoxH + 14
@@ -236,6 +265,10 @@ export const generateCustomerReportPDF = (
   const footerText = "This is a computer-generated customer service report."
   const footerW = doc.getTextWidth(footerText)
   doc.text(footerText, (PW - footerW) / 2, footerY)
+
+  // Bottom accent bar — mirrors the red bar at the very top of the page
+  doc.setFillColor(...RED)
+  doc.rect(0, PH - 4, PW, 4, "F")
 
   return doc.output("blob")
 }
