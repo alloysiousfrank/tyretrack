@@ -49,6 +49,8 @@ exports.getCustomerHistory = async (req, res) => {
         services.push({
           date: invoice.createdAt,
           invoiceId: invoice.invoiceId,
+          // Lets the report detect customers billed for multiple vehicles
+          vehicleNumber: invoice.vehicleNumber || "",
           serviceName: line.serviceName || "",
           quantity: line.quantity || 0,
           amount: line.amount || 0,
