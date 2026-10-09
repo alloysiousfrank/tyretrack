@@ -4,6 +4,7 @@ import { downloadCustomerReportPDF } from "../utils/generateCustomerReportPDF"
 import "./AdminCustomerDetail.css"
 
 interface ServiceRow {
+  vehicleNumber: string
   date: string
   invoiceId: string
   serviceName: string
@@ -87,6 +88,12 @@ export default function AdminCustomerDetail() {
     group.rows.push(s)
   })
 
+  const uniqueVehicleNumbers = Array.from(new Set(services.map((s) => s.vehicleNumber).filter(Boolean)))
+  const showVehiclePerInvoice = uniqueVehicleNumbers.length > 1
+  const vehicleBoxText = showVehiclePerInvoice
+    ? "Multiple Vehicles"
+    : (uniqueVehicleNumbers[0] || customer?.vehicleNumber || "—")
+
   return (
 
     <div className="admin-page">
@@ -116,7 +123,7 @@ export default function AdminCustomerDetail() {
                 <h2>{customer.name || "—"}</h2>
                 <p><strong>Phone:</strong> {customer.phone || "—"}</p>
                 <p><strong>Email:</strong> {customer.email || "—"}</p>
-                <p><strong>Vehicle Number:</strong> {customer.vehicleNumber || "—"}</p>
+                <p><strong>Vehicle Number:</strong> {vehicleBoxText}</p>
                 <p><strong>Total Amount Spent:</strong> ₹ {Number(totalSpent).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</p>
               </div>
 
@@ -151,6 +158,12 @@ export default function AdminCustomerDetail() {
                             {new Date(group.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                             <br />
                             <span className="customer-history-invoiceid">{group.invoiceId}</span>
+                            {showVehiclePerInvoice && group.rows[0]?.vehicleNumber && (
+                              <>
+                                <br />
+                                <span className="customer-history-invoiceid">{group.rows[0].vehicleNumber}</span>
+                              </>
+                            )}
                           </td>
                         )}
                         <td>{s.serviceName}</td>
