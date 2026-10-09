@@ -16,6 +16,7 @@ const GREY_BG: [number, number, number] = [248, 248, 248]
 interface ServiceRow {
   date: string
   invoiceId: string
+  vehicleNumber: string
   serviceName: string
   quantity: number
   amount: number
@@ -61,6 +62,11 @@ export const generateCustomerReportPDF = (
   const ML = 14
   const MR = 14
   const CW = PW - ML - MR
+
+  // Vehicle number goes per-invoice only when the customer has more than
+  // one distinct vehicle; otherwise it's shown once in the details box.
+  const uniqueVehicleNumbers = Array.from(new Set(services.map((s) => s.vehicleNumber).filter(Boolean)))
+  const showVehiclePerInvoice = uniqueVehicleNumbers.length > 1
 
   // Top accent bar
   doc.setFillColor(...RED)
@@ -169,7 +175,8 @@ export const generateCustomerReportPDF = (
 
   doc.setFont("helvetica", "normal")
   doc.text(customer.phone || "-", colXLeft + labelW, rowY1)
-  doc.text(customer.vehicleNumber || "-", colXRight + 18, rowY1)
+  const vehicleBoxText = showVehiclePerInvoice ? "Multiple Vehicles" : (uniqueVehicleNumbers[0] || customer.vehicleNumber || "-")
+  doc.text(vehicleBoxText, colXRight + 18, rowY1)
   doc.text(customer.email || "-", colXLeft + labelW, rowY2)
 
   // Services table — grouped by invoice, so the date/invoice number
@@ -179,7 +186,11 @@ export const generateCustomerReportPDF = (
   const tableBody: any[] = []
 
   groups.forEach((group) => {
-    const dateLabel = `${new Date(group.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}\n${group.invoiceId}`
+    const dateStr = new Date(group.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+    const groupVehicle = group.rows[0]?.vehicleNumber || ""
+    const dateLabel = showVehiclePerInvoice && groupVehicle
+      ? `${dateStr}\n${group.invoiceId}\n${groupVehicle}`
+      : `${dateStr}\n${group.invoiceId}`
 
     group.rows.forEach((s, idx) => {
       const row: any[] = []
