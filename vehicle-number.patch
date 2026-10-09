@@ -1,0 +1,128 @@
+From 551c290ca6729c52ed4e5ba162baca59c61cec9e Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 9 Oct 2026 02:18:24 +0000
+Subject: [PATCH] Customer report: show vehicle number per invoice only for
+ multi-vehicle customers
+
+Single-vehicle customers show the number once in the details box;
+multi-vehicle customers show "Multiple Vehicles" in the box and the
+vehicle number under each invoice date/number (PDF and detail page).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01QR3cvdFPNF9xAG2XzdxpvJ
+---
+ server/controllers/adminCustomerController.js |  2 ++
+ src/pages/AdminCustomerDetail.tsx             | 15 ++++++++++++++-
+ src/utils/generateCustomerReportPDF.ts        | 15 +++++++++++++--
+ 3 files changed, 29 insertions(+), 3 deletions(-)
+
+diff --git a/server/controllers/adminCustomerController.js b/server/controllers/adminCustomerController.js
+index 6a5687a..ae5b2ff 100644
+--- a/server/controllers/adminCustomerController.js
++++ b/server/controllers/adminCustomerController.js
+@@ -49,6 +49,8 @@ exports.getCustomerHistory = async (req, res) => {
+         services.push({
+           date: invoice.createdAt,
+           invoiceId: invoice.invoiceId,
++          // Lets the report detect customers billed for multiple vehicles
++          vehicleNumber: invoice.vehicleNumber || "",
+           serviceName: line.serviceName || "",
+           quantity: line.quantity || 0,
+           amount: line.amount || 0,
+diff --git a/src/pages/AdminCustomerDetail.tsx b/src/pages/AdminCustomerDetail.tsx
+index 5e67ffb..e7430f7 100644
+--- a/src/pages/AdminCustomerDetail.tsx
++++ b/src/pages/AdminCustomerDetail.tsx
+@@ -4,6 +4,7 @@ import { downloadCustomerReportPDF } from "../utils/generateCustomerReportPDF"
+ import "./AdminCustomerDetail.css"
+ 
+ interface ServiceRow {
++  vehicleNumber: string
+   date: string
+   invoiceId: string
+   serviceName: string
+@@ -87,6 +88,12 @@ export default function AdminCustomerDetail() {
+     group.rows.push(s)
+   })
+ 
++  const uniqueVehicleNumbers = Array.from(new Set(services.map((s) => s.vehicleNumber).filter(Boolean)))
++  const showVehiclePerInvoice = uniqueVehicleNumbers.length > 1
++  const vehicleBoxText = showVehiclePerInvoice
++    ? "Multiple Vehicles"
++    : (uniqueVehicleNumbers[0] || customer?.vehicleNumber || "—")
++
+   return (
+ 
+     <div className="admin-page">
+@@ -116,7 +123,7 @@ export default function AdminCustomerDetail() {
+                 <h2>{customer.name || "—"}</h2>
+                 <p><strong>Phone:</strong> {customer.phone || "—"}</p>
+                 <p><strong>Email:</strong> {customer.email || "—"}</p>
+-                <p><strong>Vehicle Number:</strong> {customer.vehicleNumber || "—"}</p>
++                <p><strong>Vehicle Number:</strong> {vehicleBoxText}</p>
+                 <p><strong>Total Amount Spent:</strong> ₹ {Number(totalSpent).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</p>
+               </div>
+ 
+@@ -151,6 +158,12 @@ export default function AdminCustomerDetail() {
+                             {new Date(group.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                             <br />
+                             <span className="customer-history-invoiceid">{group.invoiceId}</span>
++                            {showVehiclePerInvoice && group.rows[0]?.vehicleNumber && (
++                              <>
++                                <br />
++                                <span className="customer-history-invoiceid">{group.rows[0].vehicleNumber}</span>
++                              </>
++                            )}
+                           </td>
+                         )}
+                         <td>{s.serviceName}</td>
+diff --git a/src/utils/generateCustomerReportPDF.ts b/src/utils/generateCustomerReportPDF.ts
+index 1f379f8..b41698f 100644
+--- a/src/utils/generateCustomerReportPDF.ts
++++ b/src/utils/generateCustomerReportPDF.ts
+@@ -16,6 +16,7 @@ const GREY_BG: [number, number, number] = [248, 248, 248]
+ interface ServiceRow {
+   date: string
+   invoiceId: string
++  vehicleNumber: string
+   serviceName: string
+   quantity: number
+   amount: number
+@@ -62,6 +63,11 @@ export const generateCustomerReportPDF = (
+   const MR = 14
+   const CW = PW - ML - MR
+ 
++  // Vehicle number goes per-invoice only when the customer has more than
++  // one distinct vehicle; otherwise it's shown once in the details box.
++  const uniqueVehicleNumbers = Array.from(new Set(services.map((s) => s.vehicleNumber).filter(Boolean)))
++  const showVehiclePerInvoice = uniqueVehicleNumbers.length > 1
++
+   // Top accent bar
+   doc.setFillColor(...RED)
+   doc.rect(0, 0, PW, 4, "F")
+@@ -169,7 +175,8 @@ export const generateCustomerReportPDF = (
+ 
+   doc.setFont("helvetica", "normal")
+   doc.text(customer.phone || "-", colXLeft + labelW, rowY1)
+-  doc.text(customer.vehicleNumber || "-", colXRight + 18, rowY1)
++  const vehicleBoxText = showVehiclePerInvoice ? "Multiple Vehicles" : (uniqueVehicleNumbers[0] || customer.vehicleNumber || "-")
++  doc.text(vehicleBoxText, colXRight + 18, rowY1)
+   doc.text(customer.email || "-", colXLeft + labelW, rowY2)
+ 
+   // Services table — grouped by invoice, so the date/invoice number
+@@ -179,7 +186,11 @@ export const generateCustomerReportPDF = (
+   const tableBody: any[] = []
+ 
+   groups.forEach((group) => {
+-    const dateLabel = `${new Date(group.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}\n${group.invoiceId}`
++    const dateStr = new Date(group.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
++    const groupVehicle = group.rows[0]?.vehicleNumber || ""
++    const dateLabel = showVehiclePerInvoice && groupVehicle
++      ? `${dateStr}\n${group.invoiceId}\n${groupVehicle}`
++      : `${dateStr}\n${group.invoiceId}`
+ 
+     group.rows.forEach((s, idx) => {
+       const row: any[] = []
+-- 
+2.43.0
+
