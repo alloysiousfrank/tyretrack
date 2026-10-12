@@ -1135,3 +1135,49 @@ box-shadow:
 );
 
 }
+/* Month / year filter above the generated invoices list */
+.invoice-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  margin: 20px 0 10px;
+}
+
+.invoice-filter-bar label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #bbb;
+}
+
+.invoice-filter-bar select {
+  min-width: 160px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+}
+
+.invoice-filter-bar select:focus {
+  outline: none;
+  border-color: #ff2b2b;
+}
+
+.invoice-filter-count {
+  font-size: 13px;
+  color: #bbb;
+  padding-bottom: 10px;
+}
+
+.invoice-filter-clear {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid #ff2b2b;
+  background: transparent;
+  color: #ff2b2b;
+  cursor: pointer;
+}

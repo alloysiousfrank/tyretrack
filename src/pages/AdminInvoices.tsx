@@ -7,6 +7,11 @@ import {
 from
 "../utils/generateInvoicePdf"
 import "./AdminInvoices.css"
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+]
 import { sendInvoiceEmail }
 from "../utils/sendInvoiceEmail"
 import { sendWithRetry }
@@ -87,6 +92,12 @@ useState("")
 const [invoices,
  setInvoices] =
  useState<any[]>([])
+
+// Month/year filter for the "Generated Invoices" list ("all" = no filter)
+const [filterMonth, setFilterMonth] =
+ useState("all")
+const [filterYear, setFilterYear] =
+ useState("all")
 
 const [editingInvoiceId, setEditingInvoiceId] =
 useState("")
@@ -1016,6 +1027,23 @@ const publishInvoice = async (id: string) => {
   }
 
 }
+
+
+  // Years available in the filter come from the invoices themselves
+  const invoiceYears = Array.from(
+    new Set(
+      invoices
+        .map((inv) => new Date(inv.createdAt).getFullYear())
+        .filter((y) => !Number.isNaN(y))
+    )
+  ).sort((a, b) => b - a)
+
+  const filteredInvoices = invoices.filter((inv) => {
+    const d = new Date(inv.createdAt)
+    if (filterYear !== "all" && d.getFullYear() !== Number(filterYear)) return false
+    if (filterMonth !== "all" && d.getMonth() !== Number(filterMonth)) return false
+    return true
+  })
 
   return (
 
@@ -2196,10 +2224,61 @@ customServices
 
 </div>
 </div>
+<div className="invoice-filter-bar">
+
+  <label>
+    Month
+    <select
+      value={filterMonth}
+      onChange={(e) => setFilterMonth(e.target.value)}
+    >
+      <option value="all">All Months</option>
+      {MONTH_NAMES.map((m, i) => (
+        <option key={m} value={String(i)}>{m}</option>
+      ))}
+    </select>
+  </label>
+
+  <label>
+    Year
+    <select
+      value={filterYear}
+      onChange={(e) => setFilterYear(e.target.value)}
+    >
+      <option value="all">All Years</option>
+      {invoiceYears.map((y) => (
+        <option key={y} value={String(y)}>{y}</option>
+      ))}
+    </select>
+  </label>
+
+  <span className="invoice-filter-count">
+    {filteredInvoices.length} invoice{filteredInvoices.length === 1 ? "" : "s"}
+  </span>
+
+  {(filterMonth !== "all" || filterYear !== "all") && (
+    <button
+      type="button"
+      className="invoice-filter-clear"
+      onClick={() => {
+        setFilterMonth("all")
+        setFilterYear("all")
+      }}
+    >
+      Clear
+    </button>
+  )}
+
+</div>
+
 <div className="admin-bookings">
 
+{filteredInvoices.length === 0 && (
+  <p>No invoices found for the selected month/year.</p>
+)}
+
 {
-  invoices.map((invoice) => (
+  filteredInvoices.map((invoice) => (
 
     <div
  key={invoice._id}
