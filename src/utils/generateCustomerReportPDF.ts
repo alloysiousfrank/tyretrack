@@ -210,9 +210,17 @@ export const generateCustomerReportPDF = (
     })
   })
 
+  // Grand Total sits at a fixed position on the LAST page (never floating
+  // right under the table). Rows overflow to a new page before they can
+  // touch this zone, so the total always has the same spot.
+  const TOTAL_ZONE_Y = 246
+
   autoTable(doc, {
     startY: boxY + boxH + 8,
-    margin: { left: ML, right: MR },
+    // Bottom margin reserves the zone where the Grand Total box + footer
+    // live, so table rows never run into it; when rows would reach it,
+    // autotable moves them to a new page instead.
+    margin: { left: ML, right: MR, bottom: PH - TOTAL_ZONE_Y + 4 },
     head: [["Date / Invoice No.", "Service", "Qty", "Amount", "Total"]],
     body: tableBody.length > 0 ? tableBody : [["-", "No service history found", "-", "-", "-"]],
     theme: "grid",
@@ -238,11 +246,18 @@ export const generateCustomerReportPDF = (
       4: { cellWidth: 30, halign: "right" },
     },
     alternateRowStyles: { fillColor: GREY_BG },
+    // Bottom accent bar on every page of the report
+    didDrawPage: () => {
+      doc.setFillColor(...RED)
+      doc.rect(0, PH - 4, PW, 4, "F")
+    },
   })
 
+  // Make sure everything below is drawn on the last page
+  doc.setPage(doc.getNumberOfPages())
+
   // Grand total box, right-aligned below the table
-  // @ts-ignore — jspdf-autotable attaches this at runtime
-  const afterTableY = (doc as any).lastAutoTable.finalY + 10
+  const afterTableY = TOTAL_ZONE_Y
 
   const totalBoxW = 80
   const totalBoxH = 14
@@ -276,10 +291,6 @@ export const generateCustomerReportPDF = (
   const footerText = "This is a computer-generated customer service report."
   const footerW = doc.getTextWidth(footerText)
   doc.text(footerText, (PW - footerW) / 2, footerY)
-
-  // Bottom accent bar — mirrors the red bar at the very top of the page
-  doc.setFillColor(...RED)
-  doc.rect(0, PH - 4, PW, 4, "F")
 
   return doc.output("blob")
 }
