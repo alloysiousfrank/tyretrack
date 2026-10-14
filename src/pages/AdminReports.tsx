@@ -375,7 +375,7 @@ export default function AdminReports() {
         const rows: (string | number)[][] = []
 
         rows.push([`TyreTrack Report — ${periodLabel}`])
-        rows.push(["Generated At", new Date().toLocaleString()])
+        rows.push(["Generated At", new Date().toLocaleString("en-GB")])
         rows.push([])
 
         rows.push(["Summary"])

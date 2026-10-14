@@ -34,7 +34,7 @@ exports.createBooking = async (req, res) => {
 
         date: new Date(
           booking.date
-        ).toLocaleDateString(),
+        ).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
 
         time: booking.time,
 
@@ -80,7 +80,7 @@ exports.createBooking = async (req, res) => {
           customerName: booking.name,
           bookingId: booking.bookingId,
           service: booking.service,
-          date: new Date(booking.date).toLocaleDateString(),
+          date: new Date(booking.date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
           time: booking.time,
         })
 

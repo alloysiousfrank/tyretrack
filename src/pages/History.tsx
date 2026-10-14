@@ -5,6 +5,7 @@ import {
  getCustomerInvoices
 }
 from "../api/invoiceApi"
+import { formatDate } from "../utils/formatDate"
 import {
  generateInvoicePdf
 }
@@ -235,9 +236,7 @@ setInvoices(
                   <strong>
                     Date:
                   </strong>{" "}
-                  {new Date(
-                    booking.date
-                  ).toLocaleDateString()}
+                  {formatDate(booking.date)}
                 </p>
 
                 <p>

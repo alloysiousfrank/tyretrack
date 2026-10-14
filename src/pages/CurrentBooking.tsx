@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import "./CurrentBooking.css"
+import { formatDate } from "../utils/formatDate"
 
 export default function CurrentBooking() {
   const [allBookings,setAllBookings] =
@@ -169,9 +170,7 @@ Vehicle Type
                 <span>Date</span>
                 <h3>
 {
- new Date(
-  booking.date
- ).toLocaleDateString()
+ formatDate(booking.date)
 }
 </h3>
               </div>

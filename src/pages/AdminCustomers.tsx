@@ -6,6 +6,7 @@ import {
 import { useNavigate } from "react-router-dom"
 
 import "./AdminCustomers.css"
+import { formatDate } from "../utils/formatDate"
 
 export default function AdminCustomers() {
 
@@ -130,9 +131,7 @@ export default function AdminCustomers() {
 
                     {
                      customer.joinedDate
-                       ? new Date(
-                          customer.joinedDate
-                         ).toLocaleDateString()
+                       ? formatDate(customer.joinedDate)
                        : "—"
                     }
                   </p>
@@ -164,9 +163,7 @@ export default function AdminCustomers() {
 
                     {
                      customer.lastVisit
-                       ? new Date(
-                          customer.lastVisit
-                         ).toLocaleDateString()
+                       ? formatDate(customer.lastVisit)
                        : "—"
                     }
                   </p>

@@ -611,3 +611,99 @@ exports.updateInvoice = async (req, res) => {
   }
 
 }
+
+// ==============================
+// DELETE INVOICE
+// ==============================
+//
+// Removes the invoice from the database and re-aligns the numbering
+// counter for that series (financial year + GST / NGST) so the next
+// invoice continues from the highest number still in use:
+//   - deleting the latest invoice  -> its number is reused next
+//   - deleting an older invoice    -> counter stays at the highest
+//     remaining number (issued numbers are never re-assigned, so no
+//     duplicates can appear)
+// Everything runs in one transaction so the delete and the counter fix
+// succeed or fail together. Revenue/totals are computed from the
+// invoices collection, so they adjust automatically.
+
+exports.deleteInvoice = async (req, res) => {
+
+  const session = await mongoose.startSession()
+
+  try {
+
+    let deleted = null
+    let nextNumber = 0
+
+    await session.withTransaction(async () => {
+
+      const invoice = await Invoice.findById(req.params.id).session(session)
+
+      if (!invoice) {
+        const err = new Error("Invoice not found")
+        err.status = 404
+        throw err
+      }
+
+      deleted = invoice
+
+      await Invoice.deleteOne({ _id: invoice._id }, { session })
+
+      // Put the linked booking (if any) back in the "needs invoice" list
+      if (invoice.bookingId) {
+        await Booking.updateOne(
+          { bookingId: invoice.bookingId },
+          { $set: { invoiceGenerated: false }, $unset: { invoiceId: "" } },
+          { session }
+        )
+      }
+
+      if (invoice.financialYear) {
+
+        const isGST = invoice.includeGST === true
+
+        const highest = await Invoice.findOne({
+          financialYear: invoice.financialYear,
+          includeGST: isGST,
+          invoiceNumber: { $gt: 0 },
+        })
+          .sort({ invoiceNumber: -1 })
+          .select("invoiceNumber")
+          .session(session)
+
+        nextNumber = highest ? highest.invoiceNumber : 0
+
+        await Counter.findOneAndUpdate(
+          { _id: `${invoice.financialYear}_${isGST ? "GST" : "NGST"}` },
+          { $set: { seq: nextNumber } },
+          { upsert: true, session }
+        )
+
+      }
+
+    })
+
+    res.json({
+      success: true,
+      message: "Invoice deleted",
+      deletedInvoiceId: deleted.invoiceId,
+      lastNumberInUse: nextNumber,
+    })
+
+  } catch (error) {
+
+    console.error("DELETE INVOICE ERROR:", error.message)
+
+    res.status(error.status || 500).json({
+      success: false,
+      message: error.message,
+    })
+
+  } finally {
+
+    await session.endSession()
+
+  }
+
+}

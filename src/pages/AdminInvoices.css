@@ -1181,3 +1181,134 @@ box-shadow:
   color: #ff2b2b;
   cursor: pointer;
 }
+
+/* ===== Generated invoice cards ===== */
+.invoice-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.invoice-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.invoice-card-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.invoice-status {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.invoice-status.draft {
+  color: #ffb3b3;
+  background: rgba(255, 43, 43, 0.1);
+  border: 1px solid rgba(255, 43, 43, 0.3);
+}
+
+.invoice-status.published {
+  color: #fff;
+  background: linear-gradient(135deg, #ff2b2b, #7a0000);
+  border: 1px solid transparent;
+}
+
+.invoice-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.invoice-card-info p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  color: #fff;
+  font-size: 0.92rem;
+}
+
+.invoice-card-info p span {
+  color: #a6a6ac;
+}
+
+.invoice-card-total {
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+.invoice-card-total {
+  color: #ff2b2b;
+}
+
+.invoice-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.invoice-card-actions button {
+  width: 100%;
+  margin-top: 0;
+  padding: 14px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+/* Publish: dark glass with red outline, glows on hover — sits between the
+   solid-red Download button and the quieter Edit/Delete buttons */
+.invoice-publish-btn {
+  color: #fff;
+  background: rgba(255, 43, 43, 0.12);
+  border: 1px solid #ff2b2b;
+  box-shadow: 0 0 18px rgba(255, 43, 43, 0.15);
+}
+
+.invoice-publish-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff2b2b, #b30000);
+  transform: translateY(-2px);
+  box-shadow: 0 0 26px rgba(255, 43, 43, 0.4);
+}
+
+.invoice-publish-btn.is-published {
+  color: #a6a6ac;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.invoice-edit-btn {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.invoice-edit-btn:hover:not(:disabled) {
+  border-color: #ff2b2b;
+  transform: translateY(-2px);
+}
+
+.invoice-edit-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.invoice-card-actions .invoice-delete-btn {
+  margin-top: 0;
+}

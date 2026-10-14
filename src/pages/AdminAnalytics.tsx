@@ -171,7 +171,7 @@ export default function AdminAnalytics() {
         const rows: (string | number)[][] = []
 
         rows.push(["TyreTrack Analytics — Overall"])
-        rows.push(["Generated At", new Date().toLocaleString()])
+        rows.push(["Generated At", new Date().toLocaleString("en-GB")])
         rows.push([])
 
         rows.push(["Summary"])

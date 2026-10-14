@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react"
 import "./Tracking.css"
 import { generateInvoicePdf } from "../utils/generateInvoicePdf"
+import { formatDate } from "../utils/formatDate"
 
 const SERVER = "https://tyretrack-server.onrender.com"
 
@@ -318,7 +319,7 @@ export default function Tracking() {
 
             <div className="tracking-item">
               <span>Date</span>
-              <h3>{new Date(booking.date).toLocaleDateString()}</h3>
+              <h3>{formatDate(booking.date)}</h3>
             </div>
 
             <div className="tracking-item">
@@ -369,7 +370,7 @@ export default function Tracking() {
                   <p>Amount : <b>₹{invoice.totalAmount}</b></p>
                   <p>
                     Generated :{" "}
-                    <b>{new Date(invoice.createdAt).toLocaleDateString()}</b>
+                    <b>{formatDate(invoice.createdAt)}</b>
                   </p>
                 </div>
 

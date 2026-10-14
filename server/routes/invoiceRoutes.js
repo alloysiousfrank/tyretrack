@@ -13,6 +13,7 @@ const {
   getInvoiceByBookingId,
   publishInvoice,
   updateInvoice,
+  deleteInvoice,
 } = require("../controllers/invoiceController")
 
 const {
@@ -63,6 +64,8 @@ router.put(
 
 // ✅ FIX: /:id routes come LAST — they are catch-all param routes
 router.put("/:id", updateInvoice)
+
+router.delete("/:id", deleteInvoice)
 
 router.get("/:id", getInvoiceById)
 

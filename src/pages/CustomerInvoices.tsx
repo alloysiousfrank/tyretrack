@@ -7,6 +7,7 @@ import {
 from "../utils/generateInvoicePdf"
 
 import "./CustomerInvoices.css"
+import { formatDate } from "../utils/formatDate"
 
 export default function CustomerInvoices(){
 
@@ -212,10 +213,7 @@ invoice.totalAmount
 Date :
 
 {
-new Date(
- invoice.createdAt
-)
-.toLocaleDateString()
+formatDate(invoice.createdAt)
 }
 
 </p>

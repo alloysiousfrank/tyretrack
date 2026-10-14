@@ -19,6 +19,7 @@ from "../utils/sendWithRetry"
 import {
 useLocation
 } from "react-router-dom"
+import { formatDate } from "../utils/formatDate"
 export default function AdminInvoices() {
 
 
@@ -922,6 +923,49 @@ fetchInvoices()
 
 }   // <-- saveInvoice ends here
 
+const deleteInvoice = async (invoice: any) => {
+
+  const confirmed = window.confirm(
+    `Delete invoice ${invoice.invoiceId}?\n\n` +
+    `This permanently removes it from the database, reduces the total ` +
+    `revenue by ₹${Number(invoice.totalAmount || 0).toLocaleString("en-IN")}, ` +
+    `and the invoice numbering continues from the highest remaining number.`
+  )
+
+  if (!confirmed) return
+
+  try {
+
+    const response = await fetch(
+      `https://tyretrack-server.onrender.com/api/invoices/${invoice._id}`,
+      { method: "DELETE" }
+    )
+
+    const data = await response.json().catch(() => ({}))
+
+    if (!response.ok || data.success === false) {
+      throw new Error(data.message || "Delete failed")
+    }
+
+    // Refresh from the server so list, totals and next number are exact
+    await fetchInvoices()
+
+    // If this invoice was being edited, leave edit mode
+    if (editingInvoiceId === invoice._id) {
+      setEditingInvoiceId("")
+    }
+
+    alert(`Invoice ${invoice.invoiceId} deleted`)
+
+  } catch (error: any) {
+
+    console.error(error)
+    alert(error?.message || "Could not delete invoice")
+
+  }
+
+}
+
 const publishInvoice = async (id: string) => {
 
   try {
@@ -1392,9 +1436,7 @@ customerProfile.totalRevenue
 
 <h3>
 {
-new Date(
- customerProfile.lastVisit
-).toLocaleDateString()
+formatDate(customerProfile.lastVisit)
 }
 </h3>
 
@@ -1595,9 +1637,7 @@ Grand Total :
 <p>
 📅 Date :
 {
- new Date(
-  invoice.createdAt
- ).toLocaleDateString()
+ formatDate(invoice.createdAt)
 }
 </p>
 
@@ -2042,8 +2082,7 @@ Invoice No :
 Date :
 
 {
- new Date()
- .toLocaleDateString()
+ formatDate(new Date())
 }
 
 </p>
@@ -2281,72 +2320,92 @@ customServices
   filteredInvoices.map((invoice) => (
 
     <div
- key={invoice._id}
- className="admin-card"
->
+      key={invoice._id}
+      className="admin-card invoice-card"
+    >
 
-<button
- className="update-btn"
- onClick={() =>
- generateInvoicePdf(
-  invoice
- )
-}
->
- Download PDF
-</button>
+      <div className="invoice-card-head">
 
-<div className="admin-card">
+        <h3>{invoice.invoiceId}</h3>
 
-<h3>{invoice.invoiceId}</h3>
+        <span
+          className={
+            invoice.isPublished
+              ? "invoice-status published"
+              : "invoice-status draft"
+          }
+        >
+          {invoice.isPublished ? "Published" : "Draft"}
+        </span>
 
-<button
- className="publish-btn"
- onClick={()=>
-  publishInvoice(
-   invoice._id
-  )
- }
- disabled={invoice.isPublished}
->
-{
- invoice.isPublished
- ? "Published"
- : "🚀 Publish"
-}
-</button>
+      </div>
 
-<button
- className="update-btn"
- onClick={()=>
-  startEditInvoice(invoice)
- }
- disabled={invoice.isPublished}
- title={
-  invoice.isPublished
-   ? "Published invoices can't be edited to keep the GST invoice numbering sequence intact."
-   : "Edit this invoice"
- }
->
- ✏️ Edit
-</button>
+      <div className="invoice-card-info">
 
-</div>
+        <p>
+          <span>Date</span>
+          {formatDate(invoice.createdAt)}
+        </p>
 
-      <p>
-        Customer :
-        {invoice.customerName}
-      </p>
+        <p>
+          <span>Customer</span>
+          {invoice.customerName}
+        </p>
 
-      <p>
-        Vehicle :
-        {invoice.vehicleNumber}
-      </p>
+        <p>
+          <span>Vehicle</span>
+          {invoice.vehicleNumber || "—"}
+        </p>
 
-      <p>
-        Total :
-        ₹ {invoice.totalAmount}
-      </p>
+        <p className="invoice-card-total">
+          <span>Total</span>
+          ₹ {Number(invoice.totalAmount || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}
+        </p>
+
+      </div>
+
+      <div className="invoice-card-actions">
+
+        <button
+          className="update-btn"
+          onClick={() => generateInvoicePdf(invoice)}
+        >
+          Download PDF
+        </button>
+
+        <button
+          className={
+            invoice.isPublished
+              ? "invoice-publish-btn is-published"
+              : "invoice-publish-btn"
+          }
+          onClick={() => publishInvoice(invoice._id)}
+          disabled={invoice.isPublished}
+        >
+          {invoice.isPublished ? "✓ Published" : "🚀 Publish Invoice"}
+        </button>
+
+        <button
+          className="invoice-edit-btn"
+          onClick={() => startEditInvoice(invoice)}
+          disabled={invoice.isPublished}
+          title={
+            invoice.isPublished
+              ? "Published invoices can't be edited to keep the GST invoice numbering sequence intact."
+              : "Edit this invoice"
+          }
+        >
+          ✏️ Edit
+        </button>
+
+        <button
+          className="delete-booking-btn invoice-delete-btn"
+          onClick={() => deleteInvoice(invoice)}
+        >
+          🗑 Delete
+        </button>
+
+      </div>
 
     </div>
 
